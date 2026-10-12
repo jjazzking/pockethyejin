@@ -44,10 +44,9 @@ src/game/            UI·저장 방식과 무관한 순수 규칙 엔진
   balance.ts         모든 수치 (밸런스 조정은 여기만)
   types.ts           게임 상태 · 행동 · 이벤트 타입
   engine.ts          applyAction(상태, 행동, {rng, places}) → 새 상태 + 이벤트
-  day.ts             createInitialState, settle(상태, 오늘, rng) — 하루 마감·새 날·부재 정산
   hyejin.ts          경고 → 카운트다운 → 정우 막기 → 절반 섭취
   rules.ts           승진·레벨업 비용·거절 확률·데이트 확률 공식
-  day.ts             closeDay(하루 마감 + 다음 날 아침), settle(밀린 날 일괄 정산)
+  day.ts             createInitialState, closeDay(하루 마감 + 다음 날 아침), settle(밀린 날 일괄 정산)
   summary.ts         "자리를 비운 동안" 요약
   date.ts            게임 날짜 (Asia/Seoul 06:00 기준)
   __tests__/         단위 테스트
