@@ -12,7 +12,11 @@ npm run dev        # 개발 서버
 npm test           # 규칙 엔진 단위 테스트
 npm run typecheck
 npm run lint
+npm run simulate   # 밸런스 시뮬레이터 (전략 4개 × 12주 × 100회)
 ```
+
+밸런스 시뮬레이터 옵션: `npm run simulate -- --weeks 8 --runs 300 --seed 42 --strategy normal,greedy --json`
+결과와 수치 조정 제안은 [`docs/balance-report.md`](./docs/balance-report.md)에 있다.
 
 ## 로그인 없이 해보기 (체험 모드)
 
@@ -172,6 +176,8 @@ src/app/components/  화면 컴포넌트
   CharacterFrame     비율 고정 캐릭터 그림 자리 (페이드 전환, 그림 없으면 이모지)
   ArtSlots           장소 사진·정우 그림 자리 (아트가 생기면 여기만 교체)
 public/placeholders/ 임시 그림
+src/sim/             밸런스 시뮬레이터 (엔진 그대로 사용): strategies, simulate, report
+scripts/simulate.ts  시뮬레이터 커맨드라인
 supabase/migrations/ DB 마이그레이션 SQL
 ```
 
