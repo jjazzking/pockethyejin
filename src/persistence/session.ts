@@ -1,6 +1,7 @@
 import { toGameDate } from "@/game/date";
 import { createInitialState, settle } from "@/game/day";
 import { applyAction } from "@/game/engine";
+import { syncPlaceCount } from "@/game/places";
 import { summarizeAway, type AwaySummary } from "@/game/summary";
 import type { Action, ActionError, GameEvent, PlaceRef, Rng } from "@/game/types";
 import { CURRENT_SCHEMA_VERSION, migrateState } from "./schema";
@@ -34,13 +35,14 @@ export interface OpenResult {
 }
 
 /**
- * 앱을 열 때 호출한다: 상태를 불러와 구조 버전을 맞추고, 밀린 날짜를 정산해서 저장한다.
+ * 앱을 열 때 호출한다: 상태를 불러와 구조 버전을 맞추고, 밀린 날짜를 정산하고,
+ * 등록된 장소 수를 확인해서("새 추억" 알림) 저장한다. places는 order 순.
  *
  * 두 기기가 동시에 열어도 정산은 한 번만 반영된다. 먼저 저장한 기기가 이기고,
  * 늦은 기기는 버전 충돌로 자기 정산 결과를 버린 뒤 최신 상태를 다시 불러온다.
  * 최신 상태는 이미 오늘로 정산돼 있으므로 다시 정산되지 않는다.
  */
-export async function openGame(deps: SessionDeps): Promise<OpenResult> {
+export async function openGame(deps: SessionDeps, places: readonly PlaceRef[]): Promise<OpenResult> {
   const today = toGameDate(deps.now());
   for (let attempt = 0; attempt < MAX_SYNC_ATTEMPTS; attempt++) {
     const syncedFromOtherDevice = attempt > 0;
@@ -48,14 +50,18 @@ export async function openGame(deps: SessionDeps): Promise<OpenResult> {
 
     if (!raw) {
       const initial = createInitialState(today, deps.rng);
-      const created = await deps.store.create(initial.state);
+      // 처음 시작할 때 이미 있는 장소는 "새 추억"이 아니다.
+      const created = await deps.store.create({ ...initial.state, knownPlaceCount: places.length });
       if (!created.ok) continue;
       return { game: created.game, events: initial.events, summary: null, isNewGame: true, syncedFromOtherDevice };
     }
 
     const before = migrateState(raw.schemaVersion, raw.state);
     const settled = settle(before, today, deps.rng);
-    const needsSave = settled.events.length > 0 || raw.schemaVersion !== CURRENT_SCHEMA_VERSION;
+    const synced = syncPlaceCount(settled.state, places.length);
+    const events = [...settled.events, ...synced.events];
+    const needsSave =
+      settled.state !== before || synced.state !== settled.state || raw.schemaVersion !== CURRENT_SCHEMA_VERSION;
     if (!needsSave) {
       return {
         game: { state: before, version: raw.version },
@@ -66,11 +72,11 @@ export async function openGame(deps: SessionDeps): Promise<OpenResult> {
       };
     }
 
-    const saved = await deps.store.save(raw.version, settled.state);
+    const saved = await deps.store.save(raw.version, synced.state);
     if (!saved.ok) continue;
     return {
       game: saved.game,
-      events: settled.events,
+      events,
       summary: summarizeAway(before, settled.state, settled.events),
       isNewGame: false,
       syncedFromOtherDevice,
@@ -108,7 +114,7 @@ export async function performAction(
   const next = result.ok ? result.state : settled.state;
   const saved = await deps.store.save(game.version, next);
   if (!saved.ok) {
-    const latest = await openGame(deps);
+    const latest = await openGame(deps, places);
     return { kind: "conflict", game: latest.game, events: latest.events, summary: latest.summary };
   }
 

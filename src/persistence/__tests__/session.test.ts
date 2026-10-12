@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ALWAYS, MONDAY, NEVER, makeState } from "@/game/__tests__/helpers";
+import { ALWAYS, MONDAY, NEVER, PLACES, makeState } from "@/game/__tests__/helpers";
 import type { GameState, Rng } from "@/game/types";
 import { MemoryGameStore } from "../memoryStore";
 import { CURRENT_SCHEMA_VERSION, NewerSchemaError, migrateState } from "../schema";
-import { openGame, performAction, type SessionDeps } from "../session";
+import { openGame as open, performAction, type SessionDeps } from "../session";
+
+/** 장소 3개가 등록된 상태로 연다 */
+const openGame = (deps: SessionDeps, places = PLACES) => open(deps, places);
 
 /** 서울 시간 정오 */
 const noon = (date: string) => new Date(`${date}T12:00:00+09:00`);
@@ -98,7 +101,7 @@ describe("performAction", () => {
     const store = storeWith(makeState({}, MONDAY));
     const deps = device(store, MONDAY);
     const { game } = await openGame(deps);
-    const outcome = await performAction(deps, game, { type: "work" }, []);
+    const outcome = await performAction(deps, game, { type: "work" }, PLACES);
     expect(outcome.kind).toBe("done");
     expect(outcome.game.version).toBe(8);
     expect(store.peek()?.state).toMatchObject({ jungwoo: { money: 30_000, actionsLeft: 4 } });
@@ -108,7 +111,7 @@ describe("performAction", () => {
     const store = storeWith(makeState({}, MONDAY));
     const deps = device(store, MONDAY);
     const { game } = await openGame(deps);
-    const outcome = await performAction(deps, game, { type: "convenienceStore" }, []);
+    const outcome = await performAction(deps, game, { type: "convenienceStore" }, PLACES);
     expect(outcome).toMatchObject({ kind: "invalid", error: "NO_BULLDAK_EVENT" });
     expect(store.peek()?.version).toBe(7);
   });
@@ -120,18 +123,18 @@ describe("performAction", () => {
     const onPhone = (await openGame(phone)).game;
     const onComputer = (await openGame(computer)).game;
 
-    const first = await performAction(phone, onPhone, { type: "work" }, []);
+    const first = await performAction(phone, onPhone, { type: "work" }, PLACES);
     expect(first.kind).toBe("done");
 
     // 컴퓨터는 아직 일하기 전 상태를 들고 있다
-    const second = await performAction(computer, onComputer, { type: "playAlone" }, []);
+    const second = await performAction(computer, onComputer, { type: "playAlone" }, PLACES);
     expect(second.kind).toBe("conflict");
     // 폰의 일은 살아 있고, 컴퓨터의 혼자 놀기는 반영되지 않았다
     expect(second.game.state.jungwoo).toMatchObject({ money: 30_000, actionsLeft: 4, happiness: 90 });
     expect(store.peek()?.version).toBe(8);
 
     // 최신 상태로 다시 시도하면 된다
-    const retry = await performAction(computer, second.game, { type: "playAlone" }, []);
+    const retry = await performAction(computer, second.game, { type: "playAlone" }, PLACES);
     expect(retry.kind).toBe("done");
     expect(store.peek()?.state).toMatchObject({ jungwoo: { actionsLeft: 3, happiness: 100 } });
   });
@@ -140,7 +143,7 @@ describe("performAction", () => {
     const store = storeWith(makeState({}, MONDAY));
     const { game } = await openGame(device(store, MONDAY));
     const nextDay = device(store, "2026-10-13");
-    const outcome = await performAction(nextDay, game, { type: "work" }, []);
+    const outcome = await performAction(nextDay, game, { type: "work" }, PLACES);
     expect(outcome.kind).toBe("done");
     expect(outcome.summary).toMatchObject({ daysPassed: 1, absentDays: 0 });
     expect(outcome.game.state).toMatchObject({
@@ -164,7 +167,7 @@ describe("한정선 절반 섭취는 접속 중 행동으로만", () => {
     expect(opened.game.state.hyejin).toMatchObject({ hanjeongseon: 10, countdownTurnsLeft: 1, happiness: 0 });
     expect(opened.events.map((e) => e.type)).not.toContain("halfEaten");
 
-    const outcome = await performAction(deps, opened.game, { type: "playAlone" }, []);
+    const outcome = await performAction(deps, opened.game, { type: "playAlone" }, PLACES);
     expect(outcome.kind).toBe("done");
     if (outcome.kind !== "done") return;
     expect(outcome.events).toContainEqual({ type: "halfEaten", eaten: 5, recovered: 50 });
@@ -179,14 +182,43 @@ describe("한정선 절반 섭취는 접속 중 행동으로만", () => {
     const store = storeWith(state);
     const deps = device(store, MONDAY);
     const { game } = await openGame(deps);
-    const fed = await performAction(deps, game, { type: "feed", count: 1 }, []);
-    const played = await performAction(deps, fed.game, { type: "playAlone" }, []);
+    const fed = await performAction(deps, game, { type: "feed", count: 1 }, PLACES);
+    const played = await performAction(deps, fed.game, { type: "playAlone" }, PLACES);
     expect(played.kind).toBe("done");
     expect(played.game.state.hyejin).toMatchObject({ hanjeongseon: 9, happiness: 25, countdownTurnsLeft: null });
   });
 });
 
+describe("새 추억 알림 (접속 시)", () => {
+  it("저장된 장소 수보다 늘었으면 알림 이벤트를 내고 새 수를 저장한다", async () => {
+    const store = storeWith(makeState({ knownPlaceCount: 3, hyejin: { level: 3 } }, MONDAY));
+    const four = [...PLACES, { id: "p4" }];
+    const result = await openGame(device(store, MONDAY), four);
+    expect(result.events).toEqual([{ type: "newPlacesAdded", count: 1, levelCapRaised: true }]);
+    expect(store.peek()?.state).toMatchObject({ knownPlaceCount: 4 });
+    expect(store.peek()?.version).toBe(8);
+    // 다시 열면 알림은 한 번뿐
+    expect((await openGame(device(store, MONDAY), four)).events).toEqual([]);
+  });
+
+  it("새 게임은 이미 있는 장소를 새 추억으로 치지 않는다", async () => {
+    const store = new MemoryGameStore();
+    const first = await openGame(device(store, MONDAY));
+    expect(first.game.state.knownPlaceCount).toBe(3);
+    expect((await openGame(device(store, MONDAY))).events).toEqual([]);
+  });
+});
+
 describe("상태 구조 버전", () => {
+  it("구조 버전 1로 저장된 상태는 2로 올리고, 장소 수는 알림 없이 맞춘다", async () => {
+    const { knownPlaceCount: _omit, ...v1 } = makeState({}, MONDAY);
+    void _omit;
+    const store = new MemoryGameStore({ state: v1, version: 4, schemaVersion: 1 });
+    const result = await openGame(device(store, MONDAY));
+    expect(result.events).toEqual([]);
+    expect(store.peek()).toMatchObject({ schemaVersion: 2, version: 5, state: { knownPlaceCount: 3 } });
+  });
+
   it("이전 구조는 마이그레이션을 차례로 적용한다", () => {
     const migrations = {
       1: (raw: unknown) => ({ ...(raw as object), a: 1 }),

@@ -17,7 +17,11 @@ npm run lint
 ## Supabase 설정
 
 1. Supabase에서 프로젝트를 만든다.
-2. 대시보드 **SQL Editor**에 `supabase/migrations/20261012000000_create_game_states.sql`을 붙여 넣고 실행한다. Supabase CLI를 쓴다면 `supabase db push`로 적용해도 된다.
+2. 대시보드 **SQL Editor**에서 `supabase/migrations` 폴더의 파일을 **이름 순서대로** 하나씩 붙여 넣고 실행한다. Supabase CLI를 쓴다면 `supabase db push`로 적용해도 된다.
+   - `20261012000000_create_game_states.sql`: 게임 저장
+   - `20261013000000_create_places.sql`: 장소 테이블 + 사진 버킷
+   - `20261013000100_create_character_images.sql`: 캐릭터 그림 테이블 + 그림 버킷
+   - `20261013000200_seed_placeholders.sql`: 임시 장소 3개 + 임시 혜진 그림 5장
 3. **Authentication → Users → Add user**에서 혜진 계정(이메일 + 비밀번호)을 만든다. 이때 "Auto Confirm User"를 체크한다.
 4. **Authentication → Sign In / Providers**에서 "Allow new users to sign up"을 끈다. 이렇게 하면 계정이 하나로 고정된다.
 5. `.env.example`을 `.env.local`로 복사하고 URL과 Publishable key를 채운다. Vercel에는 같은 이름으로 환경 변수를 등록한다.
@@ -37,6 +41,89 @@ npm run lint
 - 두 기기가 같은 날 동시에 앱을 열면, 정산은 먼저 저장한 기기 것만 남는다. 늦은 기기가 다시 불러온 상태는 이미 오늘로 정산돼 있어서 두 번 정산되지 않는다.
 - 탭이 다시 화면에 보이면 최신 상태를 다시 불러온다.
 
+## 새 장소 추가하기 (대시보드)
+
+코드를 고치거나 다시 배포할 필요가 없다. 혜진이 다음에 앱을 열면 "새 추억이 추가됐어요!" 알림이 뜬다.
+
+**1. 사진 올리기**
+1. 왼쪽 메뉴 **Storage** → **places** 버킷을 연다.
+2. **Upload file**로 사진을 올린다. 파일 이름은 **영어·숫자·`-`만** 쓴다 (예: `seongsu-cafe.jpg`). jpg, png, webp를 올릴 수 있다.
+3. 올린 파일 이름을 그대로 기억해 둔다. 폴더 안에 올렸다면 `폴더/파일이름`이 경로다.
+
+**2. 장소 행 추가하기**
+1. 왼쪽 메뉴 **Table Editor** → **places** 테이블 → **Insert → Insert row**.
+2. 칸을 채운다.
+
+| 칸 | 넣을 값 | 예시 |
+|---|---|---|
+| id | 겹치지 않는 아무 이름 (영어) | `place-004` |
+| order | 해금 순서. 지금 마지막 번호 + 1 | `4` |
+| name | 장소 이름 | `성수동 카페` |
+| date | 다녀온 날짜 (비워도 됨) | `2026-11-01` |
+| image | 1단계에서 올린 사진 경로 | `seongsu-cafe.jpg` |
+| episodes | 별 개수별 에피소드 (아래 형식 그대로) | 아래 참고 |
+
+```json
+{ "1": "별 1개일 때 보여줄 이야기", "2": "별 2개일 때 이야기", "3": "별 3개일 때 이야기" }
+```
+
+3. **Save**.
+
+- 임시 장소(`place-001`~`003`)는 진짜 장소로 내용을 바꾸면 된다. 지우면 그만큼 레벨 상한이 줄어드니, 지우지 말고 **수정**하는 걸 추천한다.
+- 이미 가본 장소의 별 기록은 장소 **id**에 붙어 있다. 그러니 이미 쓰고 있는 장소의 id는 바꾸지 않는다.
+
+## 캐릭터 그림 추가하기 (대시보드)
+
+**그림 규격**: 투명 배경 PNG.
+- 전신은 **1024×1536**(세로 2:3)이고, 모든 그림에서 발끝 높이와 머리 크기를 똑같이 맞춘다.
+- 얼굴은 **1024×1024**이고, 얼굴 중심과 크기를 똑같이 맞춘다. 테두리나 글자는 넣지 않는다.
+- 이렇게 맞춰 그리면 그림이 바뀌어도 캐릭터 위치가 튀지 않는다.
+
+**1. 그림 올리기**
+1. **Storage** → **characters** 버킷 → **Upload file**.
+2. 파일 이름은 영어·숫자·`-`·`/`만 쓴다 (예: `hyejin/full/smile.png`, `hyejin/face/yummy.png`).
+
+**2. 그림 행 추가하기**
+SQL Editor에 아래 내용을 붙여 넣고, 값만 바꿔서 **Run**하면 가장 확실하다.
+
+```sql
+insert into public.character_images (character, kind, tags, path, description) values
+  ('hyejin', 'full', '{normal}', 'hyejin/full/smile.png', '웃는 혜진');
+```
+
+- `character`: `hyejin` 또는 `jeongwoo`
+- `kind`: 전신이면 `full`, 얼굴이면 `face`
+- `tags`: `'{normal}'`처럼 중괄호 안에 쓴다. 여러 개면 `'{eat_mochi,level_up}'`처럼 쉼표로 구분한다.
+- `path`: 1단계에서 올린 경로
+
+Table Editor → **character_images** → Insert row로 넣어도 된다.
+
+**태그를 붙이면 어디에 나오나**
+
+| 종류 | 태그 | 나오는 곳 |
+|---|---|---|
+| 전신 `full` | `normal` | 메인 화면 평상시 (혜진 행복도 30 초과). 여러 장이면 번갈아 나온다 |
+| 전신 `full` | `sad` | 혜진 행복도 30 이하 (경고 구간) |
+| 전신 `full` | `danger` | 혜진 행복도 20 이하 (카운트다운 구간). 없으면 `sad` 그림을 쓴다 |
+| 얼굴 `face` | `default` | 그 이벤트용 얼굴이 없을 때 대신 나오는 기본 얼굴 |
+| 얼굴 `face` | `eat_mochi` | 한정선 먹이기 |
+| 얼굴 `face` | `level_up` | 레벨업 |
+| 얼굴 `face` | `warning` | 경고 (행복도 30 이하로 내려감) |
+| 얼굴 `face` | `countdown` | 카운트다운 시작 (행복도 20 이하) |
+| 얼굴 `face` | `jeongwoo_block` | 정우가 냉동실을 막음 |
+| 얼굴 `face` | `eat_half` | 한정선 절반 먹어치움 |
+| 얼굴 `face` | `buldak_craving` | 불닭이 땡김 |
+| 얼굴 `face` | `buldak_eat` | 편의점 불닭 먹음 |
+| 얼굴 `face` | `play_together` | 같이 놀기 |
+| 얼굴 `face` | `date_1star` / `date_2star` / `date_3star` | 데이트 결과 별 1·2·3개 |
+| 얼굴 `face` | `new_place` | 새 추억 추가 알림 |
+| 얼굴 `face` | `away_summary` | 자리를 비운 동안 요약 |
+
+- 한 그림에 태그를 여러 개 붙여도 되고, 같은 태그 그림이 여러 장이면 그중 하나가 무작위로 나온다.
+- 메인 화면 전신은 앱을 열 때, 정우 행동을 할 때, 혜진을 탭할 때 바뀐다. 직전 그림은 연속으로 나오지 않는다.
+- 어떤 풀에 그림이 하나도 없어도 게임은 멈추지 않는다. 해당 자리가 비어 보일 뿐이다.
+- 임시 그림(`/placeholders/...` 경로)은 앱 안에 들어 있는 파일이다. 진짜 그림을 올리면 임시 행은 지워도 된다.
+
 ## 구조
 
 ```
@@ -49,15 +136,22 @@ src/game/            UI·저장 방식과 무관한 순수 규칙 엔진
   day.ts             createInitialState, closeDay(하루 마감 + 다음 날 아침), settle(밀린 날 일괄 정산)
   summary.ts         "자리를 비운 동안" 요약
   date.ts            게임 날짜 (Asia/Seoul 06:00 기준)
+  places.ts          새 장소 알림(syncPlaceCount), 만렙 판정
   __tests__/         단위 테스트
+src/content/         장소·캐릭터 그림 (순수 로직)
+  places.ts          맵 구성(해금 여부·최고 별), DB 행 읽기
+  images.ts          전신·얼굴 그림 고르기, 이벤트 → 얼굴 태그
 src/persistence/     저장 (규칙 엔진과 분리)
   store.ts           GameStore 인터페이스 (낙관적 동시성 제어)
   supabaseStore.ts   Supabase 구현
   memoryStore.ts     메모리 구현 (테스트·개발용)
   schema.ts          상태 구조 버전과 마이그레이션
-  session.ts         openGame(접속 시 정산·저장), performAction(행동·저장·충돌 처리)
+  session.ts         openGame(접속 시 정산·장소 확인·저장), performAction(행동·저장·충돌 처리)
+  contentRepo.ts     places·character_images 읽기, Storage 서명 URL
 src/lib/supabase.ts  환경 변수로 만드는 브라우저 Supabase 클라이언트
 src/app/GameApp.tsx  로그인 + 임시 확인용 화면 (실제 UI는 다음 단계)
+src/app/components/  CharacterFrame (비율 고정 캐릭터 그림 틀)
+public/placeholders/ 임시 그림
 supabase/migrations/ DB 마이그레이션 SQL
 ```
 
