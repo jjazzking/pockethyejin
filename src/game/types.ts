@@ -52,6 +52,11 @@ export interface GameState {
   weekendDateUsed: boolean;
   /** 마지막으로 정산한 게임 날짜 = 현재 진행 중인 게임 날짜 */
   lastSettledDate: GameDate;
+  /**
+   * 마지막으로 확인한 등록 장소 수. 접속 시 실제 장소 수가 이보다 많으면 "새 추억" 알림.
+   * null이면 아직 확인 전 (알림 없이 현재 수로 맞춘다).
+   */
+  knownPlaceCount: number | null;
 }
 
 /** 규칙 엔진이 알아야 하는 장소 정보. order 순으로 정렬된 상태로 넘긴다. */
@@ -114,6 +119,14 @@ export type GameEvent =
       bulldakIgnored: number;
     }
   | { type: "dayStarted"; date: GameDate; sulkHealed: boolean }
+  // 업데이트
+  | {
+      type: "newPlacesAdded";
+      /** 새로 늘어난 장소 수 */
+      count: number;
+      /** 혜진이 만렙이었다가 다시 레벨업할 수 있게 됐는지 */
+      levelCapRaised: boolean;
+    }
   | { type: "bulldakCraving"; date: GameDate };
 
 export type ActionResult =

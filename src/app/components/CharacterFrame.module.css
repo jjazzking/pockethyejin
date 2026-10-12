@@ -1,0 +1,47 @@
+/*
+ * 캐릭터 그림 틀. 캔버스 비율(전신 2:3, 얼굴 1:1)을 고정하고 그림은 contain으로 맞춘다.
+ * 모든 그림이 같은 캔버스·정렬 규칙으로 그려지므로, 그림이 바뀌어도 캐릭터 위치가 튀지 않는다.
+ */
+.frame {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: block;
+}
+
+.full {
+  aspect-ratio: 2 / 3;
+  max-width: min(100%, calc(60dvh * 2 / 3));
+}
+
+.face {
+  aspect-ratio: 1 / 1;
+  max-width: 160px;
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.empty {
+  position: absolute;
+  inset: 8%;
+  border: 2px dashed currentColor;
+  border-radius: 16px;
+  opacity: 0.25;
+}
+
+.tappable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}

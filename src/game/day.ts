@@ -66,6 +66,7 @@ export function createInitialState(today: GameDate, rng: Rng): { state: GameStat
     bestStars: {},
     weekendDateUsed: false,
     lastSettledDate: today,
+    knownPlaceCount: null,
   };
   const events: GameEvent[] = [];
   startDay(state, today, rng, events);

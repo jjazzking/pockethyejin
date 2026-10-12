@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#ffd9a8"/>
+  <path d="M0 620 L300 380 L520 560 L780 300 L1200 640 L1200 800 L0 800 Z" fill="#ffffff" opacity="0.55"/>
+  <circle cx="960" cy="180" r="80" fill="#ffffff" opacity="0.8"/>
+  <text x="600" y="430" text-anchor="middle" font-family="sans-serif" font-size="72" fill="#5b4636">장소 1 (임시 사진)</text>
+</svg>

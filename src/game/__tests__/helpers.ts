@@ -33,9 +33,9 @@ export function ctx(rng: Rng = NEVER, places: PlaceRef[] = PLACES): ActionContex
 
 type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? Partial<T[K]> : T[K] };
 
-/** 불닭 없는 새 게임 상태에 덮어쓰기 */
+/** 불닭 없는 새 게임 상태(장소 3개 확인 완료)에 덮어쓰기 */
 export function makeState(overrides: DeepPartial<GameState> = {}, date = MONDAY): GameState {
-  const base = createInitialState(date, NEVER).state;
+  const base = { ...createInitialState(date, NEVER).state, knownPlaceCount: PLACES.length };
   return {
     ...base,
     ...overrides,
