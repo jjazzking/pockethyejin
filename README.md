@@ -158,8 +158,19 @@ src/persistence/     저장 (규칙 엔진과 분리)
   session.ts         openGame(접속 시 정산·장소 확인·저장), performAction(행동·저장·충돌 처리)
   contentRepo.ts     places·character_images 읽기, Storage 서명 URL
 src/lib/supabase.ts  환경 변수로 만드는 브라우저 Supabase 클라이언트
-src/app/GameApp.tsx  로그인 + 임시 확인용 화면 (실제 UI는 다음 단계)
-src/app/components/  CharacterFrame (비율 고정 캐릭터 그림 틀)
+src/ui/              화면 로직 (규칙은 엔진 함수만 호출)
+  useGame.ts         불러오기·행동 실행·팝업 대기열·전신 그림 교체, 버튼 활성화는 엔진 dry-run
+  describe.ts        엔진 이벤트 → 팝업·토스트
+  copy.ts            화면 문구
+src/app/GameApp.tsx  로그인 / Supabase 게임 / 체험 모드 진입점
+src/app/components/  화면 컴포넌트
+  GameShell          모바일: 아래 탭(메인·지도·데이트), 넓은 화면(960px+): 세 칸 나란히
+  MainPanel          날짜·혜진 전신·경고·불닭·정우/혜진 상태와 행동
+  MapPanel           추억 지도 (해금·가림·최고 별)
+  DatePanel          장소 → 예산(별 확률) → 한정선 추가 → 출발
+  PopupLayer         이벤트 팝업(혜진 얼굴), 정우 막기 연출, 자리를 비운 동안, 데이트 결과
+  CharacterFrame     비율 고정 캐릭터 그림 자리 (페이드 전환, 그림 없으면 이모지)
+  ArtSlots           장소 사진·정우 그림 자리 (아트가 생기면 여기만 교체)
 public/placeholders/ 임시 그림
 supabase/migrations/ DB 마이그레이션 SQL
 ```
