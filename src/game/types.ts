@@ -1,4 +1,4 @@
-/** 게임 날짜. KST 06:00 기준으로 바뀌는 날짜, "YYYY-MM-DD" 형식. */
+/** 게임 날짜. 서울 시간 06:00 기준으로 바뀌는 날짜, "YYYY-MM-DD" 형식. */
 export type GameDate = string;
 
 export type Stars = 1 | 2 | 3;

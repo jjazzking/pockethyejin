@@ -13,10 +13,21 @@ function format(utcMs: number): GameDate {
   return new Date(utcMs).toISOString().slice(0, 10);
 }
 
-/** 실제 시각 → 게임 날짜. KST 아침 리셋 시각 이전은 전날로 친다. */
+const seoulDate = new Intl.DateTimeFormat("en-US", {
+  timeZone: TIME.TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/**
+ * 실제 시각 → 게임 날짜. 서울 시간으로 아침 리셋 시각(06:00) 이전은 전날로 친다.
+ * (리셋 시각만큼 당긴 순간의 서울 달력 날짜. 서울은 서머타임이 없어 항상 정확하다.)
+ */
 export function toGameDate(now: Date): GameDate {
-  const shifted = now.getTime() + (TIME.KST_UTC_OFFSET_HOURS - TIME.DAY_RESET_HOUR_KST) * HOUR_MS;
-  return format(shifted);
+  const parts = seoulDate.formatToParts(new Date(now.getTime() - TIME.DAY_RESET_HOUR * HOUR_MS));
+  const get = (type: string) => parts.find((p) => p.type === type)!.value;
+  return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
 export function addDays(date: GameDate, days: number): GameDate {
@@ -38,6 +49,7 @@ export function isWeekend(date: GameDate): boolean {
   return dow === 0 || dow === 6;
 }
 
-export function isMonday(date: GameDate): boolean {
-  return dayOfWeek(date) === 1;
+/** 주말의 마지막 날(일요일)인지 */
+export function isSunday(date: GameDate): boolean {
+  return dayOfWeek(date) === 0;
 }

@@ -9,10 +9,10 @@ export const HAPPINESS_MAX = 100;
 
 /** 시간 구조 */
 export const TIME = {
-  /** 한국 표준시 UTC 오프셋 (서머타임 없음) */
-  KST_UTC_OFFSET_HOURS: 9,
-  /** 매일 아침 정우 행동이 충전되고 게임 날짜가 바뀌는 시각 (KST) */
-  DAY_RESET_HOUR_KST: 6,
+  /** 게임 날짜·요일 판정 기준 시간대 */
+  TIME_ZONE: "Asia/Seoul",
+  /** 매일 아침 정우 행동이 충전되고 게임 날짜가 바뀌는 시각 (서울 시간) */
+  DAY_RESET_HOUR: 6,
   /** 하루 정우 행동 횟수 (이월 없음) */
   ACTIONS_PER_DAY: 5,
   /** 부재한 날 혜진 행복도 감소에 곱하는 비율 (결과는 소수점 버림) */

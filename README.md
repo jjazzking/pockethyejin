@@ -3,7 +3,7 @@
 정우를 부려먹어서 혜진이를 키우는 커플 육성 게임. 기획서: [`game-design-spec.md`](./game-design-spec.md)
 
 - 프레임워크: Next.js (App Router, TypeScript) — Vercel 배포 예정
-- 백엔드: Supabase (다음 단계에서 연결)
+- 백엔드: Supabase (Auth + Postgres)
 - 테스트: Vitest
 
 ```bash
@@ -13,6 +13,29 @@ npm test           # 규칙 엔진 단위 테스트
 npm run typecheck
 npm run lint
 ```
+
+## Supabase 설정
+
+1. Supabase에서 프로젝트를 만든다.
+2. 대시보드 **SQL Editor**에 `supabase/migrations/20261012000000_create_game_states.sql`을 붙여 넣고 실행한다. Supabase CLI를 쓴다면 `supabase db push`로 적용해도 된다.
+3. **Authentication → Users → Add user**에서 혜진 계정(이메일 + 비밀번호)을 만든다. 이때 "Auto Confirm User"를 체크한다.
+4. **Authentication → Sign In / Providers**에서 "Allow new users to sign up"을 끈다. 이렇게 하면 계정이 하나로 고정된다.
+5. `.env.example`을 `.env.local`로 복사하고 URL과 Publishable key를 채운다. Vercel에는 같은 이름으로 환경 변수를 등록한다.
+
+로그인은 **이메일 + 비밀번호** 방식이다.
+- 폰과 컴퓨터에서 각각 한 번만 로그인하면 세션이 브라우저에 남아서 계속 유지된다.
+- 매직 링크는 폰의 메일 앱 안에서 링크가 열리면 다른 브라우저에 로그인되는 문제가 있어서 쓰지 않았다.
+- 이메일 OTP는 로그인할 때마다 메일을 확인해야 해서 쓰지 않았다.
+
+### 저장과 동시 접속
+
+- `game_states` 테이블은 사용자당 한 행이며, RLS로 본인 행만 읽고 쓸 수 있다.
+- `state`(jsonb)에는 GameState 전체가 들어가고, 마지막 정산 날짜는 `state.lastSettledDate`에 있다.
+- `schema_version`은 state의 구조 버전이다. 구조를 바꾸면 `src/persistence/schema.ts`의 `CURRENT_SCHEMA_VERSION`을 올리고 변환 함수를 추가한다.
+- `version`은 동시 수정 방지용 번호다. 저장은 `UPDATE … WHERE version = 내가 읽은 버전`으로 하고, 트리거가 버전을 정확히 1씩만 올리도록 강제한다.
+- 다른 기기가 먼저 저장했으면 0행이 갱신된다. 그러면 앱은 최신 상태를 다시 불러오고 "다른 기기에서 플레이한 내용을 불러왔어요"라고 알린다. 방금 한 행동은 반영되지 않는다.
+- 두 기기가 같은 날 동시에 앱을 열면, 정산은 먼저 저장한 기기 것만 남는다. 늦은 기기가 다시 불러온 상태는 이미 오늘로 정산돼 있어서 두 번 정산되지 않는다.
+- 탭이 다시 화면에 보이면 최신 상태를 다시 불러온다.
 
 ## 구조
 
@@ -24,11 +47,20 @@ src/game/            UI·저장 방식과 무관한 순수 규칙 엔진
   day.ts             createInitialState, settle(상태, 오늘, rng) — 하루 마감·새 날·부재 정산
   hyejin.ts          경고 → 카운트다운 → 정우 막기 → 절반 섭취
   rules.ts           승진·레벨업 비용·거절 확률·데이트 확률 공식
-  date.ts            게임 날짜 (KST 06:00 기준)
+  day.ts             closeDay(하루 마감 + 다음 날 아침), settle(밀린 날 일괄 정산)
+  summary.ts         "자리를 비운 동안" 요약
+  date.ts            게임 날짜 (Asia/Seoul 06:00 기준)
   __tests__/         단위 테스트
+src/persistence/     저장 (규칙 엔진과 분리)
+  store.ts           GameStore 인터페이스 (낙관적 동시성 제어)
+  supabaseStore.ts   Supabase 구현
+  memoryStore.ts     메모리 구현 (테스트·개발용)
+  schema.ts          상태 구조 버전과 마이그레이션
+  session.ts         openGame(접속 시 정산·저장), performAction(행동·저장·충돌 처리)
+src/lib/supabase.ts  환경 변수로 만드는 브라우저 Supabase 클라이언트
+src/app/GameApp.tsx  로그인 + 임시 확인용 화면 (실제 UI는 다음 단계)
+supabase/migrations/ DB 마이그레이션 SQL
 ```
-
-사용 흐름: 접속하면 `settle(state, toGameDate(new Date()), Math.random)`으로 밀린 날을 정산한 뒤, 플레이 중에는 `applyAction`을 호출한다. 두 함수 모두 입력 상태를 바꾸지 않는다.
 
 ## 기획서 해석 (확정)
 
