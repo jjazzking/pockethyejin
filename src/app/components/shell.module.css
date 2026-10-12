@@ -1,0 +1,160 @@
+.shell {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px 16px calc(84px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.menu {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.menu button {
+  min-height: 36px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.columns {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+  min-width: 0;
+}
+
+.pane {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+
+/* 모바일: 선택한 탭만 보여준다 */
+.columns[data-tab="main"] > .pane:not([data-pane="main"]),
+.columns[data-tab="map"] > .pane:not([data-pane="map"]),
+.columns[data-tab="date"] > .pane:not([data-pane="date"]) {
+  display: none;
+}
+
+.tabs {
+  position: fixed;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 6px 8px max(6px, env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.tab {
+  min-height: 56px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.tab[aria-current="page"] {
+  color: var(--accent-strong);
+  background: var(--surface-2);
+}
+
+.tabEmoji {
+  position: relative;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.dot {
+  position: absolute;
+  top: -2px;
+  right: -6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+/* 넓은 화면: 메인 · 맵 · 데이트를 나란히 */
+@media (min-width: 960px) {
+  .shell {
+    padding: 20px 24px 32px;
+  }
+
+  .columns {
+    grid-template-columns: minmax(360px, 1.15fr) minmax(280px, 1fr) minmax(300px, 1fr);
+  }
+
+  .columns > .pane {
+    display: grid !important;
+  }
+
+  .columns > .pane[data-pane="map"],
+  .columns > .pane[data-pane="date"] {
+    position: sticky;
+    top: 20px;
+  }
+
+  .tabs {
+    display: none;
+  }
+}
+
+.center {
+  min-height: 60dvh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  text-align: center;
+}
+
+.loading {
+  font-size: 1.1rem;
+  animation: bob 1.2s ease-in-out infinite;
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.trialBanner {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}

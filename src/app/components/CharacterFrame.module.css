@@ -14,12 +14,10 @@
 
 .full {
   aspect-ratio: 2 / 3;
-  max-width: min(100%, calc(60dvh * 2 / 3));
 }
 
 .face {
   aspect-ratio: 1 / 1;
-  max-width: 160px;
 }
 
 .image {
@@ -33,15 +31,61 @@
   -webkit-user-drag: none;
 }
 
-.empty {
+/* 그림이 바뀔 때 짧은 페이드 */
+.fade {
+  animation: fadeIn 260ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 그림이 없을 때: 단순한 도형 + 이모지 */
+.placeholder {
   position: absolute;
-  inset: 8%;
-  border: 2px dashed currentColor;
-  border-radius: 16px;
-  opacity: 0.25;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.full .placeholder::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 4%;
+  top: 30%;
+  border-radius: 45% 45% 18% 18%;
+  background: var(--surface-2);
+}
+
+.full .placeholder .emoji {
+  position: relative;
+  font-size: min(28vw, 120px);
+  margin-bottom: 30%;
+}
+
+.face .placeholder {
+  border-radius: 50%;
+  background: var(--surface-2);
+}
+
+.face .placeholder .emoji {
+  font-size: 2.6em;
 }
 
 .tappable {
   cursor: pointer;
+  border-radius: var(--radius);
   -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease;
+}
+
+.tappable:active {
+  transform: scale(0.97);
 }

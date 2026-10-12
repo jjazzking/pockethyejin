@@ -1,0 +1,94 @@
+.closed {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-weight: 600;
+  text-align: center;
+}
+
+.step {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.step:disabled {
+  opacity: 0.5;
+}
+
+.step legend {
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.places {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.place,
+.budget {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--line);
+  background: var(--surface);
+  text-align: left;
+  font-size: 0.9rem;
+  transition:
+    border-color 120ms ease,
+    transform 100ms ease;
+}
+
+.place:active:not(:disabled),
+.budget:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.place[aria-pressed="true"],
+.budget[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.budget:disabled {
+  opacity: 0.45;
+}
+
+.budgets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.budget {
+  text-align: center;
+  min-height: var(--tap);
+}
+
+.odds {
+  display: grid;
+  gap: 2px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.short {
+  font-size: 0.7rem;
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.offerRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}

@@ -1,0 +1,33 @@
+.place {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--surface-2), var(--warn-soft));
+  font-size: 2rem;
+  object-fit: cover;
+  user-select: none;
+}
+
+.photo {
+  display: block;
+  background: var(--surface-2);
+}
+
+.locked {
+  background: repeating-linear-gradient(45deg, var(--surface-2), var(--surface-2) 10px, var(--line) 10px, var(--line) 20px);
+  filter: grayscale(1);
+  opacity: 0.8;
+}
+
+.jungwoo {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  font-size: 1.7rem;
+}
