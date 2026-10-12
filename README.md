@@ -14,6 +14,13 @@ npm run typecheck
 npm run lint
 ```
 
+## 로그인 없이 해보기 (체험 모드)
+
+로그인 화면의 **로그인 없이 해보기** 버튼을 누르면 체험 모드로 들어간다. Supabase 설정(환경 변수)이 아직 없으면 버튼 없이 바로 체험 모드로 열린다.
+- 진행 기록은 그 브라우저(localStorage)에만 저장된다. 다른 기기와 이어지지 않고, Supabase에도 저장되지 않는다.
+- 임시 장소 3개와 임시 그림으로 플레이한다.
+- **처음부터 다시** 버튼으로 체험 기록을 지울 수 있다.
+
 ## Supabase 설정
 
 1. Supabase에서 프로젝트를 만든다.
@@ -141,10 +148,12 @@ src/game/            UI·저장 방식과 무관한 순수 규칙 엔진
 src/content/         장소·캐릭터 그림 (순수 로직)
   places.ts          맵 구성(해금 여부·최고 별), DB 행 읽기
   images.ts          전신·얼굴 그림 고르기, 이벤트 → 얼굴 태그
+  placeholders.ts    체험 모드용 임시 장소·그림
 src/persistence/     저장 (규칙 엔진과 분리)
   store.ts           GameStore 인터페이스 (낙관적 동시성 제어)
   supabaseStore.ts   Supabase 구현
   memoryStore.ts     메모리 구현 (테스트·개발용)
+  localStore.ts      브라우저 localStorage 구현 (체험 모드)
   schema.ts          상태 구조 버전과 마이그레이션
   session.ts         openGame(접속 시 정산·장소 확인·저장), performAction(행동·저장·충돌 처리)
   contentRepo.ts     places·character_images 읽기, Storage 서명 URL

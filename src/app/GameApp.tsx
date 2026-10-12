@@ -3,6 +3,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { faceTagForEvent, pickFace, pickFullBody } from "@/content/images";
+import { PLACEHOLDER_IMAGES, PLACEHOLDER_PLACES } from "@/content/placeholders";
 import { buildMap } from "@/content/places";
 import type { CharacterImage, FaceEventTag, Place } from "@/content/types";
 import { BALANCE } from "@/game";
@@ -13,15 +14,20 @@ import type { AwaySummary } from "@/game/summary";
 import type { Action, GameEvent, GameState } from "@/game/types";
 import { getSupabase, supabaseConfigError } from "@/lib/supabase";
 import { BUCKETS, loadCharacterImages, loadPlaces, resolveImageUrls } from "@/persistence/contentRepo";
+import { LocalGameStore } from "@/persistence/localStore";
 import { NewerSchemaError } from "@/persistence/schema";
 import { openGame, performAction, type SessionDeps } from "@/persistence/session";
 import type { StoredGame } from "@/persistence/store";
 import { createSupabaseGameStore } from "@/persistence/supabaseStore";
 import CharacterFrame from "./components/CharacterFrame";
 
-/** 앱 진입점: 로그인 여부에 따라 로그인 화면 / 게임 화면 */
+/**
+ * 앱 진입점: 로그인 화면 / 게임 화면 / 체험 모드.
+ * Supabase 설정이 없으면 바로 체험 모드로 들어간다.
+ */
 export default function GameApp() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [trial, setTrial] = useState(false);
 
   useEffect(() => {
     if (supabaseConfigError) return;
@@ -31,13 +37,14 @@ export default function GameApp() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  if (supabaseConfigError) return <p role="alert">{supabaseConfigError}</p>;
+  if (supabaseConfigError) return <TrialGame />;
+  if (trial) return <TrialGame onExit={() => setTrial(false)} />;
   if (session === undefined) return <p>불러오는 중…</p>;
-  if (!session) return <LoginForm />;
-  return <GameScreen userId={session.user.id} />;
+  if (!session) return <LoginForm onTrial={() => setTrial(true)} />;
+  return <SupabaseGame userId={session.user.id} />;
 }
 
-function LoginForm() {
+function LoginForm({ onTrial }: { onTrial: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +75,9 @@ function LoginForm() {
         {busy ? "로그인 중…" : "로그인"}
       </button>
       {error && <p role="alert">{error}</p>}
+      <button type="button" onClick={onTrial}>
+        로그인 없이 해보기
+      </button>
     </form>
   );
 }
@@ -99,7 +109,7 @@ interface Content {
   placeUrls: Map<string, string>;
 }
 
-async function loadContent(): Promise<Content> {
+async function loadSupabaseContent(): Promise<Content> {
   const client = getSupabase();
   const [places, images] = await Promise.all([loadPlaces(client), loadCharacterImages(client)]);
   const [imageUrls, placeUrls] = await Promise.all([
@@ -118,12 +128,70 @@ function lastFaceEvent(events: GameEvent[]): FaceEventTag | null {
   return null;
 }
 
-/** 임시 확인용 화면. 실제 게임 UI는 다음 단계에서 만든다. */
-function GameScreen({ userId }: { userId: string }) {
+async function loadTrialContent(): Promise<Content> {
+  const paths = [...PLACEHOLDER_IMAGES.map((i) => i.path), ...PLACEHOLDER_PLACES.flatMap((p) => (p.image ? [p.image] : []))];
+  const urls = new Map(paths.map((path) => [path, path]));
+  return { places: PLACEHOLDER_PLACES, images: PLACEHOLDER_IMAGES, imageUrls: urls, placeUrls: urls };
+}
+
+function SupabaseGame({ userId }: { userId: string }) {
   const deps = useMemo<SessionDeps>(
     () => ({ store: createSupabaseGameStore(getSupabase(), userId), now: () => new Date(), rng: Math.random }),
     [userId],
   );
+  return (
+    <GameScreen
+      deps={deps}
+      loadContent={loadSupabaseContent}
+      footer={<button onClick={() => getSupabase().auth.signOut()}>로그아웃</button>}
+    />
+  );
+}
+
+/** 로그인 없이 해보는 체험 모드: 이 브라우저에만 저장, 임시 장소·그림 */
+function TrialGame({ onExit }: { onExit?: () => void }) {
+  const store = useMemo(() => new LocalGameStore(), []);
+  const [round, setRound] = useState(0);
+  const deps = useMemo<SessionDeps>(() => ({ store, now: () => new Date(), rng: Math.random }), [store]);
+  return (
+    <>
+      <p role="note" style={{ padding: 8, borderRadius: 8, background: "rgba(127,127,127,0.15)" }}>
+        체험 모드예요. 이 브라우저에만 저장되고 다른 기기와 이어지지 않아요.
+      </p>
+      {/* round가 바뀌면(처음부터 다시) 게임 화면을 새로 띄운다 */}
+      <GameScreen
+        key={round}
+        deps={deps}
+        loadContent={loadTrialContent}
+        footer={
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              onClick={() => {
+                if (!window.confirm("체험 기록을 지우고 처음부터 시작할까요?")) return;
+                store.reset();
+                setRound((r) => r + 1);
+              }}
+            >
+              처음부터 다시
+            </button>
+            {onExit && <button onClick={onExit}>로그인 화면으로</button>}
+          </div>
+        }
+      />
+    </>
+  );
+}
+
+/** 임시 확인용 화면. 실제 게임 UI는 다음 단계에서 만든다. */
+function GameScreen({
+  deps,
+  loadContent,
+  footer,
+}: {
+  deps: SessionDeps;
+  loadContent: () => Promise<Content>;
+  footer: React.ReactNode;
+}) {
   const [content, setContent] = useState<Content | null>(null);
   const [game, setGame] = useState<StoredGame | null>(null);
   const [summary, setSummary] = useState<{ data: AwaySummary; face: CharacterImage | null } | null>(null);
@@ -166,7 +234,7 @@ function GameScreen({ userId }: { userId: string }) {
               : "불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
           ),
         ),
-    [deps, rotateFullBody, showEvents],
+    [deps, loadContent, rotateFullBody, showEvents],
   );
 
   useEffect(() => {
@@ -289,7 +357,7 @@ function GameScreen({ userId }: { userId: string }) {
         )}
       </ol>
 
-      <button onClick={() => getSupabase().auth.signOut()}>로그아웃</button>
+      {footer}
     </section>
   );
 }
