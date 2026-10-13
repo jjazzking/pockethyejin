@@ -1,6 +1,6 @@
 import { faceTagForEvent } from "@/content/images";
 import type { FaceEventTag, JungwooFaceTag, Place } from "@/content/types";
-import type { AwaySummary } from "@/game/summary";
+import type { NightSummary } from "@/game/summary";
 import type { GameEvent, Stars } from "@/game/types";
 import { PLAY_ALONE_FLAVORS, formatMoney, rankName, type PlayFlavor } from "./copy";
 
@@ -17,7 +17,7 @@ export type PopupSpec =
     }
   /** 정우 막기 전용 연출 */
   | { kind: "block"; faceTag: FaceEventTag }
-  | { kind: "summary"; summary: AwaySummary; faceTag: FaceEventTag }
+  | { kind: "summary"; summary: NightSummary; faceTag: FaceEventTag }
   | { kind: "date"; place: Place | null; stars: Stars; newBest: boolean; firstVisit: boolean; faceTag: FaceEventTag };
 
 export interface Described {
@@ -27,8 +27,8 @@ export interface Described {
 }
 
 export interface DescribeOptions {
-  /** 이번 결과에 포함된 "자리를 비운 동안" 요약 */
-  summary: AwaySummary | null;
+  /** 잠자기 결과의 "밤사이 있었던 일" 요약 */
+  summary: NightSummary | null;
   places: readonly Place[];
   /** 혼자 놀기 연출 (디제잉/게임) */
   playFlavor?: PlayFlavor;
@@ -89,7 +89,7 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
         tone: "danger",
       };
     case "bulldakCraving":
-      return { kind: "card", emoji: "🌶️", title: "혜진이가 불닭이 땡긴다!", body: "오늘 안에 정우를 편의점에 보내주세요.", faceTag };
+      return { kind: "card", emoji: "🌶️", title: "혜진이가 불닭이 땡긴다!", body: "자기 전에 정우를 편의점에 보내주세요.", faceTag };
     case "newPlacesAdded":
       return {
         kind: "card",
@@ -106,7 +106,7 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
 
 /**
  * 엔진 이벤트 → 팝업·토스트 목록.
- * 밀린 날 정산 이벤트는 "자리를 비운 동안" 요약 하나로 묶고, 오늘 아침 불닭만 따로 알린다.
+ * 잠자기로 넘어간 밤의 이벤트는 "밤사이 있었던 일" 요약 하나로 묶고, 새 아침 불닭만 따로 알린다.
  */
 export function describeEvents(events: readonly GameEvent[], opts: DescribeOptions): Described {
   const popups: PopupSpec[] = [];
@@ -115,7 +115,7 @@ export function describeEvents(events: readonly GameEvent[], opts: DescribeOptio
   let rest = events;
   if (opts.summary) {
     popups.push({ kind: "summary", summary: opts.summary, faceTag: "away_summary" });
-    // 마지막 "새 날 아침"까지는 요약에 담겨 있다. 그 뒤(오늘 아침 불닭, 새 추억, 행동 결과)만 따로 알린다.
+    // "새 날 아침"까지는 요약에 담겨 있다. 그 뒤(아침 불닭 등)만 따로 알린다.
     const lastDayStart = events.findLastIndex((e) => e.type === "dayStarted");
     rest = events.slice(lastDayStart + 1);
   }

@@ -1,5 +1,6 @@
-import { ACTIONS, DATE_OFFERING, FEED, JUNGWOO } from "./balance";
+import { ACTIONS, DATE_OFFERING, FEED } from "./balance";
 import { isWeekend } from "./date";
+import { sleep } from "./day";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
 import {
   applyOffering,
@@ -22,18 +23,6 @@ import type {
   GameState,
 } from "./types";
 
-export function createInitialJungwoo(): GameState["jungwoo"] {
-  return {
-    happiness: JUNGWOO.START_HAPPINESS,
-    money: JUNGWOO.START_MONEY,
-    totalWorkCount: 0,
-    rank: 1,
-    actionsLeft: 0,
-    workCountToday: 0,
-    sulking: false,
-  };
-}
-
 function addJungwooHappiness(s: GameState, delta: number): void {
   s.jungwoo.happiness = clampHappiness(s.jungwoo.happiness + delta);
 }
@@ -49,8 +38,11 @@ function checkActions(s: GameState, cost: number): ActionError | null {
   return null;
 }
 
+/** 턴을 쓰는 행동 (잠자기 제외) */
+type TurnAction = Exclude<Action, { type: "sleep" }>;
+
 /** 검증만 하고 상태는 바꾸지 않는다. 성공 시 null. */
-function validate(s: GameState, action: Action, ctx: ActionContext): ActionError | null {
+function validate(s: GameState, action: TurnAction, ctx: ActionContext): ActionError | null {
   switch (action.type) {
     case "work":
       return checkActions(s, ACTIONS.WORK.ACTION_COST);
@@ -109,7 +101,7 @@ function validate(s: GameState, action: Action, ctx: ActionContext): ActionError
 }
 
 /** 행동 효과를 적용하고 소모한 정우 행동(턴) 수를 반환한다. */
-function perform(s: GameState, action: Action, ctx: ActionContext, events: GameEvent[]): number {
+function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: GameEvent[]): number {
   const j = s.jungwoo;
   const h = s.hyejin;
   switch (action.type) {
@@ -204,9 +196,10 @@ function perform(s: GameState, action: Action, ctx: ActionContext, events: GameE
 
 /**
  * (상태, 행동) → 새 상태 + 이벤트 로그. 입력 상태는 바꾸지 않는다.
- * 상태는 오늘 날짜까지 정산(settle)된 상태여야 한다.
+ * 잠자기는 턴이 아니라 하루 마감이므로 따로 처리한다 (day.ts).
  */
 export function applyAction(state: GameState, action: Action, ctx: ActionContext): ActionResult {
+  if (action.type === "sleep") return sleep(state, ctx);
   const error = validate(state, action, ctx);
   if (error) return { ok: false, error };
 

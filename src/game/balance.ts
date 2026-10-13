@@ -9,14 +9,16 @@ export const HAPPINESS_MAX = 100;
 
 /** 시간 구조 */
 export const TIME = {
-  /** 게임 날짜·요일 판정 기준 시간대 */
-  TIME_ZONE: "Asia/Seoul",
-  /** 매일 아침 정우 행동이 충전되고 게임 날짜가 바뀌는 시각 (서울 시간) */
-  DAY_RESET_HOUR: 6,
+  /** 게임 속 첫날 = 사귀기 시작한 날 (월요일) */
+  START_DATE: "2026-03-30",
   /** 하루 정우 행동 횟수 (이월 없음) */
   ACTIONS_PER_DAY: 5,
-  /** 부재한 날 혜진 행복도 감소에 곱하는 비율 (결과는 소수점 버림) */
-  ABSENT_DAY_PENALTY_RATIO: 0.5,
+  /** 현실 하루에 잘 수 있는 밤 (= 넘길 수 있는 게임 날짜 수) */
+  NIGHTS_PER_REAL_DAY: 3,
+  /** 현실 하루를 판정하는 시간대 */
+  TIME_ZONE: "Asia/Seoul",
+  /** 현실 하루가 바뀌는 시각 (서울 시간). 이때 밤 횟수가 다시 찬다. */
+  REAL_DAY_RESET_HOUR: 6,
 } as const;
 
 /** 정우 */

@@ -21,11 +21,12 @@ const seoulDate = new Intl.DateTimeFormat("en-US", {
 });
 
 /**
- * 실제 시각 → 게임 날짜. 서울 시간으로 아침 리셋 시각(06:00) 이전은 전날로 친다.
+ * 실제 시각 → 현실 하루 (밤 횟수를 세는 단위). 서울 시간 아침 6시 이전은 전날로 친다.
  * (리셋 시각만큼 당긴 순간의 서울 달력 날짜. 서울은 서머타임이 없어 항상 정확하다.)
+ * 게임 속 날짜와는 다르다 — 게임 날짜는 잠잘 때만 넘어간다.
  */
-export function toGameDate(now: Date): GameDate {
-  const parts = seoulDate.formatToParts(new Date(now.getTime() - TIME.DAY_RESET_HOUR * HOUR_MS));
+export function toRealDay(now: Date): GameDate {
+  const parts = seoulDate.formatToParts(new Date(now.getTime() - TIME.REAL_DAY_RESET_HOUR * HOUR_MS));
   const get = (type: string) => parts.find((p) => p.type === type)!.value;
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
@@ -47,6 +48,11 @@ export function dayOfWeek(date: GameDate): number {
 export function isWeekend(date: GameDate): boolean {
   const dow = dayOfWeek(date);
   return dow === 0 || dow === 6;
+}
+
+/** 사귄 지 며칠째인지. 첫날(TIME.START_DATE)이 1일째. */
+export function daysTogether(date: GameDate): number {
+  return daysBetween(TIME.START_DATE, date) + 1;
 }
 
 /** 주말의 마지막 날(일요일)인지 */

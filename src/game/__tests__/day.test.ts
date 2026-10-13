@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { addDays, isWeekend, toGameDate } from "../date";
-import { createInitialState, settle } from "../day";
+import { addDays, isWeekend } from "../date";
+import { advanceTo as settle, createInitialState } from "../day";
 import {
-  ABSENT_BULLDAK_MISS,
-  ABSENT_COMMUTE,
   ALWAYS,
   BULLDAK_MISS,
   COMMUTE,
@@ -16,17 +14,9 @@ import {
   act,
   fixed,
   makeState,
-  sequence,
 } from "./helpers";
 
 describe("게임 날짜", () => {
-  it("KST 06:00에 날짜가 바뀐다", () => {
-    // 2026-10-13 05:59 KST = 2026-10-12 20:59 UTC
-    expect(toGameDate(new Date("2026-10-12T20:59:00Z"))).toBe("2026-10-12");
-    // 2026-10-13 06:00 KST = 2026-10-12 21:00 UTC
-    expect(toGameDate(new Date("2026-10-12T21:00:00Z"))).toBe("2026-10-13");
-  });
-
   it("주말 판정과 날짜 계산", () => {
     expect(isWeekend(FRIDAY)).toBe(false);
     expect(isWeekend(SATURDAY)).toBe(true);
@@ -65,7 +55,6 @@ describe("하루 마감 (접속한 날)", () => {
     expect(events).toContainEqual({
       type: "dayEnded",
       date: MONDAY,
-      absent: false,
       commute: COMMUTE,
       overwork: 0,
       bulldakIgnored: 0,
@@ -121,30 +110,7 @@ describe("새 날 아침", () => {
   });
 });
 
-describe("부재 처리", () => {
-  it("접속하지 않은 날은 감소가 절반(버림)", () => {
-    // 월(접속) → 화·수(부재) → 목 접속. 화요일에만 불닭.
-    const rng = sequence(0, 0.999, 0.999);
-    const { state, events } = settle(makeState(), "2026-10-15", rng);
-    const ends = events.filter((e) => e.type === "dayEnded");
-    expect(ends).toEqual([
-      { type: "dayEnded", date: "2026-10-12", absent: false, commute: COMMUTE, overwork: 0, bulldakIgnored: 0 },
-      { type: "dayEnded", date: "2026-10-13", absent: true, commute: ABSENT_COMMUTE, overwork: 0, bulldakIgnored: ABSENT_BULLDAK_MISS },
-      { type: "dayEnded", date: "2026-10-14", absent: true, commute: ABSENT_COMMUTE, overwork: 0, bulldakIgnored: 0 },
-    ]);
-    // 절반은 소수점 버림: -15 → -7
-    expect(ABSENT_BULLDAK_MISS).toBe(-7);
-    expect(state.hyejin.happiness).toBe(100 + COMMUTE + ABSENT_COMMUTE * 2 + ABSENT_BULLDAK_MISS);
-    expect(events).toContainEqual({ type: "bulldakCraving", date: "2026-10-13" });
-    expect(state.lastSettledDate).toBe("2026-10-15");
-  });
-
-  it("마지막 접속일에 남긴 불닭·과로는 그대로 적용된다", () => {
-    const s = makeState({ bulldak: "active", jungwoo: { workCountToday: 3 } });
-    const { state } = settle(s, "2026-10-14", NEVER);
-    expect(state.hyejin.happiness).toBe(100 + COMMUTE + OVERWORK + BULLDAK_MISS + ABSENT_COMMUTE);
-  });
-
+describe("여러 날 연속으로 넘기기", () => {
   it("주말을 건너뛰어도 월요일에 데이트 사용 여부가 초기화된다", () => {
     const s = makeState({ weekendDateUsed: true }, SATURDAY);
     expect(settle(s, "2026-10-21", NEVER).state.weekendDateUsed).toBe(false);

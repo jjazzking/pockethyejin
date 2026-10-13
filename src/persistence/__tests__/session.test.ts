@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ABSENT_COMMUTE, ALWAYS, COMMUTE, MONDAY, NEVER, PLACES, makeState } from "@/game/__tests__/helpers";
+import { ALWAYS, COMMUTE, MONDAY, NEVER, PLACES, makeState } from "@/game/__tests__/helpers";
+import { TIME } from "@/game/balance";
 import type { GameState, Rng } from "@/game/types";
 import { MemoryGameStore } from "../memoryStore";
 import { CURRENT_SCHEMA_VERSION, NewerSchemaError, migrateState } from "../schema";
@@ -25,7 +26,8 @@ describe("openGame", () => {
     const result = await openGame(device(store, MONDAY));
     expect(result.isNewGame).toBe(true);
     expect(result.game.version).toBe(1);
-    expect(result.game.state.lastSettledDate).toBe(MONDAY);
+    // 현실 날짜와 상관없이 사귄 첫날부터
+    expect(result.game.state.lastSettledDate).toBe(TIME.START_DATE);
     expect(store.peek()?.version).toBe(1);
   });
 
@@ -37,62 +39,39 @@ describe("openGame", () => {
     expect([a.isNewGame, b.isNewGame].sort()).toEqual([false, true]);
   });
 
-  it("밀린 날을 정산해서 저장하고 요약을 돌려준다", async () => {
+  it("며칠 지나서 열어도 게임 날짜는 그대로이고 아무것도 저장하지 않는다", async () => {
     const store = storeWith(makeState({}, MONDAY));
-    const result = await openGame(device(store, "2026-10-15"));
-    expect(result.summary).toMatchObject({ daysPassed: 3, absentDays: 2 });
-    expect(result.game.version).toBe(8);
-    expect(store.peek()?.state).toEqual(result.game.state);
-    expect(result.game.state.hyejin.happiness).toBe(100 + COMMUTE + ABSENT_COMMUTE * 2);
-  });
-
-  it("같은 날 다시 열면 아무것도 저장하지 않는다", async () => {
-    const store = storeWith(makeState({}, MONDAY));
-    const result = await openGame(device(store, MONDAY));
-    expect(result.summary).toBeNull();
+    const result = await openGame(device(store, "2026-10-20"));
     expect(result.events).toEqual([]);
+    expect(result.game.state.lastSettledDate).toBe(MONDAY);
+    expect(result.game.state.hyejin.happiness).toBe(100);
     expect(store.peek()?.version).toBe(7);
-  });
-
-  it("오늘 05:59(서울)에는 아직 전날이라 정산하지 않는다", async () => {
-    const store = storeWith(makeState({}, MONDAY));
-    const deps = { store, now: () => new Date("2026-10-13T05:59:00+09:00"), rng: NEVER };
-    expect((await openGame(deps)).summary).toBeNull();
-    const after = { ...deps, now: () => new Date("2026-10-13T06:00:00+09:00") };
-    expect((await openGame(after)).summary).toMatchObject({ daysPassed: 1 });
   });
 });
 
-describe("두 기기에서 같은 날 정산은 한 번만", () => {
-  it("동시에 열면 먼저 저장한 쪽만 반영되고 늦은 쪽은 최신 상태를 다시 불러온다", async () => {
+describe("두 기기에서 잠자기는 한 번만", () => {
+  it("같은 상태에서 둘 다 자면 먼저 저장한 쪽만 반영되고 늦은 쪽은 최신 상태를 받는다", async () => {
     const store = storeWith(makeState({}, MONDAY));
     // 폰은 화요일 불닭 없음, 컴퓨터는 불닭 있음으로 굴린다. 결과는 한쪽 것만 남아야 한다.
-    const phone = device(store, "2026-10-13", NEVER);
-    const computer = device(store, "2026-10-13", ALWAYS);
+    const phone = device(store, MONDAY, NEVER);
+    const computer = device(store, MONDAY, ALWAYS);
+    const onPhone = (await openGame(phone)).game;
+    const onComputer = (await openGame(computer)).game;
 
-    const [a, b] = await Promise.all([openGame(phone), openGame(computer)]);
+    const a = await performAction(phone, onPhone, { type: "sleep" }, PLACES);
+    const b = await performAction(computer, onComputer, { type: "sleep" }, PLACES);
+    expect(a.kind).toBe("done");
+    expect(b.kind).toBe("conflict");
 
-    // 감소는 한 번만 (월요일 출근)
-    expect(store.peek()?.state).toMatchObject({ hyejin: { happiness: 100 + COMMUTE }, lastSettledDate: "2026-10-13" });
-    // 정산 저장은 한 번 → 버전도 한 번만 오른다
+    // 하루만 넘어가고 감소도 한 번만 (월요일 출근)
+    expect(store.peek()?.state).toMatchObject({
+      hyejin: { happiness: 100 + COMMUTE },
+      lastSettledDate: "2026-10-13",
+      bulldak: "none",
+      nights: { used: 1 },
+    });
     expect(store.peek()?.version).toBe(8);
-    expect(a.game).toEqual(b.game);
-    expect(a.game.state.bulldak).toBe("none");
-
-    // 먼저 저장한 기기만 요약을 받고, 늦은 기기는 동기화 알림을 받는다
-    expect(a.summary).not.toBeNull();
-    expect(a.syncedFromOtherDevice).toBe(false);
-    expect(b.summary).toBeNull();
-    expect(b.syncedFromOtherDevice).toBe(true);
-  });
-
-  it("한쪽이 정산한 뒤 다른 쪽이 열어도 다시 정산되지 않는다", async () => {
-    const store = storeWith(makeState({}, MONDAY));
-    await openGame(device(store, "2026-10-14"));
-    const second = await openGame(device(store, "2026-10-14", ALWAYS));
-    expect(second.summary).toBeNull();
-    expect(store.peek()?.version).toBe(8);
-    expect(second.game.state.hyejin.happiness).toBe(100 + COMMUTE + ABSENT_COMMUTE);
+    expect(b.game).toEqual(a.game);
   });
 });
 
@@ -139,35 +118,57 @@ describe("performAction", () => {
     expect(store.peek()?.state).toMatchObject({ jungwoo: { actionsLeft: 3, happiness: 100 } });
   });
 
-  it("앱을 켜둔 채 아침 6시가 지나면 행동 전에 정산한다 (켜둔 날은 접속한 날)", async () => {
+  it("잠자기는 다음 날로 넘기고 밤사이 요약을 돌려준다", async () => {
     const store = storeWith(makeState({}, MONDAY));
-    const { game } = await openGame(device(store, MONDAY));
-    const nextDay = device(store, "2026-10-13");
-    const outcome = await performAction(nextDay, game, { type: "work" }, PLACES);
+    const deps = device(store, "2026-10-20");
+    const { game } = await openGame(deps);
+    const outcome = await performAction(deps, game, { type: "sleep" }, PLACES);
     expect(outcome.kind).toBe("done");
-    expect(outcome.summary).toMatchObject({ daysPassed: 1, absentDays: 0 });
-    expect(outcome.game.state).toMatchObject({
-      lastSettledDate: "2026-10-13",
-      hyejin: { happiness: 100 + COMMUTE },
-      jungwoo: { actionsLeft: 4 },
-    });
+    if (outcome.kind !== "done") return;
+    expect(outcome.summary).toMatchObject({ fromDate: MONDAY, toDate: "2026-10-13", hyejinHappiness: { change: COMMUTE } });
+    // 밤 횟수는 지금 시각의 현실 하루로 센다
+    expect(outcome.game.state.nights).toEqual({ realDay: "2026-10-20", used: 1 });
+  });
+
+  it("다른 행동은 요약이 없다", async () => {
+    const store = storeWith(makeState({}, MONDAY));
+    const deps = device(store, MONDAY);
+    const outcome = await performAction(deps, (await openGame(deps)).game, { type: "work" }, PLACES);
+    expect(outcome).toMatchObject({ kind: "done", summary: null });
+  });
+
+  it(`현실 하루에 ${TIME.NIGHTS_PER_REAL_DAY}번까지 자고, 아침 6시가 지나면 다시 잘 수 있다`, async () => {
+    const store = storeWith(makeState({}, MONDAY));
+    const night = { store, now: () => new Date("2026-10-21T05:59:00+09:00"), rng: NEVER };
+    let { game } = await openGame(night);
+    for (let i = 0; i < TIME.NIGHTS_PER_REAL_DAY; i++) {
+      const slept = await performAction(night, game, { type: "sleep" }, PLACES);
+      expect(slept.kind).toBe("done");
+      game = slept.game;
+    }
+    expect(await performAction(night, game, { type: "sleep" }, PLACES)).toMatchObject({ kind: "invalid", error: "NO_NIGHTS_LEFT" });
+
+    const morning = { ...night, now: () => new Date("2026-10-21T06:00:00+09:00") };
+    expect((await performAction(morning, game, { type: "sleep" }, PLACES)).kind).toBe("done");
   });
 });
 
-describe("한정선 절반 섭취는 접속 중 행동으로만", () => {
-  it("카운트다운이 끝나기 직전인 채로 며칠 비워도, 접속해서 행동해야 발동한다", async () => {
+describe("한정선 절반 섭취는 행동(턴)으로만", () => {
+  it("카운트다운이 끝나기 직전에 자도 발동하지 않고, 다음 날 행동해야 발동한다", async () => {
     const state = makeState(
       { hyejin: { happiness: 10, hanjeongseon: 10, countdownTurnsLeft: 1, jungwooBlockUsed: true } },
       MONDAY,
     );
     const store = storeWith(state);
-    const deps = device(store, "2026-10-16");
+    const deps = device(store, MONDAY);
 
-    const opened = await openGame(deps);
-    expect(opened.game.state.hyejin).toMatchObject({ hanjeongseon: 10, countdownTurnsLeft: 1, happiness: 0 });
-    expect(opened.events.map((e) => e.type)).not.toContain("halfEaten");
+    const slept = await performAction(deps, (await openGame(deps)).game, { type: "sleep" }, PLACES);
+    expect(slept.kind).toBe("done");
+    if (slept.kind !== "done") return;
+    expect(slept.game.state.hyejin).toMatchObject({ hanjeongseon: 10, countdownTurnsLeft: 1, happiness: 0 });
+    expect(slept.events.map((e) => e.type)).not.toContain("halfEaten");
 
-    const outcome = await performAction(deps, opened.game, { type: "playAlone" }, PLACES);
+    const outcome = await performAction(deps, slept.game, { type: "playAlone" }, PLACES);
     expect(outcome.kind).toBe("done");
     if (outcome.kind !== "done") return;
     expect(outcome.events).toContainEqual({ type: "halfEaten", eaten: 5, recovered: 50 });
@@ -210,13 +211,32 @@ describe("새 추억 알림 (접속 시)", () => {
 });
 
 describe("상태 구조 버전", () => {
-  it("구조 버전 1로 저장된 상태는 2로 올리고, 장소 수는 알림 없이 맞춘다", async () => {
-    const { knownPlaceCount: _omit, ...v1 } = makeState({}, MONDAY);
+  it("현실 날짜로 진행하던 저장(구조 버전 2)은 사귄 첫날부터 새로 시작하고, 장소 수는 알림 없이 맞춘다", async () => {
+    const { nights: _omit, ...v2 } = makeState({ hyejin: { level: 3, hanjeongseon: 7 } }, MONDAY);
     void _omit;
-    const store = new MemoryGameStore({ state: v1, version: 4, schemaVersion: 1 });
+    const store = new MemoryGameStore({ state: v2, version: 4, schemaVersion: 2 });
     const result = await openGame(device(store, MONDAY));
     expect(result.events).toEqual([]);
-    expect(store.peek()).toMatchObject({ schemaVersion: 2, version: 5, state: { knownPlaceCount: 3 } });
+    expect(store.peek()).toMatchObject({
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      version: 5,
+      state: {
+        lastSettledDate: TIME.START_DATE,
+        knownPlaceCount: 3,
+        bulldak: "none",
+        nights: { realDay: null, used: 0 },
+        hyejin: { level: 1, hanjeongseon: 0, happiness: 100 },
+      },
+    });
+  });
+
+  it("구조 버전 1도 차례로 올려서 새로 시작한다", async () => {
+    const { knownPlaceCount: _a, nights: _b, ...v1 } = makeState({}, MONDAY);
+    void _a;
+    void _b;
+    const store = new MemoryGameStore({ state: v1, version: 4, schemaVersion: 1 });
+    await openGame(device(store, MONDAY));
+    expect(store.peek()).toMatchObject({ schemaVersion: CURRENT_SCHEMA_VERSION, state: { lastSettledDate: TIME.START_DATE } });
   });
 
   it("이전 구조는 마이그레이션을 차례로 적용한다", () => {

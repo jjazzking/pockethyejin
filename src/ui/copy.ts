@@ -4,7 +4,7 @@ import type { ActionError } from "@/game/types";
 /** 화면 문구. 톤: "정우를 부려먹어서 혜진이를 키우는 게임" */
 
 export const ERROR_TEXT: Record<ActionError, string> = {
-  NO_ACTIONS_LEFT: "정우가 오늘은 녹초가 됐다. 내일 아침 6시에 다시 부려먹자.",
+  NO_ACTIONS_LEFT: "정우가 오늘은 녹초가 됐다. 이제 자러 가자 🌙",
   NOT_ENOUGH_ACTIONS: `데이트는 정우 행동이 ${BALANCE.ACTIONS.DATE.ACTION_COST}번 남아 있어야 갈 수 있어요.`,
   NOT_ENOUGH_MONEY: "돈이 모자라요. 정우를 더 일 시키자 💼",
   NOT_ENOUGH_HANJEONGSEON: "한정선이 모자라요. 정우를 웨이팅 보내자 🍡",
@@ -18,9 +18,10 @@ export const ERROR_TEXT: Record<ActionError, string> = {
   INVALID_BUDGET: "예산을 다시 골라주세요.",
   INVALID_OFFERING: "한정선은 정해진 단위로만 바칠 수 있어요.",
   OFFERING_NOT_ALLOWED: "이미 별 3개를 받은 장소예요.",
+  NO_NIGHTS_LEFT: "오늘은 여기까지! 내일 아침 6시에 또 놀자 🌙",
 };
 
-export const SULKING_TEXT = "정우가 삐져서 방에 들어갔다… 내일 아침엔 풀려요.";
+export const SULKING_TEXT = "정우가 삐져서 방에 들어갔다… 자고 일어나면 풀려요.";
 export const CONFLICT_TEXT = "다른 기기에서 플레이한 내용이 있어서 최신 상태를 불러왔어요. 방금 행동은 반영되지 않았어요.";
 export const SYNCED_TEXT = "다른 기기에서 저장한 최신 상태를 불러왔어요.";
 export const WAITING_FOR_UPDATE_TEXT = "새 추억 업데이트를 기다리는 중";

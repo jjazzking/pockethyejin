@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { makeState, MONDAY, sequence } from "@/game/__tests__/helpers";
-import { settle } from "@/game/day";
-import { summarizeAway } from "@/game/summary";
+import { sleep } from "@/game/day";
+import { summarizeNight } from "@/game/summary";
 import type { GameEvent } from "@/game/types";
 import { describeEvents } from "../describe";
 
@@ -51,18 +51,20 @@ describe("이벤트 → 팝업·토스트", () => {
   });
 });
 
-describe("밀린 날 정산", () => {
-  it("정산 이벤트는 요약 하나로 묶고, 오늘 아침 불닭과 새 추억은 따로 알린다", () => {
+describe("잠자기", () => {
+  it("밤사이 이벤트는 요약 하나로 묶고, 새 아침 불닭은 따로 알린다", () => {
     const before = makeState({ hyejin: { happiness: 40 } }, MONDAY);
-    // 화 불닭(놓침), 수 불닭(오늘)
-    const { state, events } = settle(before, "2026-10-14", sequence(0, 0));
-    const summary = summarizeAway(before, state, events);
-    const all: GameEvent[] = [...events, { type: "newPlacesAdded", count: 1, levelCapRaised: false }];
+    // 화요일 아침 불닭
+    const result = sleep(before, { rng: sequence(0), places: [] });
+    if (!result.ok) throw new Error(result.error);
+    const summary = summarizeNight(before, result.state, result.events);
+    const all: GameEvent[] = [...result.events, { type: "newPlacesAdded", count: 1, levelCapRaised: false }];
     const d = describeEvents(all, { summary, places: [] });
     expect(d.popups.map((p) => p.kind)).toEqual(["summary", "card", "card"]);
+    expect(d.popups[0]).toMatchObject({ faceTag: "away_summary" });
     expect(d.popups[1]).toMatchObject({ title: "혜진이가 불닭이 땡긴다!" });
     expect(d.popups[2]).toMatchObject({ title: "새 추억이 추가됐어요!" });
-    // 정산 중 경고·카운트다운은 요약에 담기므로 따로 띄우지 않는다
+    // 마감 중 경고는 요약에 담기므로 따로 띄우지 않는다
     expect(d.popups.some((p) => p.kind === "card" && p.title.includes("냉동실"))).toBe(false);
   });
 });

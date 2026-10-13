@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { BALANCE } from "@/game";
+import { daysTogether } from "@/game/date";
 import type { GameView, Popup } from "@/ui/useGame";
 import CharacterFrame from "./CharacterFrame";
 import { Button, StarRow } from "./controls";
@@ -18,11 +19,12 @@ function Face({ popup, urls }: { popup: Popup; urls: ReadonlyMap<string, string>
 function SummaryBody({ popup }: { popup: Extract<Popup, { kind: "summary" }> }) {
   const s = popup.summary;
   const change = s.hyejinHappiness.change;
+  const [, m, d] = s.toDate.split("-").map(Number);
   return (
     <>
-      <h2 className={styles.title}>자리를 비운 동안…</h2>
+      <h2 className={styles.title}>밤사이 있었던 일</h2>
       <p className={styles.lead}>
-        {s.daysPassed}일이 지났어요{s.absentDays > 0 && ` (접속 안 한 날 ${s.absentDays}일)`}.
+        {m}월 {d}일 아침이 밝았어요 · 사귄 지 {daysTogether(s.toDate)}일째
       </p>
       <div className={styles.change} data-down={change < 0}>
         💗 {s.hyejinHappiness.before} → <strong>{s.hyejinHappiness.after}</strong> ({change >= 0 ? `+${change}` : change})
@@ -31,10 +33,9 @@ function SummaryBody({ popup }: { popup: Extract<Popup, { kind: "summary" }> }) 
         {s.breakdown.commute < 0 && <li>🏢 출근하느라 지쳤어요 {s.breakdown.commute}</li>}
         {s.breakdown.overwork < 0 && <li>💼 정우가 일만 해서 서운해요 {s.breakdown.overwork}</li>}
         {s.breakdown.bulldakIgnored < 0 && <li>🌶️ 불닭을 못 먹었어요 {s.breakdown.bulldakIgnored}</li>}
-        {s.missedBulldakDates.length > 0 && <li>놓친 불닭: {s.missedBulldakDates.map((d) => d.slice(5).replace("-", "/")).join(", ")}</li>}
+        {change === 0 && <li>😴 푹 잤어요</li>}
         {s.jungwooSulkHealed && <li>😤→🙂 삐졌던 정우가 자고 일어나서 풀렸어요</li>}
         {s.countdownTurnsLeft !== null && <li>🚨 냉동실 카운트다운 중! {s.countdownTurnsLeft}턴 남았어요</li>}
-        {s.absentDays > 0 && <li className={styles.dim}>접속 안 한 날은 감소가 절반만 적용됐어요.</li>}
       </ul>
     </>
   );

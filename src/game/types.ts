@@ -1,4 +1,4 @@
-/** 게임 날짜. 서울 시간 06:00 기준으로 바뀌는 날짜, "YYYY-MM-DD" 형식. */
+/** 날짜, "YYYY-MM-DD" 형식. 게임 속 날짜(잠잘 때 넘어감)와 현실 하루(밤 횟수 단위)에 쓴다. */
 export type GameDate = string;
 
 export type Stars = 1 | 2 | 3;
@@ -50,8 +50,10 @@ export interface GameState {
   bestStars: Record<string, Stars>;
   /** 이번 주말 데이트를 이미 했는지. 월요일 아침에 초기화된다. */
   weekendDateUsed: boolean;
-  /** 마지막으로 정산한 게임 날짜 = 현재 진행 중인 게임 날짜 */
+  /** 현재 진행 중인 게임 속 날짜 */
   lastSettledDate: GameDate;
+  /** 현실 하루에 잔 밤 횟수. realDay가 바뀌면 0부터 다시 센다. */
+  nights: { realDay: GameDate | null; used: number };
   /**
    * 마지막으로 확인한 등록 장소 수. 접속 시 실제 장소 수가 이보다 많으면 "새 추억" 알림.
    * null이면 아직 확인 전 (알림 없이 현재 수로 맞춘다).
@@ -72,7 +74,9 @@ export type Action =
   | { type: "convenienceStore" }
   | { type: "feed"; count: number }
   | { type: "levelUp" }
-  | { type: "date"; placeId: string; budget: number; offering: number };
+  | { type: "date"; placeId: string; budget: number; offering: number }
+  /** 하루를 마감하고 다음 날 아침으로 */
+  | { type: "sleep" };
 
 export type ActionError =
   | "NO_ACTIONS_LEFT"
@@ -89,7 +93,9 @@ export type ActionError =
   | "PLACE_LOCKED"
   | "INVALID_BUDGET"
   | "INVALID_OFFERING"
-  | "OFFERING_NOT_ALLOWED";
+  | "OFFERING_NOT_ALLOWED"
+  /** 현실 하루에 잘 수 있는 밤을 다 씀 */
+  | "NO_NIGHTS_LEFT";
 
 export type GameEvent =
   // 정우 행동
@@ -115,7 +121,6 @@ export type GameEvent =
   | {
       type: "dayEnded";
       date: GameDate;
-      absent: boolean;
       commute: number;
       overwork: number;
       bulldakIgnored: number;
@@ -139,4 +144,6 @@ export interface ActionContext {
   rng: Rng;
   /** 등록된 장소, order 순 */
   places: readonly PlaceRef[];
+  /** 지금의 현실 하루 (잠자기 밤 횟수 판정용). 없으면 밤 횟수를 제한하지 않는다 (시뮬레이션). */
+  realDay?: GameDate;
 }
