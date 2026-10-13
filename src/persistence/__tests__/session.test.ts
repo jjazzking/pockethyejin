@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALWAYS, MONDAY, NEVER, PLACES, makeState } from "@/game/__tests__/helpers";
+import { ABSENT_COMMUTE, ALWAYS, COMMUTE, MONDAY, NEVER, PLACES, makeState } from "@/game/__tests__/helpers";
 import type { GameState, Rng } from "@/game/types";
 import { MemoryGameStore } from "../memoryStore";
 import { CURRENT_SCHEMA_VERSION, NewerSchemaError, migrateState } from "../schema";
@@ -43,7 +43,7 @@ describe("openGame", () => {
     expect(result.summary).toMatchObject({ daysPassed: 3, absentDays: 2 });
     expect(result.game.version).toBe(8);
     expect(store.peek()?.state).toEqual(result.game.state);
-    expect(result.game.state.hyejin.happiness).toBe(100 - 20 - 10 - 10);
+    expect(result.game.state.hyejin.happiness).toBe(100 + COMMUTE + ABSENT_COMMUTE * 2);
   });
 
   it("같은 날 다시 열면 아무것도 저장하지 않는다", async () => {
@@ -72,8 +72,8 @@ describe("두 기기에서 같은 날 정산은 한 번만", () => {
 
     const [a, b] = await Promise.all([openGame(phone), openGame(computer)]);
 
-    // 감소는 한 번만 (월요일 출근 -20)
-    expect(store.peek()?.state).toMatchObject({ hyejin: { happiness: 80 }, lastSettledDate: "2026-10-13" });
+    // 감소는 한 번만 (월요일 출근)
+    expect(store.peek()?.state).toMatchObject({ hyejin: { happiness: 100 + COMMUTE }, lastSettledDate: "2026-10-13" });
     // 정산 저장은 한 번 → 버전도 한 번만 오른다
     expect(store.peek()?.version).toBe(8);
     expect(a.game).toEqual(b.game);
@@ -92,7 +92,7 @@ describe("두 기기에서 같은 날 정산은 한 번만", () => {
     const second = await openGame(device(store, "2026-10-14", ALWAYS));
     expect(second.summary).toBeNull();
     expect(store.peek()?.version).toBe(8);
-    expect(second.game.state.hyejin.happiness).toBe(100 - 20 - 10);
+    expect(second.game.state.hyejin.happiness).toBe(100 + COMMUTE + ABSENT_COMMUTE);
   });
 });
 
@@ -148,7 +148,7 @@ describe("performAction", () => {
     expect(outcome.summary).toMatchObject({ daysPassed: 1, absentDays: 0 });
     expect(outcome.game.state).toMatchObject({
       lastSettledDate: "2026-10-13",
-      hyejin: { happiness: 80 },
+      hyejin: { happiness: 100 + COMMUTE },
       jungwoo: { actionsLeft: 4 },
     });
   });

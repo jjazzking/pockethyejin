@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { settle } from "../day";
 import type { GameState } from "../types";
-import { act, makeState, NEVER } from "./helpers";
+import { COMMUTE, act, expectError, makeState, NEVER } from "./helpers";
 
 /** 혜진 행복도에 영향 없는 행동 1턴 */
 const turn = (s: GameState) => act(s, { type: "playAlone" });
@@ -25,8 +25,8 @@ describe("경고", () => {
 
 describe("카운트다운", () => {
   it("행복도가 20 이하가 되면 3턴 카운트다운 시작 (그 턴은 세지 않음)", () => {
-    const s = makeState({ hyejin: { happiness: 40 } });
-    const { state, events } = settle(s, "2026-10-13", NEVER); // 월요일 마감 -20 → 20
+    const s = makeState({ hyejin: { happiness: 20 - COMMUTE } });
+    const { state, events } = settle(s, "2026-10-13", NEVER); // 월요일 마감 출근 감소 → 20
     expect(state.hyejin.happiness).toBe(20);
     expect(state.hyejin.countdownTurnsLeft).toBe(3);
     expect(events).toContainEqual({ type: "countdownStarted", turnsLeft: 3 });
@@ -39,11 +39,10 @@ describe("카운트다운", () => {
     expect(turn(r1.state).state.hyejin.countdownTurnsLeft).toBe(1);
   });
 
-  it("한정선 먹이기·레벨업은 턴으로 치지 않는다", () => {
+  it("한정선 먹이기는 턴으로 치지 않는다", () => {
     const s = danger({ hanjeongseon: 100, happiness: 10 });
     const fed = act(s, { type: "feed", count: 1 }).state; // 20, 여전히 위험
     expect(fed.hyejin.countdownTurnsLeft).toBe(3);
-    expect(act(fed, { type: "levelUp" }).state.hyejin.countdownTurnsLeft).toBe(3);
   });
 
   it("행복도가 20을 넘으면 해제", () => {
@@ -157,5 +156,29 @@ describe("부재 중에는 절반 섭취가 일어나지 않는다", () => {
     expect(state.hyejin.hanjeongseon).toBe(10);
     expect(state.hyejin.countdownTurnsLeft).toBe(3);
     expect(events).not.toContainEqual(expect.objectContaining({ type: "halfEaten" }));
+  });
+});
+
+describe("카운트다운 중에는 레벨업 불가", () => {
+  it("카운트다운 중이면 한정선이 충분해도 레벨업할 수 없다", () => {
+    const s = danger({ hanjeongseon: 100, happiness: 20 });
+    expectError(s, { type: "levelUp" }, "HYEJIN_UPSET");
+  });
+
+  it("경고 구간(30 이하)이어도 카운트다운 전이면 레벨업할 수 있다", () => {
+    const s = makeState({ hyejin: { happiness: 25, hanjeongseon: 100 } });
+    expect(act(s, { type: "levelUp" }).state.hyejin.level).toBe(2);
+  });
+
+  it("기분을 풀어 카운트다운이 해제되면 다시 레벨업할 수 있다", () => {
+    const s = danger({ hanjeongseon: 100, happiness: 20 });
+    const fed = act(s, { type: "feed", count: 1 }).state; // 30 → 해제
+    expect(fed.hyejin.countdownTurnsLeft).toBeNull();
+    expect(act(fed, { type: "levelUp" }).state.hyejin.level).toBe(2);
+  });
+
+  it("만렙이면 만렙 사유가 먼저", () => {
+    const s = danger({ level: 3, hanjeongseon: 100 });
+    expectError(s, { type: "levelUp" }, "MAX_LEVEL");
   });
 });

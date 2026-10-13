@@ -50,6 +50,8 @@ interface Plan {
   feedPerDay: number;
   /** 접속하지 않는 요일 (0=일 … 6=토) */
   skipDays?: number[];
+  /** 카운트다운이 뜨면 한정선을 먹여 위기를 넘기는지 (기본 true) */
+  rescue?: boolean;
 }
 
 const budgetsDesc = [...DATE_BUDGETS].map((b) => b.amount).sort((a, b) => b - a);
@@ -91,6 +93,7 @@ function makeStrategy(plan: Plan): () => Strategy {
 
     /** 위기 대응: 카운트다운 중이면 20을 넘길 때까지 먹인다 (한정선이 있는 만큼) */
     function rescue(day: DayRunner) {
+      if (plan.rescue === false) return;
       while (day.state.hyejin.countdownTurnsLeft !== null && isDanger(day.state.hyejin.happiness) && day.state.hyejin.hanjeongseon > 0) {
         day.act({ type: "feed", count: 1 });
       }
@@ -159,6 +162,15 @@ export const STRATEGIES = {
     dateRatio: 0,
     pickBudget: () => null,
     feedPerDay: 0,
+  }),
+  greedyNoRescue: makeStrategy({
+    name: "욕심형(위기 무시)",
+    description: "욕심형인데 카운트다운이 떠도 한정선을 먹이지 않음",
+    routine: ["work", "playAlone", "waiting", "work", "work"],
+    dateRatio: 0,
+    pickBudget: () => null,
+    feedPerDay: 0,
+    rescue: false,
   }),
   dateAllIn: makeStrategy({
     name: "데이트 몰빵형",

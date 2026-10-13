@@ -1,7 +1,18 @@
 import { expect } from "vitest";
+import { ACTIONS, DAY_END, TIME } from "../balance";
 import { createInitialState } from "../day";
 import { applyAction } from "../engine";
 import type { Action, ActionContext, GameState, PlaceRef, Rng } from "../types";
+
+/** 밸런스 값 (balance.ts가 바뀌어도 테스트가 따라가도록) */
+const absent = (n: number) => -Math.floor(-n * TIME.ABSENT_DAY_PENALTY_RATIO);
+export const COMMUTE = DAY_END.WEEKDAY_COMMUTE;
+export const OVERWORK = DAY_END.OVERWORK_PENALTY;
+export const BULLDAK_MISS = DAY_END.BULLDAK_IGNORED_PENALTY;
+/** 접속하지 않은 날: 절반, 소수점 버림 */
+export const ABSENT_COMMUTE = absent(COMMUTE);
+export const ABSENT_BULLDAK_MISS = absent(BULLDAK_MISS);
+export const TOGETHER_HYEJIN = ACTIONS.PLAY_TOGETHER.HYEJIN_HAPPINESS;
 
 export const MONDAY = "2026-10-12";
 export const FRIDAY = "2026-10-16";

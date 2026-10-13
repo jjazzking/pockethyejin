@@ -52,7 +52,8 @@ export const ACTIONS = {
   },
   PLAY_TOGETHER: {
     JUNGWOO_HAPPINESS: 10,
-    HYEJIN_HAPPINESS: 15,
+    /** 기획서 1차안 +15 → 시뮬레이션 후 +10 */
+    HYEJIN_HAPPINESS: 10,
     ACTION_COST: 1,
   },
   CONVENIENCE_STORE: {
@@ -76,8 +77,8 @@ export const FEED = {
 
 /** 하루 마감 시 혜진 행복도 변화 */
 export const DAY_END = {
-  /** 평일 출근 (귀가 후 회복 반영 순변화) */
-  WEEKDAY_COMMUTE: -20,
+  /** 평일 출근 (귀가 후 회복 반영 순변화). 기획서 1차안 -20 → 시뮬레이션 후 -25 */
+  WEEKDAY_COMMUTE: -25,
   /** 그날 정우가 일을 이만큼 이상 했으면 */
   OVERWORK_THRESHOLD: 3,
   OVERWORK_PENALTY: -10,
@@ -135,7 +136,8 @@ export const DATE_BUDGETS: readonly {
 }[] = [
   { amount: 50_000, starPercents: { 1: 60, 2: 30, 3: 10 } },
   { amount: 150_000, starPercents: { 1: 20, 2: 40, 3: 40 } },
-  { amount: 300_000, starPercents: { 1: 0, 2: 20, 3: 80 } },
+  /** 기획서 1차안 2성 20 / 3성 80 → 시뮬레이션 후 40 / 60 */
+  { amount: 300_000, starPercents: { 1: 0, 2: 40, 3: 60 } },
 ];
 
 /** 3성 확률 올리기용 한정선 바치기 */
