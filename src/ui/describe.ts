@@ -1,12 +1,20 @@
 import { faceTagForEvent } from "@/content/images";
-import type { FaceEventTag, Place } from "@/content/types";
+import type { FaceEventTag, JungwooFaceTag, Place } from "@/content/types";
 import type { AwaySummary } from "@/game/summary";
 import type { GameEvent, Stars } from "@/game/types";
 import { PLAY_ALONE_FLAVORS, formatMoney, rankName, type PlayFlavor } from "./copy";
 
-/** 화면에 띄울 팝업 (얼굴 그림은 띄울 때 faceTag로 고른다) */
+/** 화면에 띄울 팝업 (얼굴 그림은 띄울 때 faceTag로 고른다. 정우가 주인공이면 jungwooFace로 정우 얼굴) */
 export type PopupSpec =
-  | { kind: "card"; emoji: string; title: string; body?: string; faceTag: FaceEventTag | null; tone?: "danger" }
+  | {
+      kind: "card";
+      emoji: string;
+      title: string;
+      body?: string;
+      faceTag: FaceEventTag | null;
+      jungwooFace?: JungwooFaceTag;
+      tone?: "danger";
+    }
   /** 정우 막기 전용 연출 */
   | { kind: "block"; faceTag: FaceEventTag }
   | { kind: "summary"; summary: AwaySummary; faceTag: FaceEventTag }
@@ -33,11 +41,11 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
     case "worked":
       return `정우가 출근해서 ${formatMoney(event.income)} 벌어왔다 💼`;
     case "promoted":
-      return { kind: "card", emoji: "🎉", title: `정우 승진! ${rankName(event.rank)}`, body: "이제 일 한 번에 더 많이 벌어온다.", faceTag: null };
+      return { kind: "card", emoji: "🎉", title: `정우 승진! ${rankName(event.rank)}`, body: "이제 일 한 번에 더 많이 벌어온다.", faceTag: null, jungwooFace: "happy" };
     case "waitingDone":
       return `정우가 땡볕에 줄 서서 한정선 ${event.quantity}개를 사왔다 🍡`;
     case "waitingRejected":
-      return { kind: "card", emoji: "🚪", title: "정우가 삐져서 방에 들어갔다…", body: "오늘은 더 못 시켜요. 자고 나면 풀린대요.", faceTag: null };
+      return { kind: "card", emoji: "🚪", title: "정우가 삐져서 방에 들어갔다…", body: "오늘은 더 못 시켜요. 자고 나면 풀린대요.", faceTag: null, jungwooFace: "sulk" };
     case "playedAlone":
       return PLAY_ALONE_FLAVORS[opts.playFlavor ?? "dj"].done;
     case "playedTogether":

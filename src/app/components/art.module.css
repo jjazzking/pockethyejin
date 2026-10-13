@@ -31,3 +31,34 @@
   background: var(--surface-2);
   font-size: 1.7rem;
 }
+
+/* 정우 전신 (캔버스 2:3, 발끝을 아래에 맞춘다) */
+.jungwooPose {
+  display: block;
+  width: 84px;
+  aspect-ratio: 2 / 3;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.jungwooImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: jungwooIn 260ms ease-out;
+}
+
+@keyframes jungwooIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -58,6 +58,14 @@ function DateBody({ popup }: { popup: Extract<Popup, { kind: "date" }> }) {
   );
 }
 
+/** 정우 막기 연출의 정우. 그림이 없으면 이모지 */
+function JungwooRun({ popup, urls }: { popup: Popup; urls: ReadonlyMap<string, string> }) {
+  const url = popup.jungwoo ? urls.get(popup.jungwoo.path) : undefined;
+  if (!url) return <span className={styles.blockJungwoo}>🙅‍♂️</span>;
+  // eslint-disable-next-line @next/next/no-img-element -- Storage 서명 URL일 수 있어 next/image 최적화를 쓰지 않는다
+  return <img className={`${styles.blockJungwoo} ${styles.blockJungwooImage}`} src={url} alt="" draggable={false} />;
+}
+
 function BlockOverlay({ popup, urls, onClose }: { popup: Popup; urls: ReadonlyMap<string, string>; onClose: () => void }) {
   return (
     <div className={styles.blockBackdrop} role="alertdialog" aria-modal aria-labelledby="block-title">
@@ -65,7 +73,7 @@ function BlockOverlay({ popup, urls, onClose }: { popup: Popup; urls: ReadonlyMa
       <div className={styles.block}>
         <div className={styles.blockScene} aria-hidden>
           <span className={styles.blockFreezer}>🧊</span>
-          <span className={styles.blockJungwoo}>🙅‍♂️</span>
+          <JungwooRun popup={popup} urls={urls} />
         </div>
         <Face popup={popup} urls={urls} />
         <h2 id="block-title" className={styles.blockTitle}>

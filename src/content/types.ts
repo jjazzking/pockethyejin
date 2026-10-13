@@ -42,6 +42,14 @@ export type FaceEventTag = (typeof FACE_EVENT_TAGS)[number];
 /** 이벤트에 맞는 얼굴이 없을 때 쓰는 태그 */
 export const DEFAULT_FACE_TAG = "default";
 
+/** 정우 전신 포즈 태그. 정우 카드에 마지막으로 시킨 행동에 맞는 그림을 세운다. */
+export const JUNGWOO_POSES = ["idle", "work", "waiting", "play_dj", "play_game", "run", "sulk"] as const;
+export type JungwooPose = (typeof JUNGWOO_POSES)[number];
+
+/** 정우 얼굴 태그 (정우가 주인공인 팝업) */
+export const JUNGWOO_FACE_TAGS = ["happy", "sulk"] as const;
+export type JungwooFaceTag = (typeof JUNGWOO_FACE_TAGS)[number];
+
 /** Supabase character_images 테이블 한 행 */
 export interface CharacterImage {
   id: string;

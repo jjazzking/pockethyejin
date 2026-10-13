@@ -14,7 +14,7 @@ describe("이벤트 → 팝업·토스트", () => {
 
   it("거절은 삐짐 팝업, 일은 토스트", () => {
     const d = describeEvents([{ type: "waitingRejected" }, { type: "worked", income: 30_000 }], opts);
-    expect(d.popups[0]).toMatchObject({ kind: "card", title: "정우가 삐져서 방에 들어갔다…" });
+    expect(d.popups[0]).toMatchObject({ kind: "card", title: "정우가 삐져서 방에 들어갔다…", faceTag: null, jungwooFace: "sulk" });
     expect(d.toasts).toEqual(["정우가 출근해서 3만 원 벌어왔다 💼"]);
   });
 

@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { faceTagForEvent, fullBodyPoolOrder, parseCharacterImageRow, pickFace, pickFullBody, unknownTags } from "../images";
+import {
+  faceTagForEvent,
+  fullBodyPoolOrder,
+  parseCharacterImageRow,
+  pickFace,
+  pickFullBody,
+  pickJungwooFace,
+  pickJungwooPose,
+  unknownTags,
+} from "../images";
 import { FACE_EVENT_TAGS, type CharacterImage } from "../types";
 
 let n = 0;
@@ -149,5 +158,47 @@ describe("DB 행 읽기", () => {
 
   it("오타 태그를 찾아준다", () => {
     expect(unknownTags(img("face", ["default", "eat_moch"]))).toEqual(["eat_moch"]);
+  });
+});
+
+describe("정우 포즈", () => {
+  const idle = img("full", ["idle"], "jeongwoo");
+  const work = img("full", ["work"], "jeongwoo");
+  const sulk = img("full", ["sulk"], "jeongwoo");
+  const games = [img("full", ["play_game"], "jeongwoo"), img("full", ["play_game"], "jeongwoo")];
+  const all = [idle, work, sulk, ...games];
+
+  it("방금 시킨 행동의 포즈를 고른다", () => {
+    expect(pickJungwooPose(all, "work", false, null, () => 0)).toBe(work);
+  });
+
+  it("삐져 있으면 무조건 sulk", () => {
+    expect(pickJungwooPose(all, "work", true, null, () => 0)).toBe(sulk);
+  });
+
+  it("그 포즈 그림이 없으면 idle, 아무것도 없으면 null", () => {
+    expect(pickJungwooPose(all, "run", false, null, () => 0)).toBe(idle);
+    expect(pickJungwooPose([], "run", false, null, () => 0)).toBeNull();
+  });
+
+  it("같은 포즈가 여러 장이면 직전 그림을 피한다", () => {
+    expect(pickJungwooPose(all, "play_game", false, games[0].id, () => 0)).toBe(games[1]);
+  });
+
+  it("혜진 그림은 쓰지 않는다", () => {
+    expect(pickJungwooPose([img("full", ["idle"])], "idle", false, null, () => 0)).toBeNull();
+  });
+});
+
+describe("정우 얼굴", () => {
+  it("태그에 맞는 정우 얼굴, 없으면 null", () => {
+    const happy = img("face", ["happy"], "jeongwoo");
+    expect(pickJungwooFace([happy, img("face", ["happy"])], "happy", () => 0)).toBe(happy);
+    expect(pickJungwooFace([happy], "sulk", () => 0)).toBeNull();
+  });
+
+  it("정우 태그는 정우 그림에서만 알려진 태그다", () => {
+    expect(unknownTags(img("full", ["work", "normal"], "jeongwoo"))).toEqual(["normal"]);
+    expect(unknownTags(img("full", ["work"]))).toEqual(["work"]);
   });
 });

@@ -4,11 +4,15 @@ import {
   DEFAULT_FACE_TAG,
   FACE_EVENT_TAGS,
   FULL_BODY_POOLS,
+  JUNGWOO_FACE_TAGS,
+  JUNGWOO_POSES,
   type CharacterImage,
   type CharacterName,
   type FaceEventTag,
   type FullBodyPool,
   type ImageKind,
+  type JungwooFaceTag,
+  type JungwooPose,
 } from "./types";
 
 function imagesOf(images: readonly CharacterImage[], character: CharacterName, kind: ImageKind, tag: string) {
@@ -93,7 +97,36 @@ export function faceTagForEvent(event: GameEvent): FaceEventTag | null {
   }
 }
 
-const KNOWN_TAGS = new Set<string>([...FULL_BODY_POOLS, ...FACE_EVENT_TAGS, DEFAULT_FACE_TAG]);
+/**
+ * 정우 카드에 세울 전신 그림. 삐져 있으면 무조건 sulk, 아니면 그 포즈 → idle 순으로 찾는다.
+ * 같은 포즈에 여러 장이면 직전 그림(previousId)을 피해서 고른다. 하나도 없으면 null (이모지 표시).
+ */
+export function pickJungwooPose(
+  images: readonly CharacterImage[],
+  pose: JungwooPose,
+  sulking: boolean,
+  previousId: string | null,
+  rng: Rng,
+): CharacterImage | null {
+  const order: JungwooPose[] = sulking ? ["sulk", "idle"] : [pose, "idle"];
+  for (const tag of order) {
+    const candidates = imagesOf(images, "jeongwoo", "full", tag);
+    if (candidates.length === 0) continue;
+    const fresh = candidates.filter((img) => img.id !== previousId);
+    return pickRandom(fresh.length > 0 ? fresh : candidates, rng);
+  }
+  return null;
+}
+
+/** 정우가 주인공인 팝업의 정우 얼굴. 없으면 null. */
+export function pickJungwooFace(images: readonly CharacterImage[], tag: JungwooFaceTag, rng: Rng): CharacterImage | null {
+  return pickRandom(imagesOf(images, "jeongwoo", "face", tag), rng);
+}
+
+const KNOWN_TAGS: Record<CharacterName, Set<string>> = {
+  hyejin: new Set<string>([...FULL_BODY_POOLS, ...FACE_EVENT_TAGS, DEFAULT_FACE_TAG]),
+  jeongwoo: new Set<string>([...JUNGWOO_POSES, ...JUNGWOO_FACE_TAGS]),
+};
 
 /** DB 행 → CharacterImage. 형식이 틀린 행은 null (게임이 멈추지 않게 건너뛴다). */
 export function parseCharacterImageRow(row: Record<string, unknown>): CharacterImage | null {
@@ -116,5 +149,5 @@ export function parseCharacterImageRow(row: Record<string, unknown>): CharacterI
 
 /** 알 수 없는 태그 (오타 확인용) */
 export function unknownTags(image: CharacterImage): string[] {
-  return image.tags.filter((t) => !KNOWN_TAGS.has(t));
+  return image.tags.filter((t) => !KNOWN_TAGS[image.character].has(t));
 }
