@@ -33,6 +33,7 @@ npm run simulate   # 밸런스 시뮬레이터 (전략 4개 × 12주 × 100회)
    - `20261013000000_create_places.sql`: 장소 테이블 + 사진 버킷
    - `20261013000100_create_character_images.sql`: 캐릭터 그림 테이블 + 그림 버킷
    - `20261013000200_seed_placeholders.sql`: 임시 장소 3개 + 임시 혜진 그림 5장
+   - `20261013000300_seed_hyejin_art.sql`: 진짜 혜진 그림 33장 (임시 그림 행은 지운다)
 3. **Authentication → Users → Add user**에서 혜진 계정(이메일 + 비밀번호)을 만든다. 이때 "Auto Confirm User"를 체크한다.
 4. **Authentication → Sign In / Providers**에서 "Allow new users to sign up"을 끈다. 이렇게 하면 계정이 하나로 고정된다.
 5. `.env.example`을 `.env.local`로 복사하고 URL과 Publishable key를 채운다. Vercel에는 같은 이름으로 환경 변수를 등록한다.
@@ -85,7 +86,10 @@ npm run simulate   # 밸런스 시뮬레이터 (전략 4개 × 12주 × 100회)
 
 ## 캐릭터 그림 추가하기 (대시보드)
 
-**그림 규격**: 투명 배경 PNG.
+지금 들어 있는 혜진 그림 33장은 앱 안(`public/characters/hyejin`)에 있고, 행은 `20261013000300_seed_hyejin_art.sql`로 들어간다.
+원본 시트(`incoming/`)에서 만드는 방법은 아래 **원본 시트로 그림 만들기**를 본다.
+
+**그림 규격**: 투명 배경 PNG(또는 WebP).
 - 전신은 **1024×1536**(세로 2:3)이고, 모든 그림에서 발끝 높이와 머리 크기를 똑같이 맞춘다.
 - 얼굴은 **1024×1024**이고, 얼굴 중심과 크기를 똑같이 맞춘다. 테두리나 글자는 넣지 않는다.
 - 이렇게 맞춰 그리면 그림이 바뀌어도 캐릭터 위치가 튀지 않는다.
@@ -133,7 +137,20 @@ Table Editor → **character_images** → Insert row로 넣어도 된다.
 - 한 그림에 태그를 여러 개 붙여도 되고, 같은 태그 그림이 여러 장이면 그중 하나가 무작위로 나온다.
 - 메인 화면 전신은 앱을 열 때, 정우 행동을 할 때, 혜진을 탭할 때 바뀐다. 직전 그림은 연속으로 나오지 않는다.
 - 어떤 풀에 그림이 하나도 없어도 게임은 멈추지 않는다. 해당 자리가 비어 보일 뿐이다.
-- 임시 그림(`/placeholders/...` 경로)은 앱 안에 들어 있는 파일이다. 진짜 그림을 올리면 임시 행은 지워도 된다.
+- `/`로 시작하는 경로(`/characters/...`)는 앱 안에 들어 있는 파일이다.
+
+### 원본 시트로 그림 만들기
+
+한 장에 포즈가 여러 개 그려진 원본 시트(흰 배경)를 `incoming/`에 두고 아래를 실행한다. Python 3 + `numpy`, `opencv-python-headless`, `Pillow`가 필요하다.
+
+```bash
+python3 scripts/art/cut_sheets.py incoming /tmp/art-raw   # 시트 → 포즈별 조각
+python3 scripts/art/build_art.py /tmp/art-raw             # 조각 → 투명 배경·규격 캔버스 + 시드 SQL + 체험 모드 목록
+```
+
+- 어느 시트를 어떻게 자를지는 `cut_sheets.py`의 `SHEETS`, 어떤 조각을 어떤 태그로 쓸지는 `build_art.py`의 `ART`에 적는다.
+- 흰 배경은 자동으로 지운다. 다만 팔과 몸 사이처럼 막힌 빈틈은 눈 흰자·반사광과 구분이 안 되므로 `GAPS`에 위치를 적어야 지워진다.
+- `src/content/characterArt.ts`와 시드 SQL은 스크립트가 만드는 파일이라 직접 고치지 않는다.
 
 ## 구조
 

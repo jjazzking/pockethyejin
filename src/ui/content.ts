@@ -1,4 +1,5 @@
-import { PLACEHOLDER_IMAGES, PLACEHOLDER_PLACES } from "@/content/placeholders";
+import { HYEJIN_ART } from "@/content/characterArt";
+import { PLACEHOLDER_PLACES } from "@/content/placeholders";
 import { getSupabase } from "@/lib/supabase";
 import { BUCKETS, loadCharacterImages, loadPlaces, resolveImageUrls } from "@/persistence/contentRepo";
 import type { Content } from "./useGame";
@@ -14,9 +15,9 @@ export async function loadSupabaseContent(): Promise<Content> {
   return { places, images, imageUrls, placeUrls };
 }
 
-/** 체험 모드: 앱에 들어 있는 임시 장소·그림 */
+/** 체험 모드: 앱에 들어 있는 임시 장소 + 혜진 그림 */
 export async function loadTrialContent(): Promise<Content> {
-  const paths = [...PLACEHOLDER_IMAGES.map((i) => i.path), ...PLACEHOLDER_PLACES.flatMap((p) => (p.image ? [p.image] : []))];
+  const paths = [...HYEJIN_ART.map((i) => i.path), ...PLACEHOLDER_PLACES.flatMap((p) => (p.image ? [p.image] : []))];
   const urls = new Map(paths.map((path) => [path, path]));
-  return { places: PLACEHOLDER_PLACES, images: PLACEHOLDER_IMAGES, imageUrls: urls, placeUrls: urls };
+  return { places: PLACEHOLDER_PLACES, images: HYEJIN_ART, imageUrls: urls, placeUrls: urls };
 }
