@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { fullBodyPoolOrder } from "@/content/images";
 import { BALANCE } from "@/game";
-import { dayOfWeek, isWeekend } from "@/game/date";
+import { daysTogether, dayOfWeek, isWeekend } from "@/game/date";
 import { isDanger, isWarning } from "@/game/hyejin";
 import { isMaxLevel } from "@/game/places";
 import { incomeForRank, levelUpCost, rejectPercent } from "@/game/rules";
@@ -34,8 +34,11 @@ export function DateHeader({ state }: { state: GameState }) {
   const weekend = isWeekend(date);
   return (
     <div className={styles.dateHeader}>
-      <span className={styles.date}>
-        {m}월 {d}일 ({WEEKDAY_NAMES[dayOfWeek(date)]})
+      <span className={styles.dateBlock}>
+        <span className={styles.date}>
+          {m}월 {d}일 ({WEEKDAY_NAMES[dayOfWeek(date)]})
+        </span>
+        <span className={c.hint}>💕 사귄 지 {daysTogether(date)}일째</span>
       </span>
       <Badge accent={weekend}>{weekend ? "주말 · 데이트 가능 💑" : "평일 · 혜진 출근 🏢"}</Badge>
     </div>
@@ -182,7 +185,7 @@ function BulldakCallout({ view, state }: { view: GameView; state: GameState }) {
     <div className={styles.bulldak} role="status">
       <div>
         <strong>🌶️ 혜진이가 불닭이 땡긴다!</strong>
-        <p className={c.hint}>오늘 안에 안 사다주면 혜진 행복도 {BALANCE.DAY_END.BULLDAK_IGNORED_PENALTY}</p>
+        <p className={c.hint}>자기 전에 안 사다주면 혜진 행복도 {BALANCE.DAY_END.BULLDAK_IGNORED_PENALTY}</p>
       </div>
       <Button
         variant="primary"
@@ -241,12 +244,61 @@ function HyejinActions({ view, state, maxLevel }: { view: GameView; state: GameS
   );
 }
 
+/** 잠자기: 하루 마감 → 다음 날 아침. 현실 하루에 잘 수 있는 밤은 정해져 있다. */
+function SleepCard({ view, state }: { view: GameView; state: GameState }) {
+  const [confirming, setConfirming] = useState(false);
+  const actionsLeft = state.jungwoo.actionsLeft;
+  const total = BALANCE.TIME.NIGHTS_PER_REAL_DAY;
+  const noNights = view.nightsLeft <= 0;
+  const sleep = () => {
+    setConfirming(false);
+    view.run({ type: "sleep" });
+  };
+
+  return (
+    <Card>
+      <div className={styles.sleepHead}>
+        <strong>🌙 하루 마무리</strong>
+        <span className={c.hint}>
+          오늘 남은 밤 {Math.max(0, view.nightsLeft)}/{total}
+        </span>
+      </div>
+      {noNights ? (
+        <Hint>{ERROR_TEXT.NO_NIGHTS_LEFT}</Hint>
+      ) : confirming ? (
+        <>
+          <Hint>정우 행동이 {actionsLeft}번 남았어요. 자면 사라져요. 그래도 잘까요?</Hint>
+          <div className={c.grid2}>
+            <Button variant="primary" disabled={view.busy} onClick={sleep}>
+              😴 잘래요
+            </Button>
+            <Button variant="ghost" onClick={() => setConfirming(false)}>
+              더 놀래요
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Button
+          variant={actionsLeft === 0 ? "primary" : "default"}
+          disabled={view.busy}
+          onClick={() => (actionsLeft > 0 ? setConfirming(true) : sleep())}
+          sub="하루를 마감하고 다음 날 아침으로"
+        >
+          😴 잠자기
+        </Button>
+      )}
+    </Card>
+  );
+}
+
 export default function MainPanel({ view }: { view: GameView }) {
   const { game, content } = view;
   if (!game || !content) return null;
   const state = game.state;
   const maxLevel = isMaxLevel(state, content.places.length);
   const mood = fullBodyPoolOrder(state.hyejin.happiness)[0];
+  // 행동을 다 쓰면 잠자기를 정우 카드 바로 아래로 올린다
+  const outOfActions = state.jungwoo.actionsLeft === 0;
 
   return (
     <div className={styles.panel}>
@@ -260,8 +312,10 @@ export default function MainPanel({ view }: { view: GameView }) {
       <WarningBanner state={state} />
       <BulldakCallout view={view} state={state} />
       <JungwooStatus view={view} state={state} />
+      {outOfActions && <SleepCard view={view} state={state} />}
       <JungwooActions view={view} state={state} />
       <HyejinActions view={view} state={state} maxLevel={maxLevel} />
+      {!outOfActions && <SleepCard view={view} state={state} />}
     </div>
   );
 }

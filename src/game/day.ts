@@ -1,29 +1,33 @@
 import { BULLDAK, DAY_END, HYEJIN, JUNGWOO, TIME } from "./balance";
 import { addDays, daysBetween, isSunday, isWeekend } from "./date";
-import { createInitialJungwoo } from "./engine";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
 import { rollPercent } from "./rules";
-import type { GameDate, GameEvent, GameState, Rng } from "./types";
+import type { ActionContext, ActionError, ActionResult, GameDate, GameEvent, GameState, Rng } from "./types";
 
-/** 부재한 날 감소량: 비율을 곱하고 소수점 버림 (-15 → -7) */
-function absentPenalty(amount: number): number {
-  return Math.sign(amount) * Math.floor(Math.abs(amount) * TIME.ABSENT_DAY_PENALTY_RATIO);
+export function createInitialJungwoo(): GameState["jungwoo"] {
+  return {
+    happiness: JUNGWOO.START_HAPPINESS,
+    money: JUNGWOO.START_MONEY,
+    totalWorkCount: 0,
+    rank: 1,
+    actionsLeft: 0,
+    workCountToday: 0,
+    sulking: false,
+  };
 }
 
 /** 하루 마감: 혜진 행복도 감소, 주말이 끝났으면 데이트 사용 여부 초기화 */
-function endDay(s: GameState, absent: boolean, events: GameEvent[]): void {
+function endDay(s: GameState, events: GameEvent[]): void {
   const date = s.lastSettledDate;
-  const scale = (n: number) => (absent ? absentPenalty(n) : n);
-  const commute = isWeekend(date) ? 0 : scale(DAY_END.WEEKDAY_COMMUTE);
-  const overwork =
-    s.jungwoo.workCountToday >= DAY_END.OVERWORK_THRESHOLD ? scale(DAY_END.OVERWORK_PENALTY) : 0;
-  const bulldakIgnored = s.bulldak === "active" ? scale(DAY_END.BULLDAK_IGNORED_PENALTY) : 0;
+  const commute = isWeekend(date) ? 0 : DAY_END.WEEKDAY_COMMUTE;
+  const overwork = s.jungwoo.workCountToday >= DAY_END.OVERWORK_THRESHOLD ? DAY_END.OVERWORK_PENALTY : 0;
+  const bulldakIgnored = s.bulldak === "active" ? DAY_END.BULLDAK_IGNORED_PENALTY : 0;
 
   const before = s.hyejin.happiness;
   addHyejinHappiness(s, commute);
   addHyejinHappiness(s, overwork);
   addHyejinHappiness(s, bulldakIgnored);
-  events.push({ type: "dayEnded", date, absent, commute, overwork, bulldakIgnored });
+  events.push({ type: "dayEnded", date, commute, overwork, bulldakIgnored });
   // 하루 마감은 턴이 아니므로 카운트다운 시작·해제만 하고 절반 섭취는 일어나지 않는다.
   updateCountdown(s, 0, events);
   emitWarningChange(before, s.hyejin.happiness, events);
@@ -51,8 +55,11 @@ function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[]): 
   }
 }
 
-/** 새 게임. today 아침이 막 시작된 상태. */
-export function createInitialState(today: GameDate, rng: Rng): { state: GameState; events: GameEvent[] } {
+/** 새 게임. 게임 속 첫날(기본: 사귀기 시작한 날) 아침이 막 시작된 상태. */
+export function createInitialState(
+  firstDay: GameDate = TIME.START_DATE,
+  rng: Rng,
+): { state: GameState; events: GameEvent[] } {
   const state: GameState = {
     jungwoo: createInitialJungwoo(),
     hyejin: {
@@ -65,43 +72,54 @@ export function createInitialState(today: GameDate, rng: Rng): { state: GameStat
     bulldak: "none",
     bestStars: {},
     weekendDateUsed: false,
-    lastSettledDate: today,
+    lastSettledDate: firstDay,
+    nights: { realDay: null, used: 0 },
     knownPlaceCount: null,
   };
   const events: GameEvent[] = [];
-  startDay(state, today, rng, events);
+  startDay(state, firstDay, rng, events);
   return { state, events };
 }
 
-/**
- * 하루 마감 + 다음 날 아침을 한 번 진행한다. 입력 상태는 바꾸지 않는다.
- * absent: 마감하는 날(state.lastSettledDate)에 혜진이 접속하지 않았는지. 감소가 절반만 적용된다.
- */
-export function closeDay(state: GameState, absent: boolean, rng: Rng): { state: GameState; events: GameEvent[] } {
+/** 하루 마감 + 다음 날 아침을 한 번 진행한다 (밤 횟수는 세지 않는다). 입력 상태는 바꾸지 않는다. */
+export function closeDay(state: GameState, rng: Rng): { state: GameState; events: GameEvent[] } {
   const s = structuredClone(state);
   const events: GameEvent[] = [];
-  endDay(s, absent, events);
+  endDay(s, events);
   startDay(s, addDays(s.lastSettledDate, 1), rng, events);
   return { state: s, events };
 }
 
-/**
- * 접속 시 밀린 날짜를 일괄 정산한다. 입력 상태는 바꾸지 않는다.
- * - 마지막 정산일은 혜진이 접속했던 날이므로 감소를 그대로 적용한다.
- * - 그 사이에 접속하지 않은 날은 감소를 절반(버림)만 적용한다.
- * - 정산 중에는 턴이 흐르지 않으므로 한정선 절반 섭취는 절대 일어나지 않는다.
- * - 오늘이 마지막 정산일과 같거나 이전이면 아무 일도 없다.
- */
-export function settle(state: GameState, today: GameDate, rng: Rng): { state: GameState; events: GameEvent[] } {
-  const days = daysBetween(state.lastSettledDate, today);
-  if (days <= 0) return { state, events: [] };
-
+/** 게임 날짜가 target이 될 때까지 하루씩 넘긴다. 이미 그날이거나 지났으면 그대로. */
+export function advanceTo(state: GameState, target: GameDate, rng: Rng): { state: GameState; events: GameEvent[] } {
   let s = state;
   const events: GameEvent[] = [];
-  for (let i = 0; i < days; i++) {
-    const next = closeDay(s, i > 0, rng);
+  for (let i = daysBetween(state.lastSettledDate, target); i > 0; i--) {
+    const next = closeDay(s, rng);
     s = next.state;
     events.push(...next.events);
   }
   return { state: s, events };
+}
+
+/** 이번 현실 하루에 이미 잔 밤 횟수 */
+export function nightsUsed(state: GameState, realDay: GameDate): number {
+  return state.nights.realDay === realDay ? state.nights.used : 0;
+}
+
+/** 잠잘 수 있는지. 성공 시 null. */
+export function validateSleep(state: GameState, ctx: ActionContext): ActionError | null {
+  if (ctx.realDay !== undefined && nightsUsed(state, ctx.realDay) >= TIME.NIGHTS_PER_REAL_DAY) return "NO_NIGHTS_LEFT";
+  return null;
+}
+
+/** 잠자기: 하루 마감 + 다음 날 아침. 현실 하루의 밤 횟수를 하나 쓴다. */
+export function sleep(state: GameState, ctx: ActionContext): ActionResult {
+  const error = validateSleep(state, ctx);
+  if (error) return { ok: false, error };
+  const { state: next, events } = closeDay(state, ctx.rng);
+  if (ctx.realDay !== undefined) {
+    next.nights = { realDay: ctx.realDay, used: nightsUsed(state, ctx.realDay) + 1 };
+  }
+  return { ok: true, state: next, events };
 }

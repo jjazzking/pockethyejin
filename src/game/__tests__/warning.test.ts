@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { settle } from "../day";
+import { advanceTo as settle } from "../day";
 import type { GameState } from "../types";
 import { COMMUTE, act, expectError, makeState, NEVER } from "./helpers";
 

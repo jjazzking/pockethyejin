@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { settle } from "../day";
+import { advanceTo as settle } from "../day";
 import { applyAction } from "../engine";
 import { budgetPercents, maxUsefulOffering } from "../rules";
 import type { Action } from "../types";

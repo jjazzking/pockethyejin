@@ -47,11 +47,11 @@ npm run simulate   # 밸런스 시뮬레이터 (전략 4개 × 12주 × 100회)
 ### 저장과 동시 접속
 
 - `game_states` 테이블은 사용자당 한 행이며, RLS로 본인 행만 읽고 쓸 수 있다.
-- `state`(jsonb)에는 GameState 전체가 들어가고, 마지막 정산 날짜는 `state.lastSettledDate`에 있다.
+- `state`(jsonb)에는 GameState 전체가 들어간다. 지금 게임 속 날짜는 `state.lastSettledDate`, 현실 하루에 잔 밤 횟수는 `state.nights`에 있다.
 - `schema_version`은 state의 구조 버전이다. 구조를 바꾸면 `src/persistence/schema.ts`의 `CURRENT_SCHEMA_VERSION`을 올리고 변환 함수를 추가한다.
 - `version`은 동시 수정 방지용 번호다. 저장은 `UPDATE … WHERE version = 내가 읽은 버전`으로 하고, 트리거가 버전을 정확히 1씩만 올리도록 강제한다.
 - 다른 기기가 먼저 저장했으면 0행이 갱신된다. 그러면 앱은 최신 상태를 다시 불러오고 "다른 기기에서 플레이한 내용을 불러왔어요"라고 알린다. 방금 한 행동은 반영되지 않는다.
-- 두 기기가 같은 날 동시에 앱을 열면, 정산은 먼저 저장한 기기 것만 남는다. 늦은 기기가 다시 불러온 상태는 이미 오늘로 정산돼 있어서 두 번 정산되지 않는다.
+- 두 기기에서 같은 상태로 동시에 잠자기를 눌러도, 먼저 저장한 기기 것만 남는다. 하루는 한 번만 넘어간다.
 - 탭이 다시 화면에 보이면 최신 상태를 다시 불러온다.
 
 ## 새 장소 추가하기 (대시보드)
@@ -133,7 +133,7 @@ Table Editor → **character_images** → Insert row로 넣어도 된다.
 | 얼굴 `face` | `play_together` | 같이 놀기 |
 | 얼굴 `face` | `date_1star` / `date_2star` / `date_3star` | 데이트 결과 별 1·2·3개 |
 | 얼굴 `face` | `new_place` | 새 추억 추가 알림 |
-| 얼굴 `face` | `away_summary` | 자리를 비운 동안 요약 |
+| 얼굴 `face` | `away_summary` | 자고 일어났을 때 "밤사이 있었던 일" 요약 |
 
 정우 그림(`character`가 `jeongwoo`)은 태그가 따로 있다.
 
@@ -175,8 +175,8 @@ src/game/            UI·저장 방식과 무관한 순수 규칙 엔진
   hyejin.ts          경고 → 카운트다운 → 정우 막기 → 절반 섭취
   rules.ts           승진·레벨업 비용·거절 확률·데이트 확률 공식
   day.ts             createInitialState, closeDay(하루 마감 + 다음 날 아침), settle(밀린 날 일괄 정산)
-  summary.ts         "자리를 비운 동안" 요약
-  date.ts            게임 날짜 (Asia/Seoul 06:00 기준)
+  summary.ts         "밤사이 있었던 일" 요약
+  date.ts            날짜 계산, 현실 하루(Asia/Seoul 06:00 기준), 사귄 지 며칠째
   places.ts          새 장소 알림(syncPlaceCount), 만렙 판정
   __tests__/         단위 테스트
 src/content/         장소·캐릭터 그림 (순수 로직)
@@ -189,7 +189,7 @@ src/persistence/     저장 (규칙 엔진과 분리)
   memoryStore.ts     메모리 구현 (테스트·개발용)
   localStore.ts      브라우저 localStorage 구현 (체험 모드)
   schema.ts          상태 구조 버전과 마이그레이션
-  session.ts         openGame(접속 시 정산·장소 확인·저장), performAction(행동·저장·충돌 처리)
+  session.ts         openGame(접속 시 구조 버전·장소 확인·저장), performAction(행동·저장·충돌 처리)
   contentRepo.ts     places·character_images 읽기, Storage 서명 URL
 src/lib/supabase.ts  환경 변수로 만드는 브라우저 Supabase 클라이언트
 src/ui/              화면 로직 (규칙은 엔진 함수만 호출)
@@ -202,7 +202,7 @@ src/app/components/  화면 컴포넌트
   MainPanel          날짜·혜진 전신·경고·불닭·정우/혜진 상태와 행동
   MapPanel           추억 지도 (해금·가림·최고 별)
   DatePanel          장소 → 예산(별 확률) → 한정선 추가 → 출발
-  PopupLayer         이벤트 팝업(혜진 얼굴), 정우 막기 연출, 자리를 비운 동안, 데이트 결과
+  PopupLayer         이벤트 팝업(혜진 얼굴), 정우 막기 연출, 밤사이 있었던 일, 데이트 결과
   CharacterFrame     비율 고정 캐릭터 그림 자리 (페이드 전환, 그림 없으면 이모지)
   ArtSlots           장소 사진·정우 그림 자리 (아트가 생기면 여기만 교체)
 public/placeholders/ 임시 그림
@@ -226,10 +226,10 @@ supabase/migrations/ DB 마이그레이션 SQL
 4. 절반 섭취 후에도 행복도가 20 이하이면 3턴 카운트다운을 새로 시작한다.
 5. 거절된 웨이팅은 돈, 한정선, 정우 행복도가 모두 그대로다. 행동 1회만 소모되고 남은 행동은 사라진다.
 6. 주말에도 일을 할 수 있고, "일 3회 이상 → 혜진 -10" 벌점도 적용된다. 불닭 이벤트는 평일만 발생한다.
-7. 게임 날짜는 KST 06:00에 바뀐다. 하루 마감 때는 출근, 일 3회 이상, 불닭 무시 순으로 정산한다.
-8. 부재한 날은 혜진 행복도 감소를 절반만, 소수점 버림으로 적용한다(-25 → -12, -15 → -7).
-   - 부재한 평일에도 불닭은 확률대로 발생하고, 대응할 수 없으므로 무시 페널티를 받는다.
-   - 마지막으로 접속했던 날은 감소를 그대로 적용한다.
+7. 게임 날짜는 잠자기를 할 때만 하루 넘어간다(첫날 2026-03-30). 하루 마감 때는 출근, 일 3회 이상, 불닭 무시 순으로 정산한다.
+8. 잠자기는 현실 하루(KST 06:00 기준)에 `TIME.NIGHTS_PER_REAL_DAY`(3)번까지다. 다 써도 그날 남은 행동은 쓸 수 있다.
+   - 행동이 남아 있어도 잘 수 있고, 남은 행동은 사라진다.
+   - 잠자기는 턴이 아니다. 마감으로 20 이하가 되면 카운트다운만 시작되고, 절반 섭취는 다음 행동부터 판정한다.
 9. 데이트 예산은 5만, 15만, 30만 원 세 가지 중에서만 고른다.
 10. 데이트에 바치는 한정선은 5개 단위이고, 3성 확률이 95%에 닿는 데 필요한 개수까지만 받는다.
 11. 3성을 아직 받지 못한 장소라면 처음 가는 곳에도 한정선을 바칠 수 있다.

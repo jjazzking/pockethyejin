@@ -108,7 +108,7 @@ export function simulateRun(makeStrategy: () => Strategy, seed: number, opts: Si
       count(runner.events, day);
     }
     weekHappiness += state.hyejin.happiness;
-    const closed = closeDay(state, !present, rng);
+    const closed = closeDay(state, rng);
     state = closed.state;
     count(closed.events, day);
 

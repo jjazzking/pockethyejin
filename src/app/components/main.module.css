@@ -12,6 +12,19 @@
   flex-wrap: wrap;
 }
 
+.dateBlock {
+  display: grid;
+  gap: 2px;
+}
+
+.sleepHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
 .date {
   font-weight: 800;
   font-size: 1.1rem;

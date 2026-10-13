@@ -3,8 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pickFace, pickFullBody, pickJungwooFace, pickJungwooPose } from "@/content/images";
 import type { CharacterImage, JungwooPose, Place } from "@/content/types";
+import { BALANCE } from "@/game";
+import { toRealDay } from "@/game/date";
+import { nightsUsed } from "@/game/day";
 import { applyAction } from "@/game/engine";
-import type { AwaySummary } from "@/game/summary";
+import type { NightSummary } from "@/game/summary";
 import type { Action, ActionError, GameEvent, GameState } from "@/game/types";
 import { NewerSchemaError } from "@/persistence/schema";
 import { openGame, performAction, type SessionDeps } from "@/persistence/session";
@@ -54,7 +57,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
   }, []);
 
   const show = useCallback(
-    (loaded: Content, events: GameEvent[], summary: AwaySummary | null, playFlavor?: PlayFlavor) => {
+    (loaded: Content, events: GameEvent[], summary: NightSummary | null, playFlavor?: PlayFlavor) => {
       const described = describeEvents(events, { summary, places: loaded.places, playFlavor });
       if (described.popups.length > 0) {
         const resolved = described.popups.map((p) => ({
@@ -87,7 +90,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
           setGame(result.game);
           rotate(loaded.images, result.game.state);
           poseJungwoo(loaded.images, result.game.state, "idle");
-          show(loaded, result.events, result.summary);
+          show(loaded, result.events, null);
           if (result.syncedFromOtherDevice) setNotice(SYNCED_TEXT);
         })
         .catch((e) =>
@@ -117,11 +120,18 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
       try {
         const outcome = await performAction(deps, game, action, content.places);
         setGame(outcome.game);
+        if (outcome.kind === "invalid") {
+          setNotice(ERROR_TEXT[outcome.error]);
+          return;
+        }
         rotate(content.images, outcome.game.state);
-        if (outcome.kind === "done") poseJungwoo(content.images, outcome.game.state, jungwooPoseFor(action, opts.playFlavor));
-        show(content, outcome.events, outcome.summary, opts.playFlavor);
-        if (outcome.kind === "conflict") setNotice(CONFLICT_TEXT);
-        if (outcome.kind === "invalid") setNotice(ERROR_TEXT[outcome.error]);
+        if (outcome.kind === "done") {
+          poseJungwoo(content.images, outcome.game.state, jungwooPoseFor(action, opts.playFlavor));
+          show(content, outcome.events, outcome.summary, opts.playFlavor);
+        } else {
+          show(content, outcome.events, null);
+          setNotice(CONFLICT_TEXT);
+        }
       } catch {
         setNotice("저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
       } finally {
@@ -135,11 +145,15 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
   const check = useCallback(
     (action: Action): ActionError | null => {
       if (!game || !content) return null;
-      const result = applyAction(game.state, action, { rng: DRY_RUN_RNG, places: content.places });
+      const realDay = toRealDay(deps.now());
+      const result = applyAction(game.state, action, { rng: DRY_RUN_RNG, places: content.places, realDay });
       return result.ok ? null : result.error;
     },
-    [content, game],
+    [content, deps, game],
   );
+
+  /** 지금 현실 하루에 남은 밤 (잠자기 횟수) */
+  const nightsLeft = game ? BALANCE.TIME.NIGHTS_PER_REAL_DAY - nightsUsed(game.state, toRealDay(deps.now())) : 0;
 
   const fullBody = content?.images.find((img) => img.id === fullBodyId) ?? null;
   const jungwoo = content?.images.find((img) => img.id === jungwooId) ?? null;
@@ -156,6 +170,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
     toasts,
     fullBody,
     jungwoo,
+    nightsLeft,
     tapHyejin: () => content && game && rotate(content.images, game.state),
     run,
     check,

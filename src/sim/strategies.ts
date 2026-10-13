@@ -29,9 +29,9 @@ export class DayRunner {
 export interface Strategy {
   name: string;
   description: string;
-  /** 그날 접속하는지 */
+  /** 그날 행동을 하는지 (안 하면 아무것도 안 하고 바로 잔다) */
   present(date: GameDate): boolean;
-  /** 접속한 날의 플레이 */
+  /** 행동하는 날의 플레이 */
   playDay(day: DayRunner, date: GameDate): void;
 }
 
