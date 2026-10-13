@@ -3,7 +3,7 @@ import type { CharacterImage } from "./types";
 /*
  * 앱에 들어 있는 캐릭터 그림 (public/characters).
  * scripts/art/build_art.py 가 만든 파일 — 직접 고치지 말고 스크립트를 고칠 것.
- * supabase/migrations 의 20261013000300_seed_hyejin_art.sql, 20261013000400_seed_jeongwoo_art.sql 시드와 같은 내용이다.
+ * supabase/migrations 의 20261013000300_seed_hyejin_art.sql, 20261013000400_seed_jeongwoo_art.sql, 20261013000500_seed_mood_art.sql 시드와 같은 내용이다.
  */
 export const CHARACTER_ART: CharacterImage[] = [
   { id: "00000000-0000-4000-8000-000000000101", character: "hyejin", kind: "full", tags: ["normal"], path: "/characters/hyejin/full-turn-front.webp", description: "정면 기본 자세" },
@@ -51,4 +51,30 @@ export const CHARACTER_ART: CharacterImage[] = [
   { id: "00000000-0000-4000-8000-000000000143", character: "jeongwoo", kind: "face", tags: ["sulk"], path: "/characters/jeongwoo/face-sulking.webp", description: "볼 부풀리고 삐짐" },
   { id: "00000000-0000-4000-8000-000000000144", character: "jeongwoo", kind: "face", tags: ["sulk"], path: "/characters/jeongwoo/face-mock-angry.webp", description: "팔짱 끼고 흥" },
   { id: "00000000-0000-4000-8000-000000000145", character: "hyejin", kind: "face", tags: ["play_together"], path: "/characters/hyejin/face-with-jeongwoo.webp", description: "정우가 혜진 볼에 볼 맞대기" },
+  { id: "00000000-0000-4000-8000-000000000154", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-sad-rain.webp", description: "먹구름 아래 무릎 끌어안기" },
+  { id: "00000000-0000-4000-8000-000000000155", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-sad-kick.webp", description: "고개 숙이고 바닥 콕콕" },
+  { id: "00000000-0000-4000-8000-000000000156", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-sad-snack.webp", description: "빈 과자 봉지 들고 울먹" },
+  { id: "00000000-0000-4000-8000-000000000157", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-sad-blanket.webp", description: "담요 뒤집어쓰고 빼꼼" },
+  { id: "00000000-0000-4000-8000-000000000158", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-sad-sofa.webp", description: "소파에 축 늘어짐" },
+  { id: "00000000-0000-4000-8000-000000000159", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-sad-window.webp", description: "창밖 보며 한숨" },
+  { id: "00000000-0000-4000-8000-000000000160", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-sad-pillow.webp", description: "베개 끌어안고 삐죽" },
+  { id: "00000000-0000-4000-8000-000000000161", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-sad-wet.webp", description: "비 맞고 터덜터덜" },
+  { id: "00000000-0000-4000-8000-000000000162", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-angry-huff.webp", description: "팔짱 끼고 흥" },
+  { id: "00000000-0000-4000-8000-000000000163", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-angry-stomp.webp", description: "발 쾅쾅 구르기" },
+  { id: "00000000-0000-4000-8000-000000000164", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-angry-steam.webp", description: "머리에서 김 모락모락" },
+  { id: "00000000-0000-4000-8000-000000000165", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-angry-pillow.webp", description: "쿠션 던지기 직전" },
+  { id: "00000000-0000-4000-8000-000000000166", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-angry-point.webp", description: "손가락질하며 따지기" },
+  { id: "00000000-0000-4000-8000-000000000167", character: "hyejin", kind: "full", tags: ["sad"], path: "/characters/hyejin/full-angry-glare.webp", description: "입 꾹 다물고 째려보기" },
+  { id: "00000000-0000-4000-8000-000000000168", character: "hyejin", kind: "full", tags: ["danger"], path: "/characters/hyejin/full-danger-fridge.webp", description: "냉동실 열고 침 흘리기" },
+  { id: "00000000-0000-4000-8000-000000000169", character: "hyejin", kind: "full", tags: ["danger"], path: "/characters/hyejin/full-danger-spoon.webp", description: "숟가락 들고 눈에 불" },
+  { id: "00000000-0000-4000-8000-000000000170", character: "hyejin", kind: "full", tags: ["danger"], path: "/characters/hyejin/full-danger-cry.webp", description: "폭포수 눈물" },
+  { id: "00000000-0000-4000-8000-000000000171", character: "hyejin", kind: "full", tags: ["danger"], path: "/characters/hyejin/full-danger-flail.webp", description: "드러누워 버둥버둥" },
+  { id: "00000000-0000-4000-8000-000000000172", character: "jeongwoo", kind: "full", tags: ["sulk"], path: "/characters/jeongwoo/full-sulk-corner.webp", description: "구석에서 등 돌리고 삐짐" },
+  { id: "00000000-0000-4000-8000-000000000173", character: "jeongwoo", kind: "full", tags: ["sulk"], path: "/characters/jeongwoo/full-sulk-blanket.webp", description: "헤드폰 끼고 이불 속으로" },
+  { id: "00000000-0000-4000-8000-000000000174", character: "jeongwoo", kind: "full", tags: ["sulk"], path: "/characters/jeongwoo/full-sulk-door.webp", description: "문 뒤에서 빼꼼" },
+  { id: "00000000-0000-4000-8000-000000000175", character: "jeongwoo", kind: "full", tags: ["waiting"], path: "/characters/jeongwoo/full-tired.webp", description: "웨이팅 끝에 녹초" },
+  { id: "00000000-0000-4000-8000-000000000177", character: "jeongwoo", kind: "full", tags: ["apologize"], path: "/characters/jeongwoo/full-sorry-pray.webp", description: "두 손 싹싹 빌기" },
+  { id: "00000000-0000-4000-8000-000000000178", character: "jeongwoo", kind: "full", tags: ["apologize"], path: "/characters/jeongwoo/full-sorry-mochi.webp", description: "찹쌀떡 공손히 바치기" },
+  { id: "00000000-0000-4000-8000-000000000179", character: "jeongwoo", kind: "full", tags: ["apologize"], path: "/characters/jeongwoo/full-sorry-kneel.webp", description: "무릎 꿇고 반성" },
+  { id: "00000000-0000-4000-8000-000000000180", character: "hyejin", kind: "face", tags: ["warning"], path: "/characters/hyejin/face-massage.webp", description: "삐진 혜진 어깨 주물러 주는 정우" },
 ];

@@ -35,6 +35,7 @@ npm run simulate   # 밸런스 시뮬레이터 (전략 4개 × 12주 × 100회)
    - `20261013000200_seed_placeholders.sql`: 임시 장소 3개 + 임시 혜진 그림 5장
    - `20261013000300_seed_hyejin_art.sql`: 진짜 혜진 그림 33장 (임시 그림 행은 지운다)
    - `20261013000400_seed_jeongwoo_art.sql`: 정우 그림 11장 + 둘이 함께 있는 "같이 놀기" 팝업 그림
+   - `20261013000500_seed_mood_art.sql`: 시무룩·화남·위기 혜진 전신 18장, 정우 삐짐·눈치 7장, "냉동실 경고" 팝업 그림 1장
 3. **Authentication → Users → Add user**에서 혜진 계정(이메일 + 비밀번호)을 만든다. 이때 "Auto Confirm User"를 체크한다.
 4. **Authentication → Sign In / Providers**에서 "Allow new users to sign up"을 끈다. 이렇게 하면 계정이 하나로 고정된다.
 5. `.env.example`을 `.env.local`로 복사하고 URL과 Publishable key를 채운다. Vercel에는 같은 이름으로 환경 변수를 등록한다.
@@ -87,7 +88,7 @@ npm run simulate   # 밸런스 시뮬레이터 (전략 4개 × 12주 × 100회)
 
 ## 캐릭터 그림 추가하기 (대시보드)
 
-지금 들어 있는 그림(혜진 34장, 정우 11장)은 앱 안(`public/characters`)에 있고, 행은 `20261013000300`·`20261013000400` 시드 파일로 들어간다.
+지금 게임에 쓰는 그림(혜진 53장, 정우 18장)은 앱 안(`public/characters`)에 있고, 행은 `20261013000300`·`20261013000400`·`20261013000500` 시드 파일로 들어간다.
 원본 시트(`incoming/`)에서 만드는 방법은 아래 **원본 시트로 그림 만들기**를 본다.
 
 **그림 규격**: 투명 배경 PNG(또는 WebP).
@@ -144,6 +145,7 @@ Table Editor → **character_images** → Insert row로 넣어도 된다.
 | 전신 `full` | `play_dj` / `play_game` | 혼자 디제잉 / 혼자 게임 뒤 |
 | 전신 `full` | `run` | 편의점 불닭 심부름 뒤, 정우 막기 연출 |
 | 전신 `full` | `sulk` | 정우가 삐져 있는 동안 (항상 이 그림) |
+| 전신 `full` | `apologize` | 평소 모습일 때 혜진 행복도가 30 이하면 (눈치 보는 정우) |
 | 얼굴 `face` | `happy` | 정우 승진 팝업 |
 | 얼굴 `face` | `sulk` | 웨이팅 거절(삐짐) 팝업 |
 

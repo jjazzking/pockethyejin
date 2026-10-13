@@ -52,6 +52,45 @@ export const ALBUM: AlbumSection[] = [
     ],
   },
   {
+    id: "hyejin-sad",
+    title: "혜진 · 시무룩",
+    shape: "full",
+    photos: [
+      hj("full-sad-rain.webp", "먹구름", "머리 위에만 비가 내린다. 무릎 끌어안고 웅크리기."),
+      hj("full-sad-kick.webp", "바닥 콕콕", "고개 푹 숙이고 애꿎은 바닥만 발끝으로 콕콕."),
+      hj("full-sad-snack.webp", "빈 과자 봉지", "마지막 한 조각까지 다 먹어버렸다… 눈물 그렁."),
+      hj("full-sad-blanket.webp", "담요 동굴", "담요를 뒤집어쓰고 얼굴만 빼꼼. 아무도 말 걸지 마."),
+      hj("full-sad-sofa.webp", "소파와 한 몸", "소파에 엎어져서 축 늘어진 채 움직일 생각이 없다."),
+      hj("full-sad-window.webp", "창밖 한숨", "창밖을 보며 후우… 오늘따라 하늘도 흐리다."),
+      hj("full-sad-pillow.webp", "베개 꼭", "베개를 꼭 끌어안고 입술 삐죽. 달래주길 기다리는 중."),
+      hj("full-sad-wet.webp", "비 맞은 꿍진이", "우산도 없이 비 쫄딱 맞고 터덜터덜."),
+    ],
+  },
+  {
+    id: "hyejin-angry",
+    title: "혜진 · 화남",
+    shape: "full",
+    photos: [
+      hj("full-angry-huff.webp", "흥!", "팔짱 끼고 고개 홱. 콧김이 뿜어져 나온다."),
+      hj("full-angry-stomp.webp", "쾅쾅", "발을 쾅쾅 구르며 씩씩. 바닥이 남아나질 않는다."),
+      hj("full-angry-steam.webp", "부글부글", "얼굴이 새빨개지고 머리에서 김이 모락모락."),
+      hj("full-angry-pillow.webp", "쿠션 투척 직전", "쿠션 두 개를 번쩍. 정우, 피할 준비 해."),
+      hj("full-angry-point.webp", "따지기", "\"너 지금 뭐라고 했어?\" 손가락이 정우를 향한다."),
+      hj("full-angry-glare.webp", "째려보기", "입 꾹 다물고 실눈으로 째릿. 말 안 해도 다 안다."),
+    ],
+  },
+  {
+    id: "hyejin-danger",
+    title: "혜진 · 냉동실 위기",
+    shape: "full",
+    photos: [
+      hj("full-danger-fridge.webp", "냉동실 습격", "냉동실 문을 열고 침 주르륵. 한정선이 위험하다."),
+      hj("full-danger-spoon.webp", "숟가락 장전", "눈에 불을 켜고 숟가락을 번쩍. 이미 늦었을지도."),
+      hj("full-danger-cry.webp", "폭포수 눈물", "눈물이 폭포처럼 쏟아진다. 바닥이 흥건."),
+      hj("full-danger-flail.webp", "드러눕기", "바닥에 드러누워 팔다리 버둥버둥. 달래줄 때까지 안 일어남."),
+    ],
+  },
+  {
     id: "hyejin-moments",
     title: "혜진 · 이런저런 순간",
     shape: "square",
@@ -115,6 +154,28 @@ export const ALBUM: AlbumSection[] = [
     ],
   },
   {
+    id: "jeongwoo-sulk",
+    title: "정우 · 시무룩·삐짐",
+    shape: "full",
+    photos: [
+      jw("full-sulk-corner.webp", "구석 삐짐", "방 구석에서 등 돌리고 체육 자세. 먹구름이 둥둥."),
+      jw("full-sulk-blanket.webp", "이불 속 정우", "헤드폰 끼고 이불 속으로. 세상과 잠시 단절."),
+      jw("full-sulk-door.webp", "문 뒤에서 빼꼼", "삐져서 들어갔지만 밖이 궁금해서 빼꼼."),
+      jw("full-tired.webp", "녹초", "땡볕 웨이팅 끝에 혀까지 내밀고 축 처졌다."),
+      jw("album-broke.webp", "텅 빈 지갑", "지갑을 열었더니 나방만 훨훨. 월급날은 언제?"),
+    ],
+  },
+  {
+    id: "jeongwoo-sorry",
+    title: "정우 · 눈치 보기",
+    shape: "full",
+    photos: [
+      jw("full-sorry-pray.webp", "싹싹 빌기", "두 손 모아 싹싹. 웃고는 있지만 식은땀이 난다."),
+      jw("full-sorry-mochi.webp", "찹쌀떡 조공", "찹쌀떡을 접시에 담아 공손히. 이걸로 풀어주세요."),
+      jw("full-sorry-kneel.webp", "무릎 꿇고 반성", "무릎 꿇고 고개 숙여 반성 중. 눈물 찔끔."),
+    ],
+  },
+  {
     id: "jeongwoo-faces",
     title: "정우 · 표정 모음",
     shape: "square",
@@ -131,7 +192,10 @@ export const ALBUM: AlbumSection[] = [
     id: "together",
     title: "둘이 함께",
     shape: "square",
-    photos: [hj("face-with-jeongwoo.webp", "볼 맞대기", "정우가 볼을 꾹 맞대니 혜진이는 땀 삐질. 그래도 웃음은 못 참는다.")],
+    photos: [
+      hj("face-with-jeongwoo.webp", "볼 맞대기", "정우가 볼을 꾹 맞대니 혜진이는 땀 삐질. 그래도 웃음은 못 참는다."),
+      hj("face-massage.webp", "어깨 주물러 드릴게요", "팔짱 끼고 삐진 혜진이 뒤에서 정우가 열심히 어깨 안마. 효과는… 아직 모름."),
+    ],
   },
 ];
 
@@ -165,6 +229,7 @@ const TAG_TEXT: Record<"hyejin" | "jeongwoo", Record<string, string>> = {
     play_game: "혼자 게임 뒤",
     run: "편의점 심부름 · 정우 막기",
     sulk: "삐졌을 때",
+    apologize: "혜진 기분이 안 좋을 때",
     happy: "정우 승진",
   },
 };

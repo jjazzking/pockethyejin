@@ -14,7 +14,7 @@ import { openGame, performAction, type SessionDeps } from "@/persistence/session
 import type { StoredGame } from "@/persistence/store";
 import { CONFLICT_TEXT, ERROR_TEXT, SYNCED_TEXT, type PlayFlavor } from "./copy";
 import { describeEvents, type PopupSpec } from "./describe";
-import { jungwooPoseFor } from "./jungwooPose";
+import { jungwooPoseFor, resolveJungwooPose } from "./jungwooPose";
 
 export interface Content {
   places: Place[];
@@ -53,7 +53,8 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
   }, []);
 
   const poseJungwoo = useCallback((images: CharacterImage[], state: GameState, pose: JungwooPose) => {
-    setJungwooId((prev) => pickJungwooPose(images, pose, state.jungwoo.sulking, prev, Math.random)?.id ?? null);
+    const actual = resolveJungwooPose(pose, state.hyejin.happiness);
+    setJungwooId((prev) => pickJungwooPose(images, actual, state.jungwoo.sulking, prev, Math.random)?.id ?? null);
   }, []);
 
   const show = useCallback(
