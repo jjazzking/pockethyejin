@@ -1,49 +1,132 @@
-.wrap {
+/*
+ * 타이틀 화면. 그림은 화면을 꽉 채우고(cover), 제목이 있는 위쪽을 기준으로 자른다.
+ * 버튼은 그림 아래쪽(인물 발밑)에 한 줄로 둔다.
+ */
+.screen {
+  position: relative;
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 16px;
+  overflow: hidden;
+  background: #cfe8f5;
 }
 
-.card {
-  width: min(100%, 380px);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-  padding: 28px 20px;
-  display: grid;
-  gap: 12px;
+.art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-.hero {
-  font-size: 2.6rem;
-  text-align: center;
-  letter-spacing: 6px;
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.hero span {
-  display: inline-block;
-  font-size: 3.4rem;
-  animation: bob 1.6s ease-in-out infinite;
+.actions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 16px max(16px, env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(255, 248, 242, 0), rgba(255, 248, 242, 0.75) 45%);
 }
 
-@keyframes bob {
-  50% {
-    transform: translateY(-6px);
+.primary,
+.secondary {
+  flex: 1;
+  max-width: 220px;
+  min-height: 52px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(80, 50, 20, 0.18);
+  transition: transform 120ms ease;
+}
+
+.primary:active,
+.secondary:active {
+  transform: scale(0.97);
+}
+
+.primary {
+  border: 0;
+  background: #ff7a9c;
+  color: #fff;
+}
+
+.secondary {
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.85);
+  color: #2b2118;
+  backdrop-filter: blur(6px);
+}
+
+/* 가로 화면(컴퓨터): 그림 가운데 기준, 버튼은 조금 더 띄운다 */
+@media (min-aspect-ratio: 1/1) {
+  .art img {
+    object-position: center;
+  }
+
+  .actions {
+    padding-bottom: 40px;
+    background: none;
   }
 }
 
-.title {
-  text-align: center;
-  font-size: 1.6rem;
-  font-weight: 900;
+/* 로그인 입력 창: 핸드폰은 아래에서 올라오는 시트, 넓은 화면은 가운데 카드 */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  background: rgba(20, 12, 8, 0.45);
+  animation: fade 160ms ease-out;
 }
 
-.tagline {
+.sheet {
+  width: 100%;
+  max-width: 420px;
+  display: grid;
+  gap: 12px;
+  padding: 22px 20px max(20px, env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  animation: rise 220ms ease-out;
+}
+
+@media (min-width: 640px) {
+  .backdrop {
+    align-items: center;
+  }
+
+  .sheet {
+    border-radius: 24px;
+    padding-bottom: 22px;
+  }
+}
+
+.sheetTitle {
+  margin: 0 0 4px;
   text-align: center;
-  color: var(--text-dim);
-  margin-bottom: 8px;
+  font-size: 1.2rem;
+  font-weight: 900;
 }
 
 .field {
@@ -65,29 +148,53 @@
 }
 
 .error {
+  margin: 0;
   color: var(--danger);
   font-weight: 600;
   font-size: 0.9rem;
 }
 
-.primary,
-.secondary {
+.submit,
+.cancel {
   min-height: var(--tap);
   border-radius: var(--radius-sm);
+  font: inherit;
   font-weight: 700;
+  cursor: pointer;
 }
 
-.primary {
+.submit {
   border: 0;
   background: var(--accent);
   color: var(--accent-text);
 }
 
-.primary:disabled {
+.submit:disabled {
   opacity: 0.6;
 }
 
-.secondary {
+.cancel {
   border: 1px solid var(--line);
   background: transparent;
+  color: var(--text);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
 }

@@ -91,6 +91,13 @@ SHEETS = {
   "정우_액션 4개_2탄.png": ("free", ["jw_shopping","jw_arms_crossed","jw_running","jw_poker"], Q),
   "정우_전신 샷.png":     ("free", ["jw_turn_front","jw_turn_side","jw_turn_back"], TURN),
   "정우_표정 6개.png":     ("free", ["jw_face_default","jw_face_happy","jw_face_mock_angry","jw_face_sulking","jw_face_flustered","jw_face_adoring"], JWF),
+  # 2차: 시무룩·위기·화남 (혜진), 시무룩·삐짐·눈치 (정우). 회색 실루엣 칸은 버린다(_skip).
+  "시무룩 A.png":        ("free", ["hj_sad_rain","hj_sad_kick","hj_sad_snack","hj_sad_blanket"], Q),
+  "시무룩 B.png":        ("free", ["hj_sad_sofa","hj_sad_window","hj_sad_pillow","hj_sad_wet"], Q),
+  "위기.png":            ("free", ["hj_danger_fridge","hj_danger_spoon","hj_danger_cry","hj_danger_flail"], Q),
+  "화남.png":            ("free", ["hj_angry_huff","hj_angry_stomp","hj_angry_steam","hj_angry_pillow","hj_angry_point","hj_angry_glare"], grid([(0,.34),(.34,.67),(.67,1)],[(0,.5),(.5,1)])),
+  "시무룩 삐짐.png":      ("free", ["jw_sulk_corner","jw_sulk_blanket","jw_broke","_skip","jw_tired","jw_sulk_door"], grid([(0,.33),(.33,.62),(.62,1)],[(0,.5),(.5,1)])),
+  "혜진 눈치.png":        ("free", ["jw_sorry_pray","jw_sorry_mochi","jw_sorry_kneel","jw_hj_massage"], Q),
 }
 
 manifest={}
@@ -123,6 +130,8 @@ for name,(mode,ids,fr) in SHEETS.items():
             crops.append([max(x0,x0+bb[0]-P), max(y0,y0+bb[1]-P), min(x1,x0+bb[2]+P), min(y1,y0+bb[3]+P)])
     print(name, mode, len(crops), "expected", len(ids))
     for cid,(x0,y0,x1,y1) in zip(ids,crops):
+        if cid == "_skip":
+            continue
         Image.fromarray(a[y0:y1,x0:x1]).save(os.path.join(out,cid+".png"))
         manifest[cid]={"src":name,"box":[int(x0),int(y0),int(x1),int(y1)],"mode":mode}
 json.dump(manifest, open(os.path.join(out,"manifest.json"),"w"), ensure_ascii=False, indent=1)

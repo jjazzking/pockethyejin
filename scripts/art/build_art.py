@@ -25,6 +25,7 @@ TS = os.path.join(ROOT, "src", "content", "characterArt.ts")
 BATCHES = {
     "hyejin": ("20261013000300_seed_hyejin_art.sql", "혜진 그림 시드", True),
     "jeongwoo": ("20261013000400_seed_jeongwoo_art.sql", "정우 그림 시드 (+ 혜진·정우 함께 있는 팝업 그림)", False),
+    "mood": ("20261013000500_seed_mood_art.sql", "시무룩·화남·위기 그림 시드 (혜진 전신 sad/danger, 정우 삐짐·눈치)", False),
 }
 
 HJ = dict(character="hyejin", batch="hyejin")
@@ -96,7 +97,47 @@ ART = [
     art("jw_face_default",    dict(JW_FACE, batch=None), [], "기본 얼굴", file="album-face-default.webp"),
     art("jw_face_flustered",  dict(JW_FACE, batch=None), [], "당황", file="album-face-flustered.webp"),
     art("jw_face_adoring",    dict(JW_FACE, batch=None), [], "하트 눈", file="album-face-adoring.webp"),
+    # --- 2차: 시무룩·위기·화남. 원본 시트 크기가 제각각이라 SCALE_MATCH로 키를 기존 그림에 맞춘다.
+    art("hj_sad_rain",        dict(HJ_FULL, batch="mood", scale="hj-sad-a"), ["sad"],    "먹구름 아래 무릎 끌어안기"),
+    art("hj_sad_kick",        dict(HJ_FULL, batch="mood", scale="hj-sad-a"), ["sad"],    "고개 숙이고 바닥 콕콕"),
+    art("hj_sad_snack",       dict(HJ_FULL, batch="mood", scale="hj-sad-a"), ["sad"],    "빈 과자 봉지 들고 울먹"),
+    art("hj_sad_blanket",     dict(HJ_FULL, batch="mood", scale="hj-sad-a"), ["sad"],    "담요 뒤집어쓰고 빼꼼"),
+    art("hj_sad_sofa",        dict(HJ_FULL, batch="mood", scale="hj-sad-b"), ["sad"],    "소파에 축 늘어짐"),
+    art("hj_sad_window",      dict(HJ_FULL, batch="mood", scale="hj-sad-b"), ["sad"],    "창밖 보며 한숨"),
+    art("hj_sad_pillow",      dict(HJ_FULL, batch="mood", scale="hj-sad-b"), ["sad"],    "베개 끌어안고 삐죽"),
+    art("hj_sad_wet",         dict(HJ_FULL, batch="mood", scale="hj-sad-b"), ["sad"],    "비 맞고 터덜터덜"),
+    art("hj_angry_huff",      dict(HJ_FULL, batch="mood", scale="hj-angry"), ["sad"],    "팔짱 끼고 흥"),
+    art("hj_angry_stomp",     dict(HJ_FULL, batch="mood", scale="hj-angry"), ["sad"],    "발 쾅쾅 구르기"),
+    art("hj_angry_steam",     dict(HJ_FULL, batch="mood", scale="hj-angry"), ["sad"],    "머리에서 김 모락모락"),
+    art("hj_angry_pillow",    dict(HJ_FULL, batch="mood", scale="hj-angry"), ["sad"],    "쿠션 던지기 직전"),
+    art("hj_angry_point",     dict(HJ_FULL, batch="mood", scale="hj-angry"), ["sad"],    "손가락질하며 따지기"),
+    art("hj_angry_glare",     dict(HJ_FULL, batch="mood", scale="hj-angry"), ["sad"],    "입 꾹 다물고 째려보기"),
+    art("hj_danger_fridge",   dict(HJ_FULL, batch="mood", scale="hj-danger"), ["danger"], "냉동실 열고 침 흘리기"),
+    art("hj_danger_spoon",    dict(HJ_FULL, batch="mood", scale="hj-danger"), ["danger"], "숟가락 들고 눈에 불"),
+    art("hj_danger_cry",      dict(HJ_FULL, batch="mood", scale="hj-danger"), ["danger"], "폭포수 눈물"),
+    art("hj_danger_flail",    dict(HJ_FULL, batch="mood", scale="hj-danger"), ["danger"], "드러누워 버둥버둥"),
+    art("jw_sulk_corner",     dict(JW_FULL, batch="mood", scale="jw-sulk"), ["sulk"],      "구석에서 등 돌리고 삐짐"),
+    art("jw_sulk_blanket",    dict(JW_FULL, batch="mood", scale="jw-sulk"), ["sulk"],      "헤드폰 끼고 이불 속으로"),
+    art("jw_sulk_door",       dict(JW_FULL, batch="mood", scale="jw-sulk"), ["sulk"],      "문 뒤에서 빼꼼"),
+    art("jw_tired",           dict(JW_FULL, batch="mood", scale="jw-sulk"), ["waiting"],   "웨이팅 끝에 녹초"),
+    art("jw_broke",           dict(JW_FULL, batch=None, scale="jw-sulk"), [], "텅 빈 지갑", file="album-broke.webp"),
+    art("jw_sorry_pray",      dict(JW_FULL, batch="mood", scale="jw-sorry"), ["apologize"], "두 손 싹싹 빌기"),
+    art("jw_sorry_mochi",     dict(JW_FULL, batch="mood", scale="jw-sorry"), ["apologize"], "찹쌀떡 공손히 바치기"),
+    art("jw_sorry_kneel",     dict(JW_FULL, batch="mood", scale="jw-sorry"), ["apologize"], "무릎 꿇고 반성"),
+    art("jw_hj_massage", dict(HJ, kind="face", scale="duo-massage", framed=False, batch="mood"),
+        ["warning"], "삐진 혜진 어깨 주물러 주는 정우", file="face-massage.webp"),
 ]
+
+# 원본 크기가 다른 시트의 배율: {그룹: (그 그룹의 기준 그림, 이미 있는 그룹의 기준 그림)}.
+# 두 기준 그림(서 있는 모습)이 캔버스에서 같은 키가 되도록 맞춘다.
+SCALE_MATCH = {
+    "hj-sad-a": ("hj_sad_kick", "hj_turn_front"),
+    "hj-sad-b": ("hj_sad_pillow", "hj_turn_front"),
+    "hj-angry": ("hj_angry_huff", "hj_turn_front"),
+    "hj-danger": ("hj_danger_cry", "hj_turn_front"),
+    "jw-sulk": ("jw_broke", "jw_arms_crossed"),
+    "jw-sorry": ("jw_sorry_pray", "jw_arms_crossed"),
+}
 
 # 막힌 빈틈(배경) 위치. 잘라낸 그림 안의 비율 좌표 (x, y)
 GAPS = {
@@ -111,6 +152,8 @@ GAPS = {
     "jw_gaming":     [(0.160, 0.425), (0.519, 0.662), (0.356, 0.910), (0.391, 0.952), (0.189, 0.956)],
     "jw_poker":      [(0.599, 0.613)],
     "jw_face_flustered": [(0.242, 0.650), (0.751, 0.651)],
+    "hj_danger_spoon": [(0.674, 0.661)],
+    "jw_hj_massage": [(0.479, 0.677)],
 }
 
 FULL_W, FULL_H, FACE = 1024, 1536, 1024
@@ -159,6 +202,9 @@ def trim(im):
 
 
 def place(im, scale, cw, ch, anchor_x):
+    # 맞춘 배율로 캔버스를 넘치는 그림(누운 포즈 등)만 그 그림 하나를 줄인다
+    m = MARGIN if ch == FULL_H else 0
+    scale = min(scale, (cw - 2 * m) / im.width, (ch - 2 * m) / im.height)
     im = im.resize((round(im.width * scale), round(im.height * scale)), Image.LANCZOS)
     canvas = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     x = round(cw / 2 - anchor_x * scale)
@@ -194,6 +240,10 @@ def main():
         kind = next(a["kind"] for a in ART if a["scale"] == group)
         w, h, m = (FULL_W, FULL_H, MARGIN) if kind == "full" else (FACE, FACE, 0)
         scales[group] = min((h - 2 * m) / max(i.height for i in ims), (w - 2 * m) / max(i.width for i in ims))
+
+    group_of = {a["name"]: a["scale"] for a in ART}
+    for group, (mine, ref) in SCALE_MATCH.items():
+        scales[group] = scales[group_of[ref]] * cut[ref].height / cut[mine].height
 
     rows = []
     for idx, a in enumerate(ART, start=1):

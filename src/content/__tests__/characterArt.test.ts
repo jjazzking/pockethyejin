@@ -6,7 +6,7 @@ import { unknownTags } from "../images";
 import { DEFAULT_FACE_TAG, FACE_EVENT_TAGS, FULL_BODY_POOLS, JUNGWOO_FACE_TAGS, JUNGWOO_POSES } from "../types";
 
 const ROOT = join(__dirname, "..", "..", "..");
-const SEED = ["20261013000300_seed_hyejin_art.sql", "20261013000400_seed_jeongwoo_art.sql"]
+const SEED = ["20261013000300_seed_hyejin_art.sql", "20261013000400_seed_jeongwoo_art.sql", "20261013000500_seed_mood_art.sql"]
   .map((f) => readFileSync(join(ROOT, "supabase", "migrations", f), "utf8"))
   .join("\n");
 

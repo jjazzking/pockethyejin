@@ -42,8 +42,11 @@ export type FaceEventTag = (typeof FACE_EVENT_TAGS)[number];
 /** 이벤트에 맞는 얼굴이 없을 때 쓰는 태그 */
 export const DEFAULT_FACE_TAG = "default";
 
-/** 정우 전신 포즈 태그. 정우 카드에 마지막으로 시킨 행동에 맞는 그림을 세운다. */
-export const JUNGWOO_POSES = ["idle", "work", "waiting", "play_dj", "play_game", "run", "sulk"] as const;
+/**
+ * 정우 전신 포즈 태그. 정우 카드에 마지막으로 시킨 행동에 맞는 그림을 세운다.
+ * apologize: 혜진 기분이 나쁠 때(경고 구간) 평소 모습 대신 눈치 보는 정우.
+ */
+export const JUNGWOO_POSES = ["idle", "work", "waiting", "play_dj", "play_game", "run", "sulk", "apologize"] as const;
 export type JungwooPose = (typeof JUNGWOO_POSES)[number];
 
 /** 정우 얼굴 태그 (정우가 주인공인 팝업) */
