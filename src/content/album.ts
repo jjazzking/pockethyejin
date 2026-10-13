@@ -1,3 +1,4 @@
+import { LOGIN_ART } from "@/ui/loginArt";
 import { CHARACTER_ART } from "./characterArt";
 
 /*
@@ -14,18 +15,32 @@ export interface AlbumPhoto {
   caption: string;
 }
 
+export type AlbumShape = "full" | "square" | "poster";
+
 export interface AlbumSection {
   id: string;
   title: string;
   photos: AlbumPhoto[];
-  /** 전신(세로 2:3) 또는 얼굴·장면(정사각형) */
-  shape: "full" | "square";
+  /** 전신(세로 2:3), 얼굴·장면(정사각형), 표지(세로 9:16) */
+  shape: AlbumShape;
 }
 
 const hj = (file: string, title: string, caption: string): AlbumPhoto => ({ path: `/characters/hyejin/${file}`, title, caption });
 const jw = (file: string, title: string, caption: string): AlbumPhoto => ({ path: `/characters/jeongwoo/${file}`, title, caption });
 
 export const ALBUM: AlbumSection[] = [
+  {
+    id: "cover",
+    title: "표지",
+    shape: "poster",
+    photos: [
+      {
+        path: LOGIN_ART.mobile,
+        title: "꿍진이 키우기",
+        caption: "관람차와 카페가 보이는 숲길을 혜진이, 정우, 하얀 강아지가 신나게 걸어간다. 비둘기도 따라온다. 로그인 화면 그림.",
+      },
+    ],
+  },
   {
     id: "hyejin-basic",
     title: "혜진 · 기본 모습",

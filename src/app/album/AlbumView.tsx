@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ALBUM, ALBUM_PHOTO_COUNT, albumUsage, type AlbumPhoto } from "@/content/album";
+import { ALBUM, ALBUM_PHOTO_COUNT, albumUsage, type AlbumPhoto, type AlbumShape } from "@/content/album";
 import styles from "./album.module.css";
 
 /** 사진첩 전체를 한 줄로 펼친 목록 (보기 화면에서 앞뒤로 넘길 때 쓴다) */
 const FLAT = ALBUM.flatMap((section) => section.photos.map((photo) => ({ photo, section })));
 
-function Usage({ path }: { path: string }) {
+function Usage({ path, shape }: { path: string; shape: AlbumShape }) {
+  if (shape === "poster") return <span className={styles.chip}>🎮 로그인 화면</span>;
   const usage = albumUsage(path);
   if (usage.length === 0) return <span className={`${styles.chip} ${styles.chipOnly}`}>📸 사진첩에서만</span>;
   return (
@@ -48,7 +49,7 @@ function Viewer({ index, onClose, onMove }: { index: number; onClose: () => void
         </h2>
         <p className={styles.viewerCaption}>{photo.caption}</p>
         <div className={styles.chips}>
-          <Usage path={photo.path} />
+          <Usage path={photo.path} shape={section.shape} />
         </div>
         <div className={styles.viewerNav}>
           <button type="button" onClick={() => onMove(-1)} aria-label="이전 그림">
@@ -69,7 +70,7 @@ function Viewer({ index, onClose, onMove }: { index: number; onClose: () => void
   );
 }
 
-function Card({ photo, shape, onOpen }: { photo: AlbumPhoto; shape: "full" | "square"; onOpen: () => void }) {
+function Card({ photo, shape, onOpen }: { photo: AlbumPhoto; shape: AlbumShape; onOpen: () => void }) {
   return (
     <button type="button" className={styles.card} onClick={onOpen}>
       <span className={styles.thumb} data-shape={shape}>
