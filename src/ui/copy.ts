@@ -11,6 +11,7 @@ export const ERROR_TEXT: Record<ActionError, string> = {
   INVALID_QUANTITY: "개수를 다시 골라주세요.",
   NO_BULLDAK_EVENT: "지금은 불닭이 안 땡긴대요.",
   MAX_LEVEL: "새 추억 업데이트를 기다리는 중",
+  HYEJIN_UPSET: "혜진이가 냉동실 앞을 서성이는 중이라 레벨업할 기분이 아니래요. 먼저 기분부터 풀어주세요.",
   NOT_WEEKEND: "데이트는 주말에만! 평일엔 혜진이 출근해요.",
   DATE_ALREADY_USED: "이번 주말 데이트는 이미 다녀왔어요.",
   PLACE_LOCKED: "아직 열리지 않은 장소예요.",

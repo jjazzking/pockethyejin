@@ -82,6 +82,8 @@ export type ActionError =
   | "INVALID_QUANTITY"
   | "NO_BULLDAK_EVENT"
   | "MAX_LEVEL"
+  /** 경고 카운트다운 중이라 레벨업 불가 (혜진이 기분이 나쁨) */
+  | "HYEJIN_UPSET"
   | "NOT_WEEKEND"
   | "DATE_ALREADY_USED"
   | "PLACE_LOCKED"

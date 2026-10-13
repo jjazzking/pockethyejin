@@ -1,7 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { addDays, isWeekend, toGameDate } from "../date";
 import { createInitialState, settle } from "../day";
-import { ALWAYS, FRIDAY, MONDAY, NEVER, SATURDAY, SUNDAY, act, fixed, makeState, sequence } from "./helpers";
+import {
+  ABSENT_BULLDAK_MISS,
+  ABSENT_COMMUTE,
+  ALWAYS,
+  BULLDAK_MISS,
+  COMMUTE,
+  FRIDAY,
+  MONDAY,
+  NEVER,
+  OVERWORK,
+  SATURDAY,
+  SUNDAY,
+  act,
+  fixed,
+  makeState,
+  sequence,
+} from "./helpers";
 
 describe("게임 날짜", () => {
   it("KST 06:00에 날짜가 바뀐다", () => {
@@ -43,14 +59,14 @@ describe("새 게임", () => {
 });
 
 describe("하루 마감 (접속한 날)", () => {
-  it("평일 출근 -20", () => {
+  it("평일 출근 감소", () => {
     const { state, events } = settle(makeState(), "2026-10-13", NEVER);
-    expect(state.hyejin.happiness).toBe(80);
+    expect(state.hyejin.happiness).toBe(100 + COMMUTE);
     expect(events).toContainEqual({
       type: "dayEnded",
       date: MONDAY,
       absent: false,
-      commute: -20,
+      commute: COMMUTE,
       overwork: 0,
       bulldakIgnored: 0,
     });
@@ -64,17 +80,17 @@ describe("하루 마감 (접속한 날)", () => {
     let s = makeState();
     s = act(s, { type: "work" }).state;
     s = act(s, { type: "work" }).state;
-    expect(settle(s, "2026-10-13", NEVER).state.hyejin.happiness).toBe(80);
+    expect(settle(s, "2026-10-13", NEVER).state.hyejin.happiness).toBe(100 + COMMUTE);
     s = act(s, { type: "work" }).state;
-    expect(settle(s, "2026-10-13", NEVER).state.hyejin.happiness).toBe(70);
+    expect(settle(s, "2026-10-13", NEVER).state.hyejin.happiness).toBe(100 + COMMUTE + OVERWORK);
 
     const weekend = makeState({ jungwoo: { workCountToday: 3 } }, SATURDAY);
-    expect(settle(weekend, SUNDAY, NEVER).state.hyejin.happiness).toBe(90);
+    expect(settle(weekend, SUNDAY, NEVER).state.hyejin.happiness).toBe(100 + OVERWORK);
   });
 
   it("불닭을 무시하면 -15, 대응했으면 감소 없음", () => {
-    expect(settle(makeState({ bulldak: "active" }), "2026-10-13", NEVER).state.hyejin.happiness).toBe(65);
-    expect(settle(makeState({ bulldak: "resolved" }), "2026-10-13", NEVER).state.hyejin.happiness).toBe(80);
+    expect(settle(makeState({ bulldak: "active" }), "2026-10-13", NEVER).state.hyejin.happiness).toBe(100 + COMMUTE + BULLDAK_MISS);
+    expect(settle(makeState({ bulldak: "resolved" }), "2026-10-13", NEVER).state.hyejin.happiness).toBe(100 + COMMUTE);
   });
 
   it("행복도는 0 아래로 내려가지 않는다", () => {
@@ -112,11 +128,13 @@ describe("부재 처리", () => {
     const { state, events } = settle(makeState(), "2026-10-15", rng);
     const ends = events.filter((e) => e.type === "dayEnded");
     expect(ends).toEqual([
-      { type: "dayEnded", date: "2026-10-12", absent: false, commute: -20, overwork: 0, bulldakIgnored: 0 },
-      { type: "dayEnded", date: "2026-10-13", absent: true, commute: -10, overwork: 0, bulldakIgnored: -7 },
-      { type: "dayEnded", date: "2026-10-14", absent: true, commute: -10, overwork: 0, bulldakIgnored: 0 },
+      { type: "dayEnded", date: "2026-10-12", absent: false, commute: COMMUTE, overwork: 0, bulldakIgnored: 0 },
+      { type: "dayEnded", date: "2026-10-13", absent: true, commute: ABSENT_COMMUTE, overwork: 0, bulldakIgnored: ABSENT_BULLDAK_MISS },
+      { type: "dayEnded", date: "2026-10-14", absent: true, commute: ABSENT_COMMUTE, overwork: 0, bulldakIgnored: 0 },
     ]);
-    expect(state.hyejin.happiness).toBe(100 - 20 - 17 - 10);
+    // 절반은 소수점 버림: -15 → -7
+    expect(ABSENT_BULLDAK_MISS).toBe(-7);
+    expect(state.hyejin.happiness).toBe(100 + COMMUTE + ABSENT_COMMUTE * 2 + ABSENT_BULLDAK_MISS);
     expect(events).toContainEqual({ type: "bulldakCraving", date: "2026-10-13" });
     expect(state.lastSettledDate).toBe("2026-10-15");
   });
@@ -124,7 +142,7 @@ describe("부재 처리", () => {
   it("마지막 접속일에 남긴 불닭·과로는 그대로 적용된다", () => {
     const s = makeState({ bulldak: "active", jungwoo: { workCountToday: 3 } });
     const { state } = settle(s, "2026-10-14", NEVER);
-    expect(state.hyejin.happiness).toBe(100 - 20 - 10 - 15 - 10);
+    expect(state.hyejin.happiness).toBe(100 + COMMUTE + OVERWORK + BULLDAK_MISS + ABSENT_COMMUTE);
   });
 
   it("주말을 건너뛰어도 월요일에 데이트 사용 여부가 초기화된다", () => {

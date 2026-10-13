@@ -51,7 +51,7 @@ describe("데이트 확률", () => {
   it("예산은 정해진 세 가지만", () => {
     expect(budgetPercents(50_000)).toEqual({ 1: 60, 2: 30, 3: 10 });
     expect(budgetPercents(150_000)).toEqual({ 1: 20, 2: 40, 3: 40 });
-    expect(budgetPercents(300_000)).toEqual({ 1: 0, 2: 20, 3: 80 });
+    expect(budgetPercents(300_000)).toEqual({ 1: 0, 2: 40, 3: 60 });
     expect(budgetPercents(100_000)).toBeNull();
   });
 

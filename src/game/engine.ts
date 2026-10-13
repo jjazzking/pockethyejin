@@ -80,6 +80,8 @@ function validate(s: GameState, action: Action, ctx: ActionContext): ActionError
       return null;
     case "levelUp":
       if (s.hyejin.level >= ctx.places.length) return "MAX_LEVEL";
+      // 카운트다운 중(행복도 20 이하)에는 레벨업할 수 없다. 먼저 기분을 풀어줘야 한다.
+      if (s.hyejin.countdownTurnsLeft !== null) return "HYEJIN_UPSET";
       if (s.hyejin.hanjeongseon < levelUpCost(s.hyejin.level)) return "NOT_ENOUGH_HANJEONGSEON";
       return null;
     case "date": {

@@ -60,6 +60,7 @@ function WarningBanner({ state }: { state: GameState }) {
         <p className={styles.warningSub}>
           {jungwooBlockUsed ? "⚠️ 정우 막기는 이미 썼어요. 이번엔 진짜 한정선 절반을 먹어요!" : "🛡️ 한 번은 정우가 막아줄 거예요."}
         </p>
+        <p className={styles.warningSub}>⛔ 카운트다운 중에는 레벨업도 못 해요.</p>
       </div>
     );
   }
@@ -201,6 +202,7 @@ function HyejinActions({ view, state, maxLevel }: { view: GameView; state: GameS
   const count = Math.max(1, Math.min(countRaw, h.hanjeongseon));
   const feed: Action = { type: "feed", count };
   const cost = levelUpCost(h.level);
+  const levelUpError = view.check({ type: "levelUp" });
 
   return (
     <Card title="혜진이 챙기기">
@@ -224,12 +226,13 @@ function HyejinActions({ view, state, maxLevel }: { view: GameView; state: GameS
         ) : (
           <>
             <Button
-              disabled={view.busy || view.check({ type: "levelUp" }) !== null}
+              disabled={view.busy || levelUpError !== null}
               onClick={() => view.run({ type: "levelUp" })}
               sub={`한정선 ${cost}개 (보유 ${h.hanjeongseon}개)`}
             >
               ⭐ 레벨업 → 새 장소 열기
             </Button>
+            {levelUpError === "HYEJIN_UPSET" && <Hint>🧊 {ERROR_TEXT.HYEJIN_UPSET}</Hint>}
           </>
         )}
       </div>

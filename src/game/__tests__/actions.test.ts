@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { settle } from "../day";
 import { applyAction } from "../engine";
+import { budgetPercents, maxUsefulOffering } from "../rules";
 import type { Action } from "../types";
 import {
+  TOGETHER_HYEJIN,
   ALWAYS,
   NEVER,
   SATURDAY,
@@ -146,11 +148,11 @@ describe("놀기", () => {
     expect(act(makeState({ jungwoo: { happiness: 90 } }), { type: "playAlone" }).state.jungwoo.happiness).toBe(100);
   });
 
-  it("같이 놀기: 정우 +10, 혜진 +15", () => {
+  it("같이 놀기: 정우 +10, 혜진 +같이 놀기 수치", () => {
     const s = makeState({ jungwoo: { happiness: 50 }, hyejin: { happiness: 50 } });
     const { state, events } = act(s, { type: "playTogether" });
     expect(state.jungwoo.happiness).toBe(60);
-    expect(state.hyejin.happiness).toBe(65);
+    expect(state.hyejin.happiness).toBe(50 + TOGETHER_HYEJIN);
     expect(state.jungwoo.actionsLeft).toBe(4);
     expect(events).toContainEqual({ type: "playedTogether" });
   });
@@ -297,9 +299,10 @@ describe("데이트", () => {
 
   it("한정선은 5개 단위, 95%를 넘기는 만큼은 받지 않는다", () => {
     const s = weekend({ hyejin: { hanjeongseon: 100 } });
+    const max = maxUsefulOffering(budgetPercents(300_000)!);
     expectError(s, date("p1", 300_000, 3), "INVALID_OFFERING");
-    expectError(s, date("p1", 300_000, 15), "INVALID_OFFERING");
-    expect(applyAction(s, date("p1", 300_000, 10), ctx()).ok).toBe(true);
+    expectError(s, date("p1", 300_000, max + 5), "INVALID_OFFERING");
+    expect(applyAction(s, date("p1", 300_000, max), ctx()).ok).toBe(true);
   });
 
   it("보유량보다 많이 바칠 수 없다", () => {
