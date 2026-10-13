@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { isWeekend } from "@/game/date";
 import type { GameView } from "@/ui/useGame";
@@ -47,7 +48,12 @@ export default function GameShell({ view, banner, menu }: { view: GameView; bann
     <div className={styles.shell}>
       <header className={styles.header}>
         <h1 className={styles.title}>꿍진이 키우기</h1>
-        <div className={styles.menu}>{menu}</div>
+        <div className={styles.menu}>
+          <Link href="/album" className={styles.albumLink}>
+            📸 사진첩
+          </Link>
+          {menu}
+        </div>
       </header>
       {banner}
 

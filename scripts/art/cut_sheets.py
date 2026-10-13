@@ -26,11 +26,11 @@ def runs(v, thr, mingap=15):
         else: m.append([a,b])
     return m
 
-def clean_lines(m):
-    """Remove long, thin (<=5px) horizontal guide lines only."""
+def clean_lines(m, min_frac=4):
+    """Remove long (>= W/min_frac), thin (<=5px) horizontal guide lines only."""
     H,W = m.shape
     u = m.astype(np.uint8)
-    hl = cv2.morphologyEx(u, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT,(W//4,1))) > 0
+    hl = cv2.morphologyEx(u, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT,(W//min_frac,1))) > 0
     up = np.zeros_like(m); up[6:] = m[:-6]
     dn = np.zeros_like(m); dn[:-6] = m[6:]
     thin = hl & ~up & ~dn
@@ -105,6 +105,8 @@ for name,(mode,ids,fr) in SHEETS.items():
         if "전신" in name:
             a = a.copy()
             a[raw & ~m] = 255
+            faint = ink_mask(a, 250)  # 아주 연한 회색 안내선까지
+            a[faint & ~clean_lines(faint, 12)] = 255
             a[:int(.08*H), :int(.2*W)] = 255
             a[:, :int(.035*W)] = 255
             m[:int(.08*H), :int(.2*W)] = False

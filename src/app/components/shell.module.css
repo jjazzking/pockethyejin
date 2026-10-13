@@ -27,7 +27,8 @@
   justify-content: flex-end;
 }
 
-.menu button {
+.menu button,
+.albumLink {
   min-height: 36px;
   padding: 4px 10px;
   border-radius: 999px;
@@ -35,6 +36,13 @@
   background: var(--surface);
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+.albumLink {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text);
+  text-decoration: none;
 }
 
 .columns {

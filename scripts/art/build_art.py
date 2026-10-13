@@ -87,6 +87,15 @@ ART = [
     art("jw_face_mock_angry", JW_FACE, ["sulk"],            "팔짱 끼고 흥"),
     art("jw_hj_cheek", dict(HJ, kind="face", scale="duo", framed=False, batch="jeongwoo"),
         ["play_together"], "정우가 혜진 볼에 볼 맞대기", file="face-with-jeongwoo.webp"),
+    # --- 사진첩에서만 보는 그림 (batch=None: 게임 데이터·시드에 넣지 않는다. 설명은 src/content/album.ts)
+    art("hj_turn_side",       dict(HJ_FULL, batch=None), [], "옆모습", file="album-side.webp"),
+    art("hj_turn_back",       dict(HJ_FULL, batch=None), [], "뒷모습", file="album-back.webp"),
+    art("jw_turn_front",      dict(JW_FULL, batch=None, scale="jw-turn"), [], "정면", file="album-front.webp"),
+    art("jw_turn_side",       dict(JW_FULL, batch=None, scale="jw-turn"), [], "옆모습", file="album-side.webp"),
+    art("jw_turn_back",       dict(JW_FULL, batch=None, scale="jw-turn"), [], "뒷모습", file="album-back.webp"),
+    art("jw_face_default",    dict(JW_FACE, batch=None), [], "기본 얼굴", file="album-face-default.webp"),
+    art("jw_face_flustered",  dict(JW_FACE, batch=None), [], "당황", file="album-face-flustered.webp"),
+    art("jw_face_adoring",    dict(JW_FACE, batch=None), [], "하트 눈", file="album-face-adoring.webp"),
 ]
 
 # 막힌 빈틈(배경) 위치. 잘라낸 그림 안의 비율 좌표 (x, y)
@@ -101,6 +110,7 @@ GAPS = {
     "jw_dj":         [(0.649, 0.469), (0.352, 0.716)],
     "jw_gaming":     [(0.160, 0.425), (0.519, 0.662), (0.356, 0.910), (0.391, 0.952), (0.189, 0.956)],
     "jw_poker":      [(0.599, 0.613)],
+    "jw_face_flustered": [(0.242, 0.650), (0.751, 0.651)],
 }
 
 FULL_W, FULL_H, FACE = 1024, 1536, 1024
@@ -224,6 +234,8 @@ def main():
         f.write(" * supabase/migrations 의 " + ", ".join(b[0] for b in BATCHES.values()) + " 시드와 같은 내용이다.\n */\n")
         f.write("export const CHARACTER_ART: CharacterImage[] = [\n")
         for r in rows:
+            if r["batch"] is None:
+                continue
             tags = ", ".join(f'"{x}"' for x in r["tags"])
             f.write(f'  {{ id: "{r["id"]}", character: "{r["character"]}", kind: "{r["kind"]}", tags: [{tags}], path: "{r["path"]}", description: "{r["desc"]}" }},\n')
         f.write("];\n")
