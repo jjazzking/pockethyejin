@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { pickFace, pickFullBody } from "@/content/images";
-import type { CharacterImage, Place } from "@/content/types";
+import { pickFace, pickFullBody, pickJungwooFace, pickJungwooPose } from "@/content/images";
+import type { CharacterImage, JungwooPose, Place } from "@/content/types";
 import { applyAction } from "@/game/engine";
 import type { AwaySummary } from "@/game/summary";
 import type { Action, ActionError, GameEvent, GameState } from "@/game/types";
@@ -11,6 +11,7 @@ import { openGame, performAction, type SessionDeps } from "@/persistence/session
 import type { StoredGame } from "@/persistence/store";
 import { CONFLICT_TEXT, ERROR_TEXT, SYNCED_TEXT, type PlayFlavor } from "./copy";
 import { describeEvents, type PopupSpec } from "./describe";
+import { jungwooPoseFor } from "./jungwooPose";
 
 export interface Content {
   places: Place[];
@@ -21,7 +22,8 @@ export interface Content {
   placeUrls: Map<string, string>;
 }
 
-export type Popup = PopupSpec & { id: number; face: CharacterImage | null };
+/** face: 팝업 얼굴 (보통 혜진, 정우 팝업이면 정우). jungwoo: 정우 막기 연출에 세울 정우 전신 */
+export type Popup = PopupSpec & { id: number; face: CharacterImage | null; jungwoo: CharacterImage | null };
 export interface Toast {
   id: number;
   text: string;
@@ -40,10 +42,15 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
   const [popups, setPopups] = useState<Popup[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [fullBodyId, setFullBodyId] = useState<string | null>(null);
+  const [jungwooId, setJungwooId] = useState<string | null>(null);
   const nextId = useRef(1);
 
   const rotate = useCallback((images: CharacterImage[], state: GameState) => {
     setFullBodyId((prev) => pickFullBody(images, state.hyejin.happiness, prev, Math.random)?.id ?? null);
+  }, []);
+
+  const poseJungwoo = useCallback((images: CharacterImage[], state: GameState, pose: JungwooPose) => {
+    setJungwooId((prev) => pickJungwooPose(images, pose, state.jungwoo.sulking, prev, Math.random)?.id ?? null);
   }, []);
 
   const show = useCallback(
@@ -53,7 +60,12 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
         const resolved = described.popups.map((p) => ({
           ...p,
           id: nextId.current++,
-          face: p.faceTag ? pickFace(loaded.images, p.faceTag, Math.random) : null,
+          face: p.faceTag
+            ? pickFace(loaded.images, p.faceTag, Math.random)
+            : p.kind === "card" && p.jungwooFace
+              ? pickJungwooFace(loaded.images, p.jungwooFace, Math.random)
+              : null,
+          jungwoo: p.kind === "block" ? pickJungwooPose(loaded.images, "run", false, null, Math.random) : null,
         }));
         setPopups((queue) => [...queue, ...resolved]);
       }
@@ -74,6 +86,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
           setContent(loaded);
           setGame(result.game);
           rotate(loaded.images, result.game.state);
+          poseJungwoo(loaded.images, result.game.state, "idle");
           show(loaded, result.events, result.summary);
           if (result.syncedFromOtherDevice) setNotice(SYNCED_TEXT);
         })
@@ -84,7 +97,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
               : "불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
           ),
         ),
-    [deps, loadContent, rotate, show],
+    [deps, loadContent, poseJungwoo, rotate, show],
   );
 
   useEffect(() => {
@@ -105,6 +118,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
         const outcome = await performAction(deps, game, action, content.places);
         setGame(outcome.game);
         rotate(content.images, outcome.game.state);
+        if (outcome.kind === "done") poseJungwoo(content.images, outcome.game.state, jungwooPoseFor(action, opts.playFlavor));
         show(content, outcome.events, outcome.summary, opts.playFlavor);
         if (outcome.kind === "conflict") setNotice(CONFLICT_TEXT);
         if (outcome.kind === "invalid") setNotice(ERROR_TEXT[outcome.error]);
@@ -114,7 +128,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
         setBusy(false);
       }
     },
-    [busy, content, deps, game, rotate, show],
+    [busy, content, deps, game, poseJungwoo, rotate, show],
   );
 
   /** 지금 이 행동을 할 수 있는지 엔진에 물어본다 (상태는 바꾸지 않음). 할 수 있으면 null. */
@@ -128,6 +142,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
   );
 
   const fullBody = content?.images.find((img) => img.id === fullBodyId) ?? null;
+  const jungwoo = content?.images.find((img) => img.id === jungwooId) ?? null;
 
   return {
     content,
@@ -140,6 +155,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
     dismissPopup: () => setPopups((queue) => queue.slice(1)),
     toasts,
     fullBody,
+    jungwoo,
     tapHyejin: () => content && game && rotate(content.images, game.state),
     run,
     check,

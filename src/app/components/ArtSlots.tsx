@@ -1,5 +1,5 @@
 /*
- * 아직 아트가 없는 자리들. 나중에 그림이 생기면 이 컴포넌트 안만 바꾸면 된다.
+ * 장소 사진·정우 그림 자리. 그림이 없으면 도형 + 이모지로 대신한다.
  * (혜진 그림은 CharacterFrame이 character_images 선택 함수 결과로 그린다)
  */
 import styles from "./art.module.css";
@@ -24,14 +24,19 @@ export function PlaceArt({ url, locked, label }: { url?: string; locked?: boolea
   );
 }
 
-export type JungwooMood = "work" | "waiting" | "play" | "sulk" | "idle";
-const JUNGWOO_EMOJI: Record<JungwooMood, string> = { work: "🧑‍💼", waiting: "🧍‍♂️", play: "🎧", sulk: "😤", idle: "🙂" };
-
-/** 정우 그림 자리 (정우 그림은 추후 제작) */
-export function JungwooArt({ mood = "idle" }: { mood?: JungwooMood }) {
+/** 정우 그림 자리. 그림이 없으면 도형 + 이모지 */
+export function JungwooArt({ url, label, sulking }: { url?: string; label?: string; sulking: boolean }) {
+  if (url) {
+    return (
+      <span className={styles.jungwooPose}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- Storage 서명 URL일 수 있어 next/image 최적화를 쓰지 않는다 */}
+        <img key={url} className={styles.jungwooImage} src={url} alt={label ?? "정우"} draggable={false} />
+      </span>
+    );
+  }
   return (
     <span className={styles.jungwoo} role="img" aria-label="정우">
-      {JUNGWOO_EMOJI[mood]}
+      {sulking ? "😤" : "🙂"}
     </span>
   );
 }

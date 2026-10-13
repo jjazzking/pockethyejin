@@ -87,12 +87,13 @@ function HyejinStatus({ state, maxLevel }: { state: GameState; maxLevel: boolean
   );
 }
 
-function JungwooStatus({ state }: { state: GameState }) {
+function JungwooStatus({ view, state }: { view: GameView; state: GameState }) {
   const j = state.jungwoo;
+  const art = view.jungwoo;
   return (
     <Card>
       <div className={styles.jungwooHead}>
-        <JungwooArt mood={j.sulking ? "sulk" : "idle"} />
+        <JungwooArt url={art ? view.content?.imageUrls.get(art.path) : undefined} label={art?.description ?? undefined} sulking={j.sulking} />
         <div className={styles.jungwooInfo}>
           <strong>정우</strong>
           <span className={c.hint}>
@@ -258,7 +259,7 @@ export default function MainPanel({ view }: { view: GameView }) {
       </div>
       <WarningBanner state={state} />
       <BulldakCallout view={view} state={state} />
-      <JungwooStatus state={state} />
+      <JungwooStatus view={view} state={state} />
       <JungwooActions view={view} state={state} />
       <HyejinActions view={view} state={state} maxLevel={maxLevel} />
     </div>

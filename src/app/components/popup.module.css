@@ -152,6 +152,14 @@
   animation: shake 0.5s ease-in-out 3;
 }
 
+.blockJungwooImage {
+  width: 7.5rem;
+  aspect-ratio: 2 / 3;
+  object-fit: contain;
+  object-position: center bottom;
+  user-select: none;
+}
+
 .blockFreezer {
   filter: drop-shadow(0 0 8px rgba(120, 200, 255, 0.8));
 }

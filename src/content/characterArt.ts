@@ -1,11 +1,11 @@
 import type { CharacterImage } from "./types";
 
 /*
- * 앱에 들어 있는 혜진 그림 (public/characters/hyejin).
+ * 앱에 들어 있는 캐릭터 그림 (public/characters).
  * scripts/art/build_art.py 가 만든 파일 — 직접 고치지 말고 스크립트를 고칠 것.
- * supabase/migrations/20261013000300_seed_hyejin_art.sql 의 시드와 같은 내용이다.
+ * supabase/migrations 의 20261013000300_seed_hyejin_art.sql, 20261013000400_seed_jeongwoo_art.sql 시드와 같은 내용이다.
  */
-export const HYEJIN_ART: CharacterImage[] = [
+export const CHARACTER_ART: CharacterImage[] = [
   { id: "00000000-0000-4000-8000-000000000101", character: "hyejin", kind: "full", tags: ["normal"], path: "/characters/hyejin/full-turn-front.webp", description: "정면 기본 자세" },
   { id: "00000000-0000-4000-8000-000000000102", character: "hyejin", kind: "full", tags: ["normal"], path: "/characters/hyejin/full-cards.webp", description: "카드 들고 음흉한 웃음" },
   { id: "00000000-0000-4000-8000-000000000103", character: "hyejin", kind: "full", tags: ["normal"], path: "/characters/hyejin/full-dance.webp", description: "신나는 춤" },
@@ -39,4 +39,16 @@ export const HYEJIN_ART: CharacterImage[] = [
   { id: "00000000-0000-4000-8000-000000000131", character: "hyejin", kind: "face", tags: ["new_place"], path: "/characters/hyejin/face-skating.webp", description: "스케이트" },
   { id: "00000000-0000-4000-8000-000000000132", character: "hyejin", kind: "face", tags: ["away_summary"], path: "/characters/hyejin/face-sleepy.webp", description: "졸려서 눈 비비기" },
   { id: "00000000-0000-4000-8000-000000000133", character: "hyejin", kind: "face", tags: ["away_summary"], path: "/characters/hyejin/face-working.webp", description: "노트북으로 공부 중" },
+  { id: "00000000-0000-4000-8000-000000000134", character: "jeongwoo", kind: "full", tags: ["idle"], path: "/characters/jeongwoo/full-music.webp", description: "헤드폰 끼고 음악 감상" },
+  { id: "00000000-0000-4000-8000-000000000135", character: "jeongwoo", kind: "full", tags: ["work"], path: "/characters/jeongwoo/full-laptop.webp", description: "노트북으로 일하기" },
+  { id: "00000000-0000-4000-8000-000000000136", character: "jeongwoo", kind: "full", tags: ["waiting"], path: "/characters/jeongwoo/full-shopping.webp", description: "한정선 사서 돌아오기" },
+  { id: "00000000-0000-4000-8000-000000000137", character: "jeongwoo", kind: "full", tags: ["play_dj"], path: "/characters/jeongwoo/full-dj.webp", description: "디제잉" },
+  { id: "00000000-0000-4000-8000-000000000138", character: "jeongwoo", kind: "full", tags: ["play_game"], path: "/characters/jeongwoo/full-gaming.webp", description: "컴퓨터 게임" },
+  { id: "00000000-0000-4000-8000-000000000139", character: "jeongwoo", kind: "full", tags: ["play_game"], path: "/characters/jeongwoo/full-poker.webp", description: "포커 지고 넋 나감" },
+  { id: "00000000-0000-4000-8000-000000000140", character: "jeongwoo", kind: "full", tags: ["run"], path: "/characters/jeongwoo/full-running.webp", description: "다급하게 달려가기" },
+  { id: "00000000-0000-4000-8000-000000000141", character: "jeongwoo", kind: "full", tags: ["sulk"], path: "/characters/jeongwoo/full-arms-crossed.webp", description: "팔짱 끼고 삐짐" },
+  { id: "00000000-0000-4000-8000-000000000142", character: "jeongwoo", kind: "face", tags: ["happy"], path: "/characters/jeongwoo/face-happy.webp", description: "활짝 웃음" },
+  { id: "00000000-0000-4000-8000-000000000143", character: "jeongwoo", kind: "face", tags: ["sulk"], path: "/characters/jeongwoo/face-sulking.webp", description: "볼 부풀리고 삐짐" },
+  { id: "00000000-0000-4000-8000-000000000144", character: "jeongwoo", kind: "face", tags: ["sulk"], path: "/characters/jeongwoo/face-mock-angry.webp", description: "팔짱 끼고 흥" },
+  { id: "00000000-0000-4000-8000-000000000145", character: "hyejin", kind: "face", tags: ["play_together"], path: "/characters/hyejin/face-with-jeongwoo.webp", description: "정우가 혜진 볼에 볼 맞대기" },
 ];

@@ -1,5 +1,5 @@
 -- 혜진 그림 시드 (scripts/art/build_art.py 로 만든 파일 — 직접 고치지 말고 스크립트를 고칠 것)
--- 그림 파일은 앱에 들어 있다 (public/characters/hyejin). 임시 혜진 그림 행은 지운다.
+-- 그림 파일은 앱에 들어 있다 (public/characters). 임시 혜진 그림 행은 지운다.
 -- 여러 번 실행해도 중복으로 들어가지 않는다.
 
 delete from public.character_images where path like '/placeholders/%';
