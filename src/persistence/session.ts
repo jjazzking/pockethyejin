@@ -80,8 +80,11 @@ export async function performAction(
   game: StoredGame,
   action: Action,
   places: readonly PlaceRef[],
+  /** 임시: 하루 밤 횟수 제한을 안 센다 */
+  unlimitedNights = false,
 ): Promise<ActionOutcome> {
-  const result = applyAction(game.state, action, { rng: deps.rng, places, realDay: toRealDay(deps.now()) });
+  const realDay = unlimitedNights ? undefined : toRealDay(deps.now());
+  const result = applyAction(game.state, action, { rng: deps.rng, places, realDay });
   if (!result.ok) return { kind: "invalid", error: result.error, game };
 
   const saved = await deps.store.save(game.version, result.state);

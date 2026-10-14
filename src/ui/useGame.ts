@@ -16,6 +16,8 @@ import { CONFLICT_TEXT, ERROR_TEXT, SYNCED_TEXT, type PlayFlavor } from "./copy"
 import { describeEvents, type PopupSpec } from "./describe";
 import { jungwooPoseFor, resolveJungwooPose } from "./jungwooPose";
 
+const UNLIMITED_NIGHTS_KEY = "pockethyejin:unlimited-nights";
+
 export interface Content {
   places: Place[];
   images: CharacterImage[];
@@ -47,6 +49,24 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
   const [fullBodyId, setFullBodyId] = useState<string | null>(null);
   const [jungwooId, setJungwooId] = useState<string | null>(null);
   const nextId = useRef(1);
+  // shortcut: 밤 제한 임시 해제는 이 브라우저에만 저장, 테스트 끝나면 버튼째 지운다
+  // 게임 화면은 클라이언트에서 불러온 뒤에야 그려지므로 첫 렌더에 바로 읽어도 된다 (서버에선 catch → false)
+  const [unlimitedNights, setUnlimitedNights] = useState(() => {
+    try {
+      return localStorage.getItem(UNLIMITED_NIGHTS_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const toggleUnlimitedNights = useCallback(() => {
+    setUnlimitedNights((on) => {
+      try {
+        if (on) localStorage.removeItem(UNLIMITED_NIGHTS_KEY);
+        else localStorage.setItem(UNLIMITED_NIGHTS_KEY, "1");
+      } catch {}
+      return !on;
+    });
+  }, []);
 
   const rotate = useCallback((images: CharacterImage[], state: GameState) => {
     setFullBodyId((prev) => pickFullBody(images, state.hyejin.happiness, prev, Math.random)?.id ?? null);
@@ -119,7 +139,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
       setBusy(true);
       setNotice(null);
       try {
-        const outcome = await performAction(deps, game, action, content.places);
+        const outcome = await performAction(deps, game, action, content.places, unlimitedNights);
         setGame(outcome.game);
         if (outcome.kind === "invalid") {
           setNotice(ERROR_TEXT[outcome.error]);
@@ -139,7 +159,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
         setBusy(false);
       }
     },
-    [busy, content, deps, game, poseJungwoo, rotate, show],
+    [busy, content, deps, game, poseJungwoo, rotate, show, unlimitedNights],
   );
 
   /** 지금 이 행동을 할 수 있는지 엔진에 물어본다 (상태는 바꾸지 않음). 할 수 있으면 null. */
@@ -154,7 +174,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
   );
 
   /** 지금 현실 하루에 남은 밤 (잠자기 횟수) */
-  const nightsLeft = game ? BALANCE.TIME.NIGHTS_PER_REAL_DAY - nightsUsed(game.state, toRealDay(deps.now())) : 0;
+  const nightsLeft = unlimitedNights ? Infinity : game ? BALANCE.TIME.NIGHTS_PER_REAL_DAY - nightsUsed(game.state, toRealDay(deps.now())) : 0;
 
   const fullBody = content?.images.find((img) => img.id === fullBodyId) ?? null;
   const jungwoo = content?.images.find((img) => img.id === jungwooId) ?? null;
@@ -172,6 +192,8 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
     fullBody,
     jungwoo,
     nightsLeft,
+    unlimitedNights,
+    toggleUnlimitedNights,
     tapHyejin: () => content && game && rotate(content.images, game.state),
     run,
     check,
