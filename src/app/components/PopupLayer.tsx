@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BALANCE } from "@/game";
 import { daysTogether } from "@/game/date";
 import type { GameView, Popup } from "@/ui/useGame";
@@ -96,6 +96,75 @@ function BlockOverlay({ popup, urls, onClose }: { popup: Popup; urls: ReadonlyMa
   );
 }
 
+const ASK_MS = 1600;
+const LINE_MS = 2200;
+
+/** 웨이팅 연출: 갈까 말까 뜸 들이기 → (가면) 줄 서기 → 결과 */
+function WaitingOverlay({ popup, urls, onClose }: { popup: Extract<Popup, { kind: "waiting" }>; urls: ReadonlyMap<string, string>; onClose: () => void }) {
+  const rejected = popup.quantity === null;
+  const [stage, setStage] = useState<"ask" | "line" | "done">("ask");
+
+  useEffect(() => {
+    const next = stage === "ask" ? (rejected ? "done" : "line") : stage === "line" ? "done" : null;
+    if (!next) return;
+    const t = setTimeout(() => setStage(next), stage === "ask" ? ASK_MS : LINE_MS);
+    return () => clearTimeout(t);
+  }, [stage, rejected]);
+
+  return (
+    <div className={styles.backdrop}>
+      <div className={styles.sheet} role="dialog" aria-modal aria-labelledby="waiting-title" aria-live="polite">
+        {stage === "ask" && (
+          <>
+            <div className={styles.waitingThink} aria-hidden>
+              <span>🙆‍♂️</span>
+              <span>🙅‍♂️</span>
+            </div>
+            <h2 id="waiting-title" className={styles.title}>
+              정우한테 웨이팅 부탁하는 중<span className={styles.dots} />
+            </h2>
+            <p className={styles.dim}>갈까… 말까…</p>
+          </>
+        )}
+        {stage !== "ask" && !rejected && (
+          // eslint-disable-next-line @next/next/no-img-element -- 연출용 고정 그림
+          <img className={styles.waitingScene} src="/characters/props/waiting-line.webp" alt="땡볕에 줄 선 정우" draggable={false} />
+        )}
+        {stage === "line" && (
+          <>
+            <h2 id="waiting-title" className={styles.title}>
+              정우가 땡볕에 줄 서는 중<span className={styles.dots} />
+            </h2>
+            <div className={styles.waitingBar} style={{ animationDuration: `${LINE_MS}ms` }} aria-hidden />
+          </>
+        )}
+        {stage === "done" && rejected && (
+          <>
+            <Face popup={popup} urls={urls} />
+            <div className={styles.emoji} aria-hidden>
+              🚪
+            </div>
+            <h2 id="waiting-title" className={styles.title}>
+              정우가 삐져서 방에 들어갔다…
+            </h2>
+            <p className={styles.lead}>오늘은 더 못 시켜요. 자고 나면 풀린대요.</p>
+          </>
+        )}
+        {stage === "done" && !rejected && (
+          <h2 id="waiting-title" className={styles.title}>
+            한정선 {popup.quantity}개 사왔다! 🍡
+          </h2>
+        )}
+        {stage === "done" && (
+          <button type="button" className={styles.ok} onClick={onClose} autoFocus>
+            확인
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** 이벤트 팝업 (한 번에 하나씩 차례로) */
 export function PopupLayer({ view }: { view: GameView }) {
   const popup = view.popup;
@@ -108,6 +177,7 @@ export function PopupLayer({ view }: { view: GameView }) {
 
   if (!popup) return null;
   if (popup.kind === "block") return <BlockOverlay popup={popup} urls={urls} onClose={view.dismissPopup} />;
+  if (popup.kind === "waiting") return <WaitingOverlay key={popup.id} popup={popup} urls={urls} onClose={view.dismissPopup} />;
 
   return (
     <div className={styles.backdrop} onClick={view.dismissPopup}>
