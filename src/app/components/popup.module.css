@@ -146,6 +146,14 @@
   animation: fill linear forwards;
 }
 
+.sulkLine {
+  padding: 8px 14px;
+  border-radius: 16px;
+  background: var(--surface-2);
+  font-weight: 700;
+  animation: shake 300ms ease-in-out 2;
+}
+
 /* 정우 막기 전용 연출 */
 .blockBackdrop {
   position: fixed;

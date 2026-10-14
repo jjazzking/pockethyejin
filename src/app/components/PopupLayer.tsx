@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BALANCE } from "@/game";
 import { daysTogether } from "@/game/date";
+import { SULK_LINES } from "@/ui/copy";
 import type { GameView, Popup } from "@/ui/useGame";
 import CharacterFrame from "./CharacterFrame";
 import { Button, StarRow } from "./controls";
@@ -103,6 +104,7 @@ const LINE_MS = 2200;
 function WaitingOverlay({ popup, urls, onClose }: { popup: Extract<Popup, { kind: "waiting" }>; urls: ReadonlyMap<string, string>; onClose: () => void }) {
   const rejected = popup.quantity === null;
   const [stage, setStage] = useState<"ask" | "line" | "done">("ask");
+  const [sulkLine] = useState(() => SULK_LINES[Math.floor(Math.random() * SULK_LINES.length)]);
 
   useEffect(() => {
     const next = stage === "ask" ? (rejected ? "done" : "line") : stage === "line" ? "done" : null;
@@ -147,7 +149,8 @@ function WaitingOverlay({ popup, urls, onClose }: { popup: Extract<Popup, { kind
             <h2 id="waiting-title" className={styles.title}>
               정우가 삐져서 방에 들어갔다…
             </h2>
-            <p className={styles.lead}>오늘은 더 못 시켜요. 자고 나면 풀린대요.</p>
+            <p className={styles.sulkLine}>&ldquo;{sulkLine}&rdquo;</p>
+            <p className={styles.dim}>오늘은 더 못 시켜요. 자고 나면 풀린대요.</p>
           </>
         )}
         {stage === "done" && !rejected && (
