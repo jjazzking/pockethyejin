@@ -10,6 +10,8 @@ export const ERROR_TEXT: Record<ActionError, string> = {
   NOT_ENOUGH_HANJEONGSEON: "한정선이 모자라요. 정우를 웨이팅 보내자 🍡",
   INVALID_QUANTITY: "개수를 다시 골라주세요.",
   NO_BULLDAK_EVENT: "지금은 불닭이 안 땡긴대요.",
+  HYEJIN_SICK: "혜진이가 감기라 오늘은 같이 못 놀아요. 죽을 사다 주세요 🥣",
+  NOT_SICK: "혜진이 지금 멀쩡해요.",
   MAX_LEVEL: "새 추억 업데이트를 기다리는 중",
   HYEJIN_UPSET: "혜진이가 냉동실 앞을 서성이는 중이라 레벨업할 기분이 아니래요. 먼저 기분부터 풀어주세요.",
   NOT_WEEKEND: "데이트는 주말에만! 평일엔 혜진이 출근해요.",
@@ -83,6 +85,85 @@ export const SOCIAL_TEXT: Record<
     body: "밤 11시, 혜진이가 갑자기 치킨이 먹고 싶대요.",
     choices: { order: { label: "치킨 시킨다", done: "야식은 진리. 둘 다 배부르고 행복 🍗" } },
   },
+  rain: {
+    emoji: "🌧️",
+    title: "갑자기 소나기!",
+    body: "퇴근길에 비가 쏟아지는데 혜진이가 우산이 없대요.",
+    choices: {
+      pickup: { label: "우산 들고 마중 간다", done: "우산 하나에 둘이 쏙. 정우 어깨는 다 젖었지만 혜진이는 감동 ☔" },
+      taxi: { label: "택시비 보내준다", done: "택시 타고 뽀송하게 귀가. 혜진이 고마워해요 🚕" },
+    },
+  },
+  karaoke: {
+    emoji: "🎤",
+    title: "코인노래방 번개",
+    body: "혜진이가 갑자기 노래가 부르고 싶대요.",
+    choices: {
+      together: { label: "같이 간다", done: "듀엣까지 완벽. 목 다 쉬었지만 신났다 🎤" },
+      solo: { label: "혼자 다녀오라 한다", done: "혜진이 혼자 콘서트 한 판. 그래도 기분 좋대요 🎶" },
+    },
+  },
+  dessert: {
+    emoji: "🍰",
+    title: "편의점 신상 디저트",
+    body: "혜진이가 SNS에서 편의점 신상 디저트를 봤대요. 먹고 싶다고 눈빛 발사 중.",
+    choices: {
+      buy: { label: "사다 준다", done: "신상 디저트 득템! 혜진이 한 입 먹고 눈이 반짝 ✨" },
+      hanjeongseon: { label: "한정선으로 달랜다", done: "\"신상보다 한정선이지!\" 혜진이 금방 넘어왔다 🍡" },
+    },
+  },
+  newgame: {
+    emoji: "🕹️",
+    title: "정우 게임 신작 출시",
+    body: "기다리던 게임이 나왔어요. 정우가 오늘 밤새 하고 싶대요…",
+    choices: {
+      allow: { label: "오늘만 허락한다", done: "정우 신났다! 혜진이는 살짝 서운한 눈치 🕹️" },
+      date: { label: "게임 대신 혜진이랑", done: "게임은 내일로. 혜진이 옆에 딱 붙어 있었다 💕" },
+    },
+  },
+  homebody: {
+    emoji: "🛋️",
+    title: "주말 집콕",
+    body: "밖에 나가기 귀찮은 주말. 둘 다 소파와 한 몸이 되고 싶대요.",
+    choices: { netflix: { label: "넷플릭스 정주행", done: "담요 덮고 정주행. 이게 행복이지 🍿" } },
+  },
+  parcel: {
+    emoji: "📦",
+    title: "택배 왔어요",
+    body: "혜진이가 몰래 시킨 택배가 도착했어요. 결제는 정우 카드로 되어 있는데…?",
+    choices: {
+      pay: { label: "쿨하게 내가 낸다", done: "혜진이 언박싱하며 신났다. 정우 지갑은 가벼워졌다 📦" },
+      half: { label: "반반 하자고 한다", done: "\"치사해!\" 하면서도 혜진이 웃는다 😤" },
+    },
+  },
+  yeppi: {
+    emoji: "🐶",
+    title: "예삐가 놀러 왔어요",
+    body: "하얀 말티즈 예삐가 놀러 왔어요. 꼬리가 프로펠러처럼 돌아가는 중!",
+    choices: {
+      walk: { label: "다 같이 산책", done: "셋이서 동네 한 바퀴. 예삐가 제일 신났다 🐾" },
+      treat: { label: "간식 사준다", done: "예삐 간식 냠냠. 혜진이는 예삐 보고 녹아내림 🦴" },
+    },
+  },
+  payday: {
+    emoji: "💸",
+    title: "오늘은 월급날!",
+    body: "정우 월급이 들어왔어요. 혜진이가 \"오늘 뭐 사줄 거야?\" 하고 물어봐요.",
+    choices: {
+      save: { label: "통장에 고이 넣는다", done: "월급 그대로 저축. 정우 마음이 든든하다 💰" },
+      treat: { label: "혜진이 맛있는 거 사준다", done: "월급날 외식! 혜진이 볼이 빵빵 🍽️" },
+      hanjeongseon: { label: "한정선 왕창 사온다", done: "월급 털어 한정선 3개! 냉동실이 든든해졌다 🍡" },
+    },
+  },
+  anniversary: {
+    emoji: "🎂",
+    title: "오늘은 기념일!",
+    body: "사귄 지 100일 단위가 되는 날이에요. 주말이면 오늘 데이트는 별이 하나 더 붙어요!",
+    choices: {
+      cake: { label: "케이크랑 편지", done: "촛불 끄고 편지 낭독. 혜진이 눈물 찔끔 🎂" },
+      flowers: { label: "꽃다발 선물", done: "꽃다발 받고 혜진이 활짝 💐" },
+    },
+  },
 };
 
 /** 이벤트 탭(도감) 문구 */
@@ -91,6 +172,16 @@ export const STORY_TEXT: Record<StoryEventId, { emoji: string; title: string; ca
   poker: { emoji: SOCIAL_TEXT.poker.emoji, title: "번개 포커", caption: "정우 친구들이랑 밤새 포커 한 판." },
   friends: { emoji: SOCIAL_TEXT.friends.emoji, title: "민정·다은이랑", caption: "혜진이가 민정이, 다은이랑 놀러 간 날." },
   snack: { emoji: SOCIAL_TEXT.snack.emoji, title: "야식 번개", caption: "밤 11시에 갑자기 치킨." },
+  rain: { emoji: SOCIAL_TEXT.rain.emoji, title: "갑자기 소나기", caption: "퇴근길에 우산 없는 혜진이." },
+  karaoke: { emoji: SOCIAL_TEXT.karaoke.emoji, title: "코인노래방 번개", caption: "갑자기 노래가 부르고 싶은 날." },
+  dessert: { emoji: SOCIAL_TEXT.dessert.emoji, title: "편의점 신상 디저트", caption: "SNS에서 본 신상은 못 참지." },
+  newgame: { emoji: SOCIAL_TEXT.newgame.emoji, title: "게임 신작 출시", caption: "정우가 기다리던 게임이 나왔어요." },
+  homebody: { emoji: SOCIAL_TEXT.homebody.emoji, title: "주말 집콕", caption: "소파와 한 몸이 된 주말." },
+  parcel: { emoji: SOCIAL_TEXT.parcel.emoji, title: "택배 왔어요", caption: "결제는 정우 카드로…?" },
+  yeppi: { emoji: SOCIAL_TEXT.yeppi.emoji, title: "예삐가 놀러 왔어요", caption: "하얀 말티즈 예삐랑 노는 날." },
+  cold: { emoji: "🤒", title: "혜진이 감기", caption: "콜록콜록, 정우가 죽을 사 왔어요." },
+  payday: { emoji: SOCIAL_TEXT.payday.emoji, title: "월급날", caption: "오늘 뭐 사줄 거야?" },
+  anniversary: { emoji: SOCIAL_TEXT.anniversary.emoji, title: "기념일", caption: "사귄 지 100일 단위가 되는 날." },
   sulk: { emoji: "😤", title: "정우 삐짐", caption: "웨이팅 또 가라니까 정우가 방에 들어가 버렸어요." },
   promoted: { emoji: "📈", title: "정우 승진", caption: "열심히 일한 정우가 승진했어요." },
   block: { emoji: "🙅‍♂️", title: "냉동실 사수", caption: "정우가 냉동실 앞을 몸으로 막아섰어요." },

@@ -51,7 +51,7 @@ describe("closeDay: 하루 마감 + 다음 날 아침", () => {
       jungwoo: { actionsLeft: 0, workCountToday: 3, sulking: true, happiness: 10 },
       bulldak: "active",
     });
-    const { state, events } = closeDay(s, sequence(0, 0.999));
+    const { state, events } = closeDay(s, sequence(0, 0.999, 0.999));
     expect(state.hyejin.happiness).toBe(100 + COMMUTE + OVERWORK + BULLDAK_MISS);
     expect(state.jungwoo).toMatchObject({ actionsLeft: 5, workCountToday: 0, sulking: false, happiness: 100 });
     expect(state.bulldak).toBe("active");
@@ -66,7 +66,8 @@ describe("closeDay: 하루 마감 + 다음 날 아침", () => {
   });
 
   it("금요일 → 월요일: 주말엔 출근 감소가 없고 불닭 판정은 월요일만", () => {
-    const rng = sequence(0.999, 0.999, 0, 0.999); // 토·일 아침은 이벤트 판정만, 월요일 아침은 불닭 판정 + 이벤트 판정
+    // 토·일 아침은 이벤트·감기 판정만, 월요일 아침은 불닭 판정 + 이벤트·감기 판정
+    const rng = sequence(0.999, 0.999, 0.999, 0.999, 0, 0.999, 0.999);
     const { state, events } = advanceTo(makeState({ weekendDateUsed: true }, FRIDAY), NEXT_MONDAY, rng);
     expect(state.hyejin.happiness).toBe(100 + COMMUTE);
     expect(state.weekendDateUsed).toBe(false);
@@ -134,7 +135,7 @@ describe("잠자기", () => {
 describe("밤사이 요약", () => {
   it("마감 감소와 아침 상황을 담는다", () => {
     const before = makeState({ bulldak: "active", jungwoo: { sulking: true, workCountToday: 3 }, hyejin: { happiness: 80 } });
-    const { state, events } = act(before, { type: "sleep" }, sleepCtx(TODAY, sequence(0, 0.999)));
+    const { state, events } = act(before, { type: "sleep" }, sleepCtx(TODAY, sequence(0, 0.999, 0.999)));
     const change = COMMUTE + OVERWORK + BULLDAK_MISS;
     expect(80 + change).toBe(30); // 경고 구간에 막 들어감 (카운트다운 전)
     expect(summarizeNight(before, state, events)).toEqual({
@@ -161,17 +162,17 @@ describe("랜덤 이벤트 (번개 약속)", () => {
   const withEvent = (social: "poker" | "friends" | "snack", money = 100_000) => makeState({ social, jungwoo: { money } });
 
   it(`아침마다 ${SOCIAL.CHANCE_PERCENT}% 확률로 이벤트 하나가 생긴다`, () => {
-    // 월→화: 불닭 판정(실패), 이벤트 판정(성공), 종류 고르기(마지막 = 야식)
-    const { state, events } = closeDay(makeState(), sequence(0.999, 0.19, 0.99));
+    // 월→화: 불닭 판정(실패), 이벤트 판정(성공), 종류 고르기(평일 9종 중 세 번째 = 야식), 감기 판정(실패)
+    const { state, events } = closeDay(makeState(), sequence(0.999, 0.29, 0.25, 0.999));
     expect(state.social).toBe("snack");
     expect(events).toContainEqual({ type: "socialEvent", event: "snack" });
-    expect(closeDay(makeState(), sequence(0.999, 0.2)).state.social).toBeNull();
+    expect(closeDay(makeState(), sequence(0.999, 0.3, 0.999)).state.social).toBeNull();
   });
 
   it("만난 이벤트는 이벤트 도감에 한 번만 남는다", () => {
-    const { state } = closeDay(makeState(), sequence(0.999, 0.19, 0.99));
+    const { state } = closeDay(makeState(), sequence(0.999, 0.29, 0.25, 0.999));
     expect(state.seenEvents).toEqual(["snack"]);
-    const again = closeDay({ ...state, social: null }, sequence(0.999, 0.19, 0.99)).state;
+    const again = closeDay({ ...state, social: null }, sequence(0.999, 0.29, 0.25, 0.999)).state;
     expect(again.seenEvents).toEqual(["snack"]);
   });
 

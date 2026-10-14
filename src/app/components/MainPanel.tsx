@@ -201,11 +201,34 @@ function BulldakCallout({ view, state }: { view: GameView; state: GameState }) {
   );
 }
 
+function SickCallout({ view, state }: { view: GameView; state: GameState }) {
+  if (!state.hyejin.sick) return null;
+  const action: Action = { type: "porridge" };
+  const error = view.check(action);
+  const P = BALANCE.ACTIONS.PORRIDGE;
+  return (
+    <div className={styles.bulldak} role="status">
+      <div>
+        <strong>🤒 혜진이가 감기에 걸렸다</strong>
+        <p className={c.hint}>오늘은 같이 못 놀고, 행복도가 반만 올라요.</p>
+      </div>
+      <Button variant="primary" disabled={view.busy || error !== null} onClick={() => view.run(action)} sub={`${formatMoney(P.COST_MONEY)} · 혜진 +${P.HYEJIN_HAPPINESS} · 감기 뚝`}>
+        🥣 죽 사다 주기
+      </Button>
+      {error && error !== "NO_ACTIONS_LEFT" && <Hint>{ERROR_TEXT[error]}</Hint>}
+    </div>
+  );
+}
+
+const signed = (n: number) => (n > 0 ? `+${n}` : `${n}`);
+/** 날짜로 정해지는 이벤트는 패스 버튼 없이 고르게 한다 */
+const NO_SKIP: readonly string[] = ["payday", "anniversary"];
+
 /** 오늘 생긴 랜덤 이벤트. 행동은 안 쓰고, 선택지마다 효과와 비용을 보여준다 */
 function SocialCallout({ view, state }: { view: GameView; state: GameState }) {
   if (!state.social) return null;
   const text = SOCIAL_TEXT[state.social];
-  const effects = BALANCE.SOCIAL.EVENTS[state.social] as Record<string, { hyejin: number; jungwoo: number; money: number; tired: number }>;
+  const effects = BALANCE.SOCIAL.EVENTS[state.social] as Record<string, { hyejin: number; jungwoo: number; money: number; hanjeongseon: number; tired: number }>;
   return (
     <div className={styles.social} role="status">
       <div>
@@ -218,9 +241,11 @@ function SocialCallout({ view, state }: { view: GameView; state: GameState }) {
         {Object.entries(effects).map(([choice, e]) => {
           const action: Action = { type: "social", choice };
           const sub = [
-            `혜진 +${e.hyejin}`,
-            e.jungwoo > 0 && `정우 +${e.jungwoo}`,
+            e.hyejin !== 0 && `혜진 ${signed(e.hyejin)}`,
+            e.jungwoo !== 0 && `정우 ${signed(e.jungwoo)}`,
             e.money > 0 && formatMoney(e.money),
+            e.money < 0 && `+${formatMoney(-e.money)}`,
+            e.hanjeongseon !== 0 && `한정선 ${signed(e.hanjeongseon)}`,
             e.tired > 0 && `내일 행동 -${e.tired}`,
           ]
             .filter(Boolean)
@@ -231,9 +256,11 @@ function SocialCallout({ view, state }: { view: GameView; state: GameState }) {
             </Button>
           );
         })}
-        <Button variant="ghost" disabled={view.busy} onClick={() => view.run({ type: "social", choice: "skip" })}>
-          이번엔 패스
-        </Button>
+        {!NO_SKIP.includes(state.social) && (
+          <Button variant="ghost" disabled={view.busy} onClick={() => view.run({ type: "social", choice: "skip" })}>
+            이번엔 패스
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -349,6 +376,7 @@ export default function MainPanel({ view }: { view: GameView }) {
         <HyejinStatus state={state} maxLevel={maxLevel} />
       </div>
       <WarningBanner state={state} />
+      <SickCallout view={view} state={state} />
       <BulldakCallout view={view} state={state} />
       <SocialCallout view={view} state={state} />
       <JungwooStatus view={view} state={state} />

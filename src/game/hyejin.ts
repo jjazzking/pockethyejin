@@ -10,8 +10,10 @@ export function isDanger(happiness: number): boolean {
   return happiness <= WARNING.DANGER_HAPPINESS;
 }
 
+/** 감기 걸린 날은 오르는 행복도가 반만 (내림) */
 export function addHyejinHappiness(s: GameState, delta: number): void {
-  s.hyejin.happiness = clampHappiness(s.hyejin.happiness + delta);
+  const gain = delta > 0 && s.hyejin.sick ? Math.floor(delta / 2) : delta;
+  s.hyejin.happiness = clampHappiness(s.hyejin.happiness + gain);
 }
 
 /** 행복도가 경고 구간에 들어가거나 벗어났으면 이벤트를 남긴다. */

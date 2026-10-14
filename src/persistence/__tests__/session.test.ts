@@ -268,3 +268,12 @@ describe("상태 구조 버전", () => {
     expect(store.peek()?.version).toBe(3);
   });
 });
+
+describe("v5 → v6 마이그레이션", () => {
+  it("진행 중인 게임은 감기 안 걸린 상태로 이어진다", () => {
+    const current = makeState();
+    const hyejinV5: Partial<GameState["hyejin"]> = { ...current.hyejin };
+    delete hyejinV5.sick;
+    expect(migrateState(5, { ...current, hyejin: hyejinV5 }).hyejin.sick).toBe(false);
+  });
+});

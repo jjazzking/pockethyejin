@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "꿍진이 키우기 게임 방법",
 };
 
-const { TIME, ACTIONS: A, FEED, DAY_END, SULK, WARNING, BULLDAK, DATE_BUDGETS, DATE_OFFERING, RANKS, SOCIAL } = BALANCE;
+const { TIME, ACTIONS: A, FEED, DAY_END, SULK, WARNING, BULLDAK, SICK, DATE_BUDGETS, DATE_OFFERING, RANKS, SOCIAL } = BALANCE;
 const plus = (n: number) => (n > 0 ? `+${n}` : `${n}`);
 
 /** public/guide 의 실제 게임 화면 캡처 (체험 모드) */
@@ -118,6 +118,10 @@ export default function GuidePage() {
             평일에 가끔({BULLDAK.WEEKDAY_CHANCE_PERCENT}%) 혜진이가 <b>오늘 밤 불닭이 땡긴대요</b>. 아침에 미리 알려주니, 자기 전까지 정우를 편의점에 보내면{" "}
             {plus(A.CONVENIENCE_STORE.HYEJIN_HAPPINESS)}, 안 보내면 {plus(DAY_END.BULLDAK_IGNORED_PENALTY)}.
           </li>
+          <li>
+            가끔({SICK.CHANCE_PERCENT}%) 혜진이가 <b>감기</b>에 걸려요. 그날은 같이 놀 수 없고 행복도가 반만 올라요. 정우가 죽을 사다 주면(행동 1번, {formatMoney(A.PORRIDGE.COST_MONEY)}) 바로 낫고{" "}
+            {plus(A.PORRIDGE.HYEJIN_HAPPINESS)}. 안 사다 줘도 다음 날 아침엔 나아요.
+          </li>
         </ul>
         <Shots names={["bulldak"]} />
       </section>
@@ -137,6 +141,15 @@ export default function GuidePage() {
           </li>
           <li>
             🍗 <b>야식 번개</b>: 혜진 +{SOCIAL.EVENTS.snack.order.hyejin}, 정우 +{SOCIAL.EVENTS.snack.order.jungwoo}, {formatMoney(SOCIAL.EVENTS.snack.order.money)}.
+          </li>
+          <li>
+            그 밖에 🌧️ 소나기(평일만), 🎤 코인노래방, 🍰 편의점 신상 디저트, 🕹️ 정우 게임 신작, 🛋️ 주말 집콕(주말만), 📦 택배, 🐶 예삐 방문. 선택지 버튼에 효과가 적혀 있어요.
+          </li>
+          <li>
+            💸 <b>월급날</b>: 매달 {SOCIAL.PAYDAY_DAY_OF_MONTH}일 아침엔 꼭 생겨요. 저축하면 {formatMoney(-SOCIAL.EVENTS.payday.save.money)}이 들어와요.
+          </li>
+          <li>
+            🎂 <b>기념일</b>: 사귄 지 {SOCIAL.ANNIVERSARY_EVERY_DAYS}일 단위 날엔 꼭 생겨요. 그날이 주말이면 데이트 별이 하나 더 붙어요.
           </li>
         </ul>
         <Shots names={["social"]} />
