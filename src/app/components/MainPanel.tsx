@@ -10,6 +10,7 @@ import { incomeForRank, levelUpCost, rejectPercent } from "@/game/rules";
 import type { Action, GameState } from "@/game/types";
 import {
   ERROR_TEXT,
+  SOCIAL_TEXT,
   PLAY_ALONE_FLAVORS,
   SULKING_TEXT,
   WAITING_FOR_UPDATE_TEXT,
@@ -200,6 +201,44 @@ function BulldakCallout({ view, state }: { view: GameView; state: GameState }) {
   );
 }
 
+/** 오늘 생긴 랜덤 이벤트. 행동은 안 쓰고, 선택지마다 효과와 비용을 보여준다 */
+function SocialCallout({ view, state }: { view: GameView; state: GameState }) {
+  if (!state.social) return null;
+  const text = SOCIAL_TEXT[state.social];
+  const effects = BALANCE.SOCIAL.EVENTS[state.social] as Record<string, { hyejin: number; jungwoo: number; money: number; tired: number }>;
+  return (
+    <div className={styles.social} role="status">
+      <div>
+        <strong>
+          {text.emoji} {text.title}
+        </strong>
+        <p className={c.hint}>{text.body}</p>
+      </div>
+      <div className={c.grid2}>
+        {Object.entries(effects).map(([choice, e]) => {
+          const action: Action = { type: "social", choice };
+          const sub = [
+            `혜진 +${e.hyejin}`,
+            e.jungwoo > 0 && `정우 +${e.jungwoo}`,
+            e.money > 0 && formatMoney(e.money),
+            e.tired > 0 && `내일 행동 -${e.tired}`,
+          ]
+            .filter(Boolean)
+            .join(" · ");
+          return (
+            <Button key={choice} variant="primary" disabled={view.busy || view.check(action) !== null} onClick={() => view.run(action)} sub={sub}>
+              {text.choices[choice].label}
+            </Button>
+          );
+        })}
+        <Button variant="ghost" disabled={view.busy} onClick={() => view.run({ type: "social", choice: "skip" })}>
+          이번엔 패스
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function HyejinActions({ view, state, maxLevel }: { view: GameView; state: GameState; maxLevel: boolean }) {
   const h = state.hyejin;
   const [countRaw, setCount] = useState(1);
@@ -311,6 +350,7 @@ export default function MainPanel({ view }: { view: GameView }) {
       </div>
       <WarningBanner state={state} />
       <BulldakCallout view={view} state={state} />
+      <SocialCallout view={view} state={state} />
       <JungwooStatus view={view} state={state} />
       {outOfActions && <SleepCard view={view} state={state} />}
       <JungwooActions view={view} state={state} />

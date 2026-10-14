@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TIME } from "../balance";
+import { SOCIAL, TIME } from "../balance";
 import { daysTogether, toRealDay } from "../date";
 import { advanceTo, closeDay, createInitialState, nightsUsed } from "../day";
 import { applyAction } from "../engine";
@@ -51,7 +51,7 @@ describe("closeDay: 하루 마감 + 다음 날 아침", () => {
       jungwoo: { actionsLeft: 0, workCountToday: 3, sulking: true, happiness: 10 },
       bulldak: "active",
     });
-    const { state, events } = closeDay(s, sequence(0));
+    const { state, events } = closeDay(s, sequence(0, 0.999));
     expect(state.hyejin.happiness).toBe(100 + COMMUTE + OVERWORK + BULLDAK_MISS);
     expect(state.jungwoo).toMatchObject({ actionsLeft: 5, workCountToday: 0, sulking: false, happiness: 100 });
     expect(state.bulldak).toBe("active");
@@ -66,7 +66,7 @@ describe("closeDay: 하루 마감 + 다음 날 아침", () => {
   });
 
   it("금요일 → 월요일: 주말엔 출근 감소가 없고 불닭 판정은 월요일만", () => {
-    const rng = sequence(0); // 월요일 아침 불닭 판정에 딱 한 번만 쓰여야 한다
+    const rng = sequence(0.999, 0.999, 0, 0.999); // 토·일 아침은 이벤트 판정만, 월요일 아침은 불닭 판정 + 이벤트 판정
     const { state, events } = advanceTo(makeState({ weekendDateUsed: true }, FRIDAY), NEXT_MONDAY, rng);
     expect(state.hyejin.happiness).toBe(100 + COMMUTE);
     expect(state.weekendDateUsed).toBe(false);
@@ -134,7 +134,7 @@ describe("잠자기", () => {
 describe("밤사이 요약", () => {
   it("마감 감소와 아침 상황을 담는다", () => {
     const before = makeState({ bulldak: "active", jungwoo: { sulking: true, workCountToday: 3 }, hyejin: { happiness: 80 } });
-    const { state, events } = act(before, { type: "sleep" }, sleepCtx(TODAY, sequence(0)));
+    const { state, events } = act(before, { type: "sleep" }, sleepCtx(TODAY, sequence(0, 0.999)));
     const change = COMMUTE + OVERWORK + BULLDAK_MISS;
     expect(80 + change).toBe(30); // 경고 구간에 막 들어감 (카운트다운 전)
     expect(summarizeNight(before, state, events)).toEqual({
@@ -146,6 +146,7 @@ describe("밤사이 요약", () => {
       warningStarted: true,
       countdownTurnsLeft: null,
       jungwooSulkHealed: true,
+      jungwooTired: 0,
     });
   });
 
@@ -153,5 +154,59 @@ describe("밤사이 요약", () => {
     const s = makeState();
     const { state, events } = act(s, { type: "work" });
     expect(summarizeNight(s, state, events)).toBeNull();
+  });
+});
+
+describe("랜덤 이벤트 (번개 약속)", () => {
+  const withEvent = (social: "poker" | "friends" | "snack", money = 100_000) => makeState({ social, jungwoo: { money } });
+
+  it(`아침마다 ${SOCIAL.CHANCE_PERCENT}% 확률로 이벤트 하나가 생긴다`, () => {
+    // 월→화: 불닭 판정(실패), 이벤트 판정(성공), 종류 고르기(마지막 = 야식)
+    const { state, events } = closeDay(makeState(), sequence(0.999, 0.19, 0.99));
+    expect(state.social).toBe("snack");
+    expect(events).toContainEqual({ type: "socialEvent", event: "snack" });
+    expect(closeDay(makeState(), sequence(0.999, 0.2)).state.social).toBeNull();
+  });
+
+  it("고르지 않은 이벤트는 하루가 끝나면 사라진다 (벌점 없음)", () => {
+    const { state } = closeDay(withEvent("friends"), NEVER);
+    expect(state.social).toBeNull();
+    expect(state.hyejin.happiness).toBe(100 + COMMUTE);
+  });
+
+  it("행동을 쓰지 않는다", () => {
+    const { state } = act(withEvent("friends"), { type: "social", choice: "solo" });
+    expect(state.jungwoo.actionsLeft).toBe(TIME.ACTIONS_PER_DAY);
+    expect(state.social).toBeNull();
+  });
+
+  it("정우도 합류하면 돈이 들고, 돈이 모자라면 못 고른다", () => {
+    const s = makeState({ social: "friends", jungwoo: { money: 100_000, happiness: 50 }, hyejin: { happiness: 50 } });
+    const { state, events } = act(s, { type: "social", choice: "join" });
+    const join = SOCIAL.EVENTS.friends.join;
+    expect(state.jungwoo.money).toBe(100_000 - join.money);
+    expect(state.hyejin.happiness).toBe(50 + join.hyejin);
+    expect(state.jungwoo.happiness).toBe(50 + join.jungwoo);
+    expect(events).toContainEqual({ type: "socialDone", event: "friends", choice: "join" });
+    expect(applyAction(withEvent("friends", 0), { type: "social", choice: "join" }, sleepCtx())).toEqual({ ok: false, error: "NOT_ENOUGH_MONEY" });
+  });
+
+  it("밤샘 포커는 다음 날 정우 행동을 줄인다", () => {
+    const played = act(withEvent("poker"), { type: "social", choice: "go" }).state;
+    const next = closeDay(played, NEVER);
+    expect(next.state.jungwoo.actionsLeft).toBe(TIME.ACTIONS_PER_DAY - SOCIAL.EVENTS.poker.go.tired);
+    expect(next.state.jungwooTiredActions).toBe(0);
+    expect(summarizeNight(played, next.state, next.events)!.jungwooTired).toBe(SOCIAL.EVENTS.poker.go.tired);
+    // 그다음 날은 다시 5번
+    expect(closeDay(next.state, NEVER).state.jungwoo.actionsLeft).toBe(TIME.ACTIONS_PER_DAY);
+  });
+
+  it("패스하면 아무 일 없이 사라지고, 없는 선택지나 이벤트 없는 날은 거절", () => {
+    const { state, events } = act(withEvent("snack"), { type: "social", choice: "skip" });
+    expect(state.social).toBeNull();
+    expect(state.jungwoo.money).toBe(100_000);
+    expect(events).toEqual([{ type: "socialSkipped", event: "snack" }]);
+    expect(applyAction(withEvent("snack"), { type: "social", choice: "go" }, sleepCtx())).toEqual({ ok: false, error: "INVALID_CHOICE" });
+    expect(applyAction(makeState(), { type: "social", choice: "skip" }, sleepCtx())).toEqual({ ok: false, error: "NO_SOCIAL_EVENT" });
   });
 });

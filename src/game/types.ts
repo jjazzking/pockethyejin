@@ -42,6 +42,9 @@ export interface HyejinState {
 /** 오늘의 불닭 이벤트 상태 */
 export type BulldakState = "none" | "active" | "resolved";
 
+/** 랜덤 이벤트 종류 (balance.ts SOCIAL.EVENTS) */
+export type SocialEventId = "poker" | "friends" | "snack";
+
 export interface GameState {
   jungwoo: JungwooState;
   hyejin: HyejinState;
@@ -52,6 +55,10 @@ export interface GameState {
   weekendDateUsed: boolean;
   /** 현재 진행 중인 게임 속 날짜 */
   lastSettledDate: GameDate;
+  /** 오늘 생긴 랜덤 이벤트 (아직 안 골랐으면). 고르거나 하루가 끝나면 null */
+  social: SocialEventId | null;
+  /** 내일 아침 정우 행동에서 뺄 수 (밤샘 포커 피로) */
+  jungwooTiredActions: number;
   /** 현실 하루에 잔 밤 횟수. realDay가 바뀌면 0부터 다시 센다. */
   nights: { realDay: GameDate | null; used: number };
   /**
@@ -75,6 +82,8 @@ export type Action =
   | { type: "feed"; count: number }
   | { type: "levelUp" }
   | { type: "date"; placeId: string; budget: number; offering: number }
+  /** 랜덤 이벤트 고르기 (행동 안 씀). choice는 SOCIAL.EVENTS의 선택지 또는 "skip" */
+  | { type: "social"; choice: string }
   /** 하루를 마감하고 다음 날 아침으로 */
   | { type: "sleep" };
 
@@ -95,7 +104,9 @@ export type ActionError =
   | "INVALID_OFFERING"
   | "OFFERING_NOT_ALLOWED"
   /** 현실 하루에 잘 수 있는 밤을 다 씀 */
-  | "NO_NIGHTS_LEFT";
+  | "NO_NIGHTS_LEFT"
+  | "NO_SOCIAL_EVENT"
+  | "INVALID_CHOICE";
 
 export type GameEvent =
   // 정우 행동
@@ -125,7 +136,7 @@ export type GameEvent =
       overwork: number;
       bulldakIgnored: number;
     }
-  | { type: "dayStarted"; date: GameDate; sulkHealed: boolean }
+  | { type: "dayStarted"; date: GameDate; sulkHealed: boolean; tired: number }
   // 업데이트
   | {
       type: "newPlacesAdded";
@@ -134,7 +145,11 @@ export type GameEvent =
       /** 혜진이 만렙이었다가 다시 레벨업할 수 있게 됐는지 */
       levelCapRaised: boolean;
     }
-  | { type: "bulldakCraving"; date: GameDate };
+  | { type: "bulldakCraving"; date: GameDate }
+  // 랜덤 이벤트
+  | { type: "socialEvent"; event: SocialEventId }
+  | { type: "socialDone"; event: SocialEventId; choice: string }
+  | { type: "socialSkipped"; event: SocialEventId };
 
 export type ActionResult =
   | { ok: true; state: GameState; events: GameEvent[] }

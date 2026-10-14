@@ -55,7 +55,7 @@ describe("잠자기", () => {
   it("밤사이 이벤트는 요약 하나로 묶고, 새 아침 불닭은 따로 알린다", () => {
     const before = makeState({ hyejin: { happiness: 40 } }, MONDAY);
     // 화요일 아침 불닭
-    const result = sleep(before, { rng: sequence(0), places: [] });
+    const result = sleep(before, { rng: sequence(0, 0.999), places: [] });
     if (!result.ok) throw new Error(result.error);
     const summary = summarizeNight(before, result.state, result.events);
     const all: GameEvent[] = [...result.events, { type: "newPlacesAdded", count: 1, levelCapRaised: false }];

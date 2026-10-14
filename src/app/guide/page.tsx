@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: "꿍진이 키우기 게임 방법",
 };
 
-const { TIME, ACTIONS: A, FEED, DAY_END, SULK, WARNING, BULLDAK, DATE_BUDGETS, DATE_OFFERING, RANKS } = BALANCE;
+const { TIME, ACTIONS: A, FEED, DAY_END, SULK, WARNING, BULLDAK, DATE_BUDGETS, DATE_OFFERING, RANKS, SOCIAL } = BALANCE;
 const plus = (n: number) => (n > 0 ? `+${n}` : `${n}`);
 
 /** 게임 방법. 숫자는 전부 balance.ts에서 가져와서 밸런스를 바꾸면 설명도 같이 바뀐다. */
@@ -87,6 +87,25 @@ export default function GuidePage() {
           <li>
             평일에 가끔({BULLDAK.WEEKDAY_CHANCE_PERCENT}%) 혜진이가 <b>오늘 밤 불닭이 땡긴대요</b>. 아침에 미리 알려주니, 자기 전까지 정우를 편의점에 보내면{" "}
             {plus(A.CONVENIENCE_STORE.HYEJIN_HAPPINESS)}, 안 보내면 {plus(DAY_END.BULLDAK_IGNORED_PENALTY)}.
+          </li>
+        </ul>
+      </section>
+
+      <section className={styles.card}>
+        <h2>🎲 번개 약속 (랜덤 이벤트)</h2>
+        <p>
+          아침에 {SOCIAL.CHANCE_PERCENT}% 확률로 번개 약속이 생겨요. <b>정우 행동은 안 써요</b>. 대신 돈이나 다음 날 피로가 들어요. 안 고르면 그냥 지나가요.
+        </p>
+        <ul>
+          <li>
+            🃏 <b>번개 포커</b>: 혜진 +{SOCIAL.EVENTS.poker.go.hyejin}, 정우 +{SOCIAL.EVENTS.poker.go.jungwoo}. 밤새 쳐서 다음 날 정우 행동 -{SOCIAL.EVENTS.poker.go.tired}.
+          </li>
+          <li>
+            👯 <b>민정·다은과 놀기</b>: 혜진만 보내면 혜진 +{SOCIAL.EVENTS.friends.solo.hyejin}. 정우도 합류하면 혜진 +{SOCIAL.EVENTS.friends.join.hyejin}, 정우 +
+            {SOCIAL.EVENTS.friends.join.jungwoo}, {formatMoney(SOCIAL.EVENTS.friends.join.money)}.
+          </li>
+          <li>
+            🍗 <b>야식 번개</b>: 혜진 +{SOCIAL.EVENTS.snack.order.hyejin}, 정우 +{SOCIAL.EVENTS.snack.order.jungwoo}, {formatMoney(SOCIAL.EVENTS.snack.order.money)}.
           </li>
         </ul>
       </section>

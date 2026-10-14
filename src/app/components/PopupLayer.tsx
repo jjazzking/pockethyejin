@@ -35,6 +35,7 @@ function SummaryBody({ popup }: { popup: Extract<Popup, { kind: "summary" }> }) 
         {s.breakdown.bulldakIgnored < 0 && <li>🌶️ 불닭을 못 먹었어요 {s.breakdown.bulldakIgnored}</li>}
         {change === 0 && <li>😴 푹 잤어요</li>}
         {s.jungwooSulkHealed && <li>😤→🙂 삐졌던 정우가 자고 일어나서 풀렸어요</li>}
+        {s.jungwooTired > 0 && <li>🥱 밤샘 포커 여파로 정우가 피곤해요 (오늘 행동 -{s.jungwooTired})</li>}
         {s.countdownTurnsLeft !== null && <li>🚨 냉동실 카운트다운 중! {s.countdownTurnsLeft}턴 남았어요</li>}
       </ul>
     </>
