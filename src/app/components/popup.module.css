@@ -129,7 +129,7 @@
   animation: dots 1.2s steps(4) infinite;
 }
 
-.waitingScene {
+.scene {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
