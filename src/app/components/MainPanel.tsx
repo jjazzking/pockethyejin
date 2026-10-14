@@ -326,9 +326,13 @@ function SleepCard({ view, state }: { view: GameView; state: GameState }) {
       <div className={styles.sleepHead}>
         <strong>🌙 하루 마무리</strong>
         <span className={c.hint}>
-          오늘 남은 밤 {Math.max(0, view.nightsLeft)}/{total}
+          {view.unlimitedNights ? "🔓 밤 제한 풀림 (임시)" : `오늘 남은 밤 ${Math.max(0, view.nightsLeft)}/${total}`}
         </span>
       </div>
+      {/* 임시: 밤 제한 풀기/잠그기 버튼. 테스트 끝나면 지운다 */}
+      <Button variant="ghost" disabled={view.busy} onClick={view.toggleUnlimitedNights}>
+        {view.unlimitedNights ? "🔒 밤 제한 다시 걸기" : "🔓 밤 제한 풀기 (임시)"}
+      </Button>
       {noNights ? (
         <Hint>{ERROR_TEXT.NO_NIGHTS_LEFT}</Hint>
       ) : confirming ? (
