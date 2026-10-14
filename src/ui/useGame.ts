@@ -66,7 +66,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
           id: nextId.current++,
           face: p.faceTag
             ? pickFace(loaded.images, p.faceTag, Math.random)
-            : p.kind === "card" && p.jungwooFace
+            : "jungwooFace" in p && p.jungwooFace
               ? pickJungwooFace(loaded.images, p.jungwooFace, Math.random)
               : null,
           jungwoo: p.kind === "block" ? pickJungwooPose(loaded.images, "run", false, null, Math.random) : null,

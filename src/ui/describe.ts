@@ -17,6 +17,8 @@ export type PopupSpec =
     }
   /** 정우 막기 전용 연출 */
   | { kind: "block"; faceTag: FaceEventTag }
+  /** 웨이팅 연출: 정우가 갈지 말지 뜸 들인 뒤 결과. quantity가 null이면 삐짐 */
+  | { kind: "waiting"; quantity: number | null; faceTag: null; jungwooFace?: JungwooFaceTag }
   | { kind: "summary"; summary: NightSummary; faceTag: FaceEventTag }
   | { kind: "date"; place: Place | null; stars: Stars; newBest: boolean; firstVisit: boolean; faceTag: FaceEventTag };
 
@@ -43,9 +45,9 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
     case "promoted":
       return { kind: "card", emoji: "🎉", title: `정우 승진! ${rankName(event.rank)}`, body: "이제 일 한 번에 더 많이 벌어온다.", faceTag: null, jungwooFace: "happy" };
     case "waitingDone":
-      return `정우가 땡볕에 줄 서서 한정선 ${event.quantity}개를 사왔다 🍡`;
+      return { kind: "waiting", quantity: event.quantity, faceTag: null };
     case "waitingRejected":
-      return { kind: "card", emoji: "🚪", title: "정우가 삐져서 방에 들어갔다…", body: "오늘은 더 못 시켜요. 자고 나면 풀린대요.", faceTag: null, jungwooFace: "sulk" };
+      return { kind: "waiting", quantity: null, faceTag: null, jungwooFace: "sulk" };
     case "playedAlone":
       return PLAY_ALONE_FLAVORS[opts.playFlavor ?? "dj"].done;
     case "playedTogether":

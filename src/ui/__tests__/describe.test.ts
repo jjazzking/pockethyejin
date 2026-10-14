@@ -12,9 +12,12 @@ describe("이벤트 → 팝업·토스트", () => {
     expect(describeEvents([{ type: "jungwooBlocked" }], opts).popups).toEqual([{ kind: "block", faceTag: "jeongwoo_block" }]);
   });
 
-  it("거절은 삐짐 팝업, 일은 토스트", () => {
-    const d = describeEvents([{ type: "waitingRejected" }, { type: "worked", income: 30_000 }], opts);
-    expect(d.popups[0]).toMatchObject({ kind: "card", title: "정우가 삐져서 방에 들어갔다…", faceTag: null, jungwooFace: "sulk" });
+  it("웨이팅은 결과와 상관없이 웨이팅 연출 팝업, 일은 토스트", () => {
+    const d = describeEvents([{ type: "waitingRejected" }, { type: "waitingDone", quantity: 3, cost: 1 }, { type: "worked", income: 30_000 }], opts);
+    expect(d.popups).toEqual([
+      { kind: "waiting", quantity: null, faceTag: null, jungwooFace: "sulk" },
+      { kind: "waiting", quantity: 3, faceTag: null },
+    ]);
     expect(d.toasts).toEqual(["정우가 출근해서 3만 원 벌어왔다 💼"]);
   });
 

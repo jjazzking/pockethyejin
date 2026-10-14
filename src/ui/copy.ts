@@ -24,6 +24,15 @@ export const ERROR_TEXT: Record<ActionError, string> = {
 };
 
 export const SULKING_TEXT = "정우가 삐져서 방에 들어갔다… 자고 일어나면 풀려요.";
+/** 웨이팅 거절할 때 정우 한마디 (하나 골라서 보여준다) */
+export const SULK_LINES = [
+  "흥! 오늘은 안 가줄래!",
+  "나도 더워… 오늘은 파업이야!",
+  "땡볕에 또? 싫어싫어! 😤",
+  "한정선보다 내가 더 소중하지 않아?!",
+  "오늘 정우는 영업 종료입니다. 흥!",
+  "줄 서는 거 이제 지쳤어… 안 가!",
+] as const;
 export const CONFLICT_TEXT = "다른 기기에서 플레이한 내용이 있어서 최신 상태를 불러왔어요. 방금 행동은 반영되지 않았어요.";
 export const SYNCED_TEXT = "다른 기기에서 저장한 최신 상태를 불러왔어요.";
 export const WAITING_FOR_UPDATE_TEXT = "새 추억 업데이트를 기다리는 중";
