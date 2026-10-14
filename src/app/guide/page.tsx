@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { BALANCE } from "@/game";
 import { daysTogether } from "@/game/date";
@@ -14,6 +15,32 @@ export const metadata: Metadata = {
 
 const { TIME, ACTIONS: A, FEED, DAY_END, SULK, WARNING, BULLDAK, DATE_BUDGETS, DATE_OFFERING, RANKS, SOCIAL } = BALANCE;
 const plus = (n: number) => (n > 0 ? `+${n}` : `${n}`);
+
+/** public/guide 의 실제 게임 화면 캡처 (체험 모드) */
+const SHOTS = {
+  main: { w: 585, h: 1266, caption: "메인 화면" },
+  night: { w: 540, h: 562, caption: "자고 일어나면" },
+  map: { w: 585, h: 1266, caption: "추억 지도" },
+  bulldak: { w: 585, h: 1266, caption: "불닭 땡기는 날" },
+  social: { w: 585, h: 1266, caption: "번개 약속" },
+  countdown: { w: 585, h: 1266, caption: "카운트다운" },
+  block: { w: 525, h: 832, caption: "정우가 막아줄 때" },
+  "date-plan": { w: 585, h: 1266, caption: "데이트 고르기" },
+  "date-result": { w: 562, h: 592, caption: "다녀오면" },
+} as const;
+
+function Shots({ names }: { names: (keyof typeof SHOTS)[] }) {
+  return (
+    <div className={styles.shots}>
+      {names.map((n) => (
+        <figure key={n} className={styles.shot}>
+          <Image src={`/guide/${n}.webp`} width={SHOTS[n].w} height={SHOTS[n].h} alt={`${SHOTS[n].caption} 화면`} />
+          <figcaption>{SHOTS[n].caption}</figcaption>
+        </figure>
+      ))}
+    </div>
+  );
+}
 
 /** 게임 방법. 숫자는 전부 balance.ts에서 가져와서 밸런스를 바꾸면 설명도 같이 바뀐다. */
 export default function GuidePage() {
@@ -41,6 +68,7 @@ export default function GuidePage() {
           </li>
           <li>자고 일어나면 밤사이 있었던 일(출근, 불닭, 삐짐 풀림)을 알려줘요.</li>
         </ul>
+        <Shots names={["main", "night"]} />
       </section>
 
       <section className={styles.card}>
@@ -73,6 +101,7 @@ export default function GuidePage() {
             {levelUpCost(2)} → {levelUpCost(3)} → {levelUpCost(4)} …).
           </li>
         </ul>
+        <Shots names={["map"]} />
       </section>
 
       <section className={styles.card}>
@@ -89,6 +118,7 @@ export default function GuidePage() {
             {plus(A.CONVENIENCE_STORE.HYEJIN_HAPPINESS)}, 안 보내면 {plus(DAY_END.BULLDAK_IGNORED_PENALTY)}.
           </li>
         </ul>
+        <Shots names={["bulldak"]} />
       </section>
 
       <section className={styles.card}>
@@ -108,6 +138,7 @@ export default function GuidePage() {
             🍗 <b>야식 번개</b>: 혜진 +{SOCIAL.EVENTS.snack.order.hyejin}, 정우 +{SOCIAL.EVENTS.snack.order.jungwoo}, {formatMoney(SOCIAL.EVENTS.snack.order.money)}.
           </li>
         </ul>
+        <Shots names={["social"]} />
       </section>
 
       <section className={`${styles.card} ${styles.danger}`}>
@@ -124,6 +155,7 @@ export default function GuidePage() {
           </li>
         </ol>
         <p className={styles.tip}>💡 한정선을 몇 개 남겨두면 위기 때 바로 먹여서 넘길 수 있어요.</p>
+        <Shots names={["countdown", "block"]} />
       </section>
 
       <section className={styles.card}>
@@ -159,6 +191,7 @@ export default function GuidePage() {
           💡 별 3개를 아직 못 받은 장소는 한정선을 {DATE_OFFERING.BUNDLE_SIZE}개씩 바쳐서 3성 확률을 {DATE_OFFERING.PERCENT_PER_BUNDLE}%p씩 올릴 수 있어요(최대{" "}
           {DATE_OFFERING.MAX_THREE_STAR_PERCENT}%).
         </p>
+        <Shots names={["date-plan", "date-result"]} />
       </section>
 
       <section className={styles.card}>
