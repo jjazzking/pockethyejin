@@ -37,16 +37,30 @@ export interface HyejinState {
   countdownTurnsLeft: number | null;
   /** 정우 막기를 이미 썼는지. 게임 전체에서 한 번만 쓸 수 있다. */
   jungwooBlockUsed: boolean;
+  /** 오늘 감기 걸렸는지. 죽을 사다 주거나 다음 날 아침이면 낫는다. */
+  sick: boolean;
 }
 
 /** 오늘의 불닭 이벤트 상태 */
 export type BulldakState = "none" | "active" | "resolved";
 
 /** 랜덤 이벤트 종류 (balance.ts SOCIAL.EVENTS) */
-export type SocialEventId = "poker" | "friends" | "snack";
+export type SocialEventId =
+  | "poker"
+  | "friends"
+  | "snack"
+  | "rain"
+  | "karaoke"
+  | "dessert"
+  | "newgame"
+  | "homebody"
+  | "parcel"
+  | "yeppi"
+  | "payday"
+  | "anniversary";
 
 /** 이벤트 탭에 모이는 이벤트. 랜덤 번개 약속 + 게임 중 생기는 사건들 */
-export type StoryEventId = SocialEventId | "bulldak" | "sulk" | "promoted" | "block" | "raid";
+export type StoryEventId = SocialEventId | "bulldak" | "sulk" | "promoted" | "block" | "raid" | "cold";
 
 export interface GameState {
   jungwoo: JungwooState;
@@ -84,6 +98,8 @@ export type Action =
   | { type: "playAlone" }
   | { type: "playTogether" }
   | { type: "convenienceStore" }
+  /** 감기 걸린 혜진이한테 죽 사다 주기 */
+  | { type: "porridge" }
   | { type: "feed"; count: number }
   | { type: "levelUp" }
   | { type: "date"; placeId: string; budget: number; offering: number }
@@ -99,6 +115,9 @@ export type ActionError =
   | "NOT_ENOUGH_HANJEONGSEON"
   | "INVALID_QUANTITY"
   | "NO_BULLDAK_EVENT"
+  /** 혜진이 감기라 같이 놀 수 없음 */
+  | "HYEJIN_SICK"
+  | "NOT_SICK"
   | "MAX_LEVEL"
   /** 경고 카운트다운 중이라 레벨업 불가 (혜진이 기분이 나쁨) */
   | "HYEJIN_UPSET"
@@ -122,6 +141,7 @@ export type GameEvent =
   | { type: "playedAlone" }
   | { type: "playedTogether" }
   | { type: "bulldakResolved" }
+  | { type: "porridgeDelivered" }
   | { type: "dated"; placeId: string; stars: Stars; newBest: boolean; firstVisit: boolean }
   // 혜진
   | { type: "fed"; count: number }
@@ -151,6 +171,7 @@ export type GameEvent =
       levelCapRaised: boolean;
     }
   | { type: "bulldakCraving"; date: GameDate }
+  | { type: "hyejinSick" }
   // 랜덤 이벤트
   | { type: "socialEvent"; event: SocialEventId }
   | { type: "socialDone"; event: SocialEventId; choice: string }

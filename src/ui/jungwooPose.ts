@@ -21,6 +21,7 @@ export function jungwooPoseFor(action: Action, playFlavor: PlayFlavor = "dj"): J
     case "playAlone":
       return playFlavor === "game" ? "play_game" : "play_dj";
     case "convenienceStore":
+    case "porridge":
       return "run";
     default:
       return "idle";

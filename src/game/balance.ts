@@ -64,6 +64,12 @@ export const ACTIONS = {
     COST_MONEY: 5_000,
     ACTION_COST: 1,
   },
+  /** 혜진이 감기 걸린 날 죽 사다 주기. 감기가 낫는다 */
+  PORRIDGE: {
+    HYEJIN_HAPPINESS: 30,
+    COST_MONEY: 10_000,
+    ACTION_COST: 1,
+  },
   DATE: {
     JUNGWOO_HAPPINESS: 30,
     HYEJIN_HAPPINESS: 30,
@@ -152,24 +158,74 @@ export const DATE_OFFERING = {
   MAX_THREE_STAR_PERCENT: 95,
 } as const;
 
+/** 혜진이 감기: 아침에 확률로 걸리고, 그날은 같이 놀기 불가 + 행복도가 반만 오른다. 다음 날 아침 낫는다 */
+export const SICK = {
+  CHANCE_PERCENT: 5,
+} as const;
+
 /**
  * 랜덤 이벤트 (번개 약속). 아침에 확률로 하나가 생기고 그날 자기 전까지 고른다.
  * 정우 행동은 쓰지 않는다. 대신 돈이나 다음 날 피로(행동 감소)가 든다. 안 고르면 그냥 지나간다.
  */
 export const SOCIAL = {
   /** 아침마다 이벤트가 생길 확률 (%) */
-  CHANCE_PERCENT: 20,
-  /** 이벤트 → 고를 수 있는 선택지 → 효과. tired: 다음 날 정우 행동 감소 */
+  CHANCE_PERCENT: 30,
+  /** 평일에만 / 주말에만 생기는 이벤트 */
+  WEEKDAY_ONLY: ["rain"],
+  WEEKEND_ONLY: ["homebody"],
+  /** 날짜로 정해지는 이벤트 (확률과 상관없이 그날 아침 생긴다). 기념일이 월급날보다 먼저 */
+  ANNIVERSARY_EVERY_DAYS: 100,
+  PAYDAY_DAY_OF_MONTH: 25,
+  /**
+   * 이벤트 → 고를 수 있는 선택지 → 효과.
+   * money: 드는 돈 (음수면 들어오는 돈), hanjeongseon: 한정선 변화, tired: 다음 날 정우 행동 감소
+   */
   EVENTS: {
     poker: {
-      go: { hyejin: 20, jungwoo: 20, money: 0, tired: 2 },
+      go: { hyejin: 20, jungwoo: 20, money: 0, hanjeongseon: 0, tired: 2 },
     },
     friends: {
-      solo: { hyejin: 15, jungwoo: 0, money: 0, tired: 0 },
-      join: { hyejin: 25, jungwoo: 10, money: 50_000, tired: 0 },
+      solo: { hyejin: 15, jungwoo: 0, money: 0, hanjeongseon: 0, tired: 0 },
+      join: { hyejin: 25, jungwoo: 10, money: 50_000, hanjeongseon: 0, tired: 0 },
     },
     snack: {
-      order: { hyejin: 15, jungwoo: 10, money: 20_000, tired: 0 },
+      order: { hyejin: 15, jungwoo: 10, money: 20_000, hanjeongseon: 0, tired: 0 },
+    },
+    rain: {
+      pickup: { hyejin: 20, jungwoo: 0, money: 0, hanjeongseon: 0, tired: 1 },
+      taxi: { hyejin: 10, jungwoo: 0, money: 20_000, hanjeongseon: 0, tired: 0 },
+    },
+    karaoke: {
+      together: { hyejin: 15, jungwoo: 15, money: 10_000, hanjeongseon: 0, tired: 0 },
+      solo: { hyejin: 10, jungwoo: 0, money: 0, hanjeongseon: 0, tired: 0 },
+    },
+    dessert: {
+      buy: { hyejin: 10, jungwoo: 0, money: 5_000, hanjeongseon: 0, tired: 0 },
+      hanjeongseon: { hyejin: 15, jungwoo: 0, money: 0, hanjeongseon: -1, tired: 0 },
+    },
+    newgame: {
+      allow: { hyejin: -10, jungwoo: 30, money: 0, hanjeongseon: 0, tired: 0 },
+      date: { hyejin: 10, jungwoo: -10, money: 0, hanjeongseon: 0, tired: 0 },
+    },
+    homebody: {
+      netflix: { hyejin: 10, jungwoo: 10, money: 0, hanjeongseon: 0, tired: 0 },
+    },
+    parcel: {
+      pay: { hyejin: 25, jungwoo: 0, money: 30_000, hanjeongseon: 0, tired: 0 },
+      half: { hyejin: 10, jungwoo: 0, money: 15_000, hanjeongseon: 0, tired: 0 },
+    },
+    yeppi: {
+      walk: { hyejin: 15, jungwoo: 15, money: 0, hanjeongseon: 0, tired: 0 },
+      treat: { hyejin: 20, jungwoo: 10, money: 5_000, hanjeongseon: 0, tired: 0 },
+    },
+    payday: {
+      save: { hyejin: 0, jungwoo: 10, money: -100_000, hanjeongseon: 0, tired: 0 },
+      treat: { hyejin: 20, jungwoo: 0, money: -50_000, hanjeongseon: 0, tired: 0 },
+      hanjeongseon: { hyejin: 0, jungwoo: 0, money: -50_000, hanjeongseon: 3, tired: 0 },
+    },
+    anniversary: {
+      cake: { hyejin: 30, jungwoo: 10, money: 30_000, hanjeongseon: 0, tired: 0 },
+      flowers: { hyejin: 20, jungwoo: 0, money: 20_000, hanjeongseon: 0, tired: 0 },
     },
   },
 } as const;

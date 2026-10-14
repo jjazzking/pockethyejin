@@ -1,5 +1,5 @@
 import { ACTIONS, DATE_OFFERING, FEED, SOCIAL } from "./balance";
-import { isWeekend } from "./date";
+import { isAnniversary, isWeekend } from "./date";
 import { sleep } from "./day";
 import { markSeen } from "./seen";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
@@ -22,6 +22,7 @@ import type {
   ActionResult,
   GameEvent,
   GameState,
+  Stars,
 } from "./types";
 
 function addJungwooHappiness(s: GameState, delta: number): void {
@@ -39,7 +40,7 @@ function checkActions(s: GameState, cost: number): ActionError | null {
   return null;
 }
 
-type SocialChoice = { hyejin: number; jungwoo: number; money: number; tired: number };
+type SocialChoice = { hyejin: number; jungwoo: number; money: number; hanjeongseon: number; tired: number };
 
 /** 오늘 이벤트의 선택지 효과. 없는 선택지면 undefined */
 function socialChoice(s: GameState, choice: string): SocialChoice | undefined {
@@ -66,7 +67,15 @@ function validate(s: GameState, action: TurnAction, ctx: ActionContext): ActionE
     case "playAlone":
       return checkActions(s, ACTIONS.PLAY_ALONE.ACTION_COST);
     case "playTogether":
+      if (s.hyejin.sick) return "HYEJIN_SICK";
       return checkActions(s, ACTIONS.PLAY_TOGETHER.ACTION_COST);
+    case "porridge": {
+      if (!s.hyejin.sick) return "NOT_SICK";
+      const err = checkActions(s, ACTIONS.PORRIDGE.ACTION_COST);
+      if (err) return err;
+      if (s.jungwoo.money < ACTIONS.PORRIDGE.COST_MONEY) return "NOT_ENOUGH_MONEY";
+      return null;
+    }
     case "convenienceStore": {
       if (s.bulldak !== "active") return "NO_BULLDAK_EVENT";
       const err = checkActions(s, ACTIONS.CONVENIENCE_STORE.ACTION_COST);
@@ -80,6 +89,7 @@ function validate(s: GameState, action: TurnAction, ctx: ActionContext): ActionE
       const c = socialChoice(s, action.choice);
       if (!c) return "INVALID_CHOICE";
       if (s.jungwoo.money < c.money) return "NOT_ENOUGH_MONEY";
+      if (s.hyejin.hanjeongseon + c.hanjeongseon < 0) return "NOT_ENOUGH_HANJEONGSEON";
       return null;
     }
     case "feed":
@@ -171,6 +181,13 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
       j.actionsLeft -= ACTIONS.CONVENIENCE_STORE.ACTION_COST;
       events.push({ type: "bulldakResolved" });
       return ACTIONS.CONVENIENCE_STORE.ACTION_COST;
+    case "porridge":
+      j.money -= ACTIONS.PORRIDGE.COST_MONEY;
+      h.sick = false;
+      addHyejinHappiness(s, ACTIONS.PORRIDGE.HYEJIN_HAPPINESS);
+      j.actionsLeft -= ACTIONS.PORRIDGE.ACTION_COST;
+      events.push({ type: "porridgeDelivered" });
+      return ACTIONS.PORRIDGE.ACTION_COST;
     case "social": {
       // 이벤트는 정우 행동을 쓰지 않는다 (턴 0)
       const event = s.social!;
@@ -181,6 +198,7 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
         return 0;
       }
       j.money -= c.money;
+      h.hanjeongseon += c.hanjeongseon;
       addHyejinHappiness(s, c.hyejin);
       addJungwooHappiness(s, c.jungwoo);
       s.jungwooTiredActions += c.tired;
@@ -201,7 +219,9 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
     }
     case "date": {
       const percents = applyOffering(budgetPercents(action.budget)!, action.offering);
-      const stars = rollStars(ctx.rng, percents);
+      const rolled = rollStars(ctx.rng, percents);
+      // 기념일 데이트는 별 하나 더
+      const stars = isAnniversary(s.lastSettledDate) ? (Math.min(3, rolled + 1) as Stars) : rolled;
       const prevBest = s.bestStars[action.placeId];
       j.money -= action.budget;
       h.hanjeongseon -= action.offering;

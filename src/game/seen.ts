@@ -1,7 +1,26 @@
 import type { GameEvent, GameState, StoryEventId } from "./types";
 
 /** 이벤트 탭에 보여줄 순서 */
-export const STORY_EVENTS: readonly StoryEventId[] = ["bulldak", "poker", "friends", "snack", "sulk", "promoted", "block", "raid"];
+export const STORY_EVENTS: readonly StoryEventId[] = [
+  "bulldak",
+  "poker",
+  "friends",
+  "snack",
+  "rain",
+  "karaoke",
+  "dessert",
+  "newgame",
+  "homebody",
+  "parcel",
+  "yeppi",
+  "cold",
+  "payday",
+  "anniversary",
+  "sulk",
+  "promoted",
+  "block",
+  "raid",
+];
 
 function storyId(e: GameEvent): StoryEventId | null {
   switch (e.type) {
@@ -17,6 +36,8 @@ function storyId(e: GameEvent): StoryEventId | null {
       return "block";
     case "halfEaten":
       return "raid";
+    case "hyejinSick":
+      return "cold";
     default:
       return null;
   }

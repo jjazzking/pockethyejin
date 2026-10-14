@@ -52,6 +52,16 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
       return PLAY_ALONE_FLAVORS[opts.playFlavor ?? "dj"].done;
     case "playedTogether":
       return { kind: "card", emoji: "💞", title: "같이 놀았다!", body: "혜진이도 정우도 기분 최고.", faceTag };
+    case "hyejinSick":
+      return {
+        kind: "card",
+        emoji: "🤒",
+        title: "혜진이가 감기에 걸렸다…",
+        body: "오늘은 같이 못 놀고, 행복도도 반만 올라요. 죽을 사다 주면 금방 나아요.",
+        faceTag: "warning",
+      };
+    case "porridgeDelivered":
+      return { kind: "card", emoji: "🥣", title: "죽 배달 완료!", body: "따끈한 죽 먹고 혜진이 감기가 싹 나았다.", faceTag: null, jungwooFace: "happy" };
     case "bulldakResolved":
       return { kind: "card", emoji: "🔥", title: "불닭 배달 완료!", body: "정우가 편의점까지 뛰어갔다 왔다. 혜진이 매운맛 충전 완료.", faceTag };
     case "fed":

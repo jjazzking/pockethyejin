@@ -1,11 +1,25 @@
-import { BULLDAK, DAY_END, HYEJIN, JUNGWOO, SOCIAL, TIME } from "./balance";
-import { addDays, daysBetween, isSunday, isWeekend } from "./date";
+import { BULLDAK, DAY_END, HYEJIN, JUNGWOO, SICK, SOCIAL, TIME } from "./balance";
+import { addDays, daysBetween, isAnniversary, isSunday, isWeekend } from "./date";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
 import { rollPercent } from "./rules";
 import { markSeen } from "./seen";
 import type { ActionContext, ActionError, ActionResult, GameDate, GameEvent, GameState, Rng, SocialEventId } from "./types";
 
-const SOCIAL_EVENTS = Object.keys(SOCIAL.EVENTS) as SocialEventId[];
+const SCHEDULED: readonly SocialEventId[] = ["anniversary", "payday"];
+const RANDOM_EVENTS = (Object.keys(SOCIAL.EVENTS) as SocialEventId[]).filter((e) => !SCHEDULED.includes(e));
+
+/** 그날 날짜로 정해진 이벤트 (기념일 > 월급날) */
+function scheduledSocial(date: GameDate): SocialEventId | null {
+  if (isAnniversary(date)) return "anniversary";
+  if (Number(date.slice(8)) === SOCIAL.PAYDAY_DAY_OF_MONTH) return "payday";
+  return null;
+}
+
+/** 그날 랜덤으로 생길 수 있는 이벤트 */
+function randomPool(date: GameDate): SocialEventId[] {
+  const excluded: readonly string[] = isWeekend(date) ? SOCIAL.WEEKDAY_ONLY : SOCIAL.WEEKEND_ONLY;
+  return RANDOM_EVENTS.filter((e) => !excluded.includes(e));
+}
 
 export function createInitialJungwoo(): GameState["jungwoo"] {
   return {
@@ -38,7 +52,7 @@ function endDay(s: GameState, events: GameEvent[]): void {
   if (isSunday(date)) s.weekendDateUsed = false;
 }
 
-/** 새 날 아침: 행동 충전(전날 밤샘 피로만큼 덜), 삐짐 해제, 불닭 판정(평일만), 랜덤 이벤트 판정 */
+/** 새 날 아침: 행동 충전(전날 밤샘 피로만큼 덜), 삐짐·감기 해제, 불닭 판정(평일만), 이벤트 판정, 감기 판정 */
 function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[]): void {
   const j = s.jungwoo;
   const sulkHealed = j.sulking;
@@ -59,11 +73,15 @@ function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[]): 
     events.push({ type: "bulldakCraving", date });
   }
 
-  s.social = null;
-  if (rollPercent(rng, SOCIAL.CHANCE_PERCENT)) {
-    s.social = SOCIAL_EVENTS[Math.min(SOCIAL_EVENTS.length - 1, Math.floor(rng() * SOCIAL_EVENTS.length))];
-    events.push({ type: "socialEvent", event: s.social });
+  s.social = scheduledSocial(date);
+  if (!s.social && rollPercent(rng, SOCIAL.CHANCE_PERCENT)) {
+    const pool = randomPool(date);
+    s.social = pool[Math.min(pool.length - 1, Math.floor(rng() * pool.length))];
   }
+  if (s.social) events.push({ type: "socialEvent", event: s.social });
+
+  s.hyejin.sick = rollPercent(rng, SICK.CHANCE_PERCENT);
+  if (s.hyejin.sick) events.push({ type: "hyejinSick" });
 }
 
 /** 새 게임. 게임 속 첫날(기본: 사귀기 시작한 날) 아침이 막 시작된 상태. */
@@ -79,6 +97,7 @@ export function createInitialState(
       hanjeongseon: HYEJIN.START_HANJEONGSEON,
       countdownTurnsLeft: null,
       jungwooBlockUsed: false,
+      sick: false,
     },
     bulldak: "none",
     bestStars: {},

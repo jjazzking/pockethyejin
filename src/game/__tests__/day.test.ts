@@ -43,6 +43,7 @@ describe("새 게임", () => {
       hanjeongseon: 0,
       countdownTurnsLeft: null,
       jungwooBlockUsed: false,
+      sick: false,
     });
     expect(state.lastSettledDate).toBe(MONDAY);
   });

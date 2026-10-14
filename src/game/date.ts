@@ -1,4 +1,4 @@
-import { TIME } from "./balance";
+import { SOCIAL, TIME } from "./balance";
 import type { GameDate } from "./types";
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -53,6 +53,11 @@ export function isWeekend(date: GameDate): boolean {
 /** 사귄 지 며칠째인지. 첫날(TIME.START_DATE)이 1일째. */
 export function daysTogether(date: GameDate): number {
   return daysBetween(TIME.START_DATE, date) + 1;
+}
+
+/** 사귄 지 100일, 200일, … 되는 날인지 */
+export function isAnniversary(date: GameDate): boolean {
+  return daysTogether(date) % SOCIAL.ANNIVERSARY_EVERY_DAYS === 0;
 }
 
 /** 주말의 마지막 날(일요일)인지 */
