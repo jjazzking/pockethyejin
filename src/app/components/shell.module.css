@@ -72,7 +72,7 @@
   right: 0;
   bottom: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   padding: 6px 8px max(6px, env(safe-area-inset-bottom));
   background: var(--surface);
   border-top: 1px solid var(--line);
@@ -91,6 +91,15 @@
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-dim);
+}
+
+a.tab {
+  text-decoration: none;
+}
+
+/* 아래 탭이 없는 넓은 화면에서만 보이는 머리글 버튼 */
+.wideOnly {
+  display: none !important;
 }
 
 .tab[aria-current="page"] {
@@ -136,6 +145,10 @@
 
   .tabs {
     display: none;
+  }
+
+  .wideOnly {
+    display: inline-flex !important;
   }
 }
 

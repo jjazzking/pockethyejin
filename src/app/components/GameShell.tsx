@@ -49,6 +49,9 @@ export default function GameShell({ view, banner, menu }: { view: GameView; bann
       <header className={styles.header}>
         <h1 className={styles.title}>꿍진이 키우기</h1>
         <div className={styles.menu}>
+          <Link href="/guide" className={`${styles.albumLink} ${styles.wideOnly}`}>
+            ❓ 게임 방법
+          </Link>
           <Link href="/album" className={styles.albumLink}>
             📸 사진첩
           </Link>
@@ -85,6 +88,12 @@ export default function GameShell({ view, banner, menu }: { view: GameView; bann
             {t.label}
           </button>
         ))}
+        <Link href="/guide" className={styles.tab}>
+          <span className={styles.tabEmoji} aria-hidden>
+            ❓
+          </span>
+          게임 방법
+        </Link>
       </nav>
 
       <ToastLayer view={view} />
