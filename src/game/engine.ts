@@ -1,6 +1,7 @@
 import { ACTIONS, DATE_OFFERING, FEED, SOCIAL } from "./balance";
 import { isWeekend } from "./date";
 import { sleep } from "./day";
+import { markSeen } from "./seen";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
 import {
   applyOffering,
@@ -240,5 +241,6 @@ export function applyAction(state: GameState, action: Action, ctx: ActionContext
   const turns = perform(s, action, ctx, events);
   updateCountdown(s, turns, events);
   emitWarningChange(hyejinBefore, s.hyejin.happiness, events);
+  markSeen(s, events);
   return { ok: true, state: s, events };
 }

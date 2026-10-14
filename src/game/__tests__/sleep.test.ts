@@ -168,6 +168,13 @@ describe("랜덤 이벤트 (번개 약속)", () => {
     expect(closeDay(makeState(), sequence(0.999, 0.2)).state.social).toBeNull();
   });
 
+  it("만난 이벤트는 이벤트 도감에 한 번만 남는다", () => {
+    const { state } = closeDay(makeState(), sequence(0.999, 0.19, 0.99));
+    expect(state.seenEvents).toEqual(["snack"]);
+    const again = closeDay({ ...state, social: null }, sequence(0.999, 0.19, 0.99)).state;
+    expect(again.seenEvents).toEqual(["snack"]);
+  });
+
   it("고르지 않은 이벤트는 하루가 끝나면 사라진다 (벌점 없음)", () => {
     const { state } = closeDay(withEvent("friends"), NEVER);
     expect(state.social).toBeNull();

@@ -5,17 +5,18 @@ import { useState, type ReactNode } from "react";
 import { isWeekend } from "@/game/date";
 import type { GameView } from "@/ui/useGame";
 import DatePanel, { EMPTY_PLAN, type DatePlan } from "./DatePanel";
+import EventsPanel from "./EventsPanel";
 import MainPanel from "./MainPanel";
 import MapPanel from "./MapPanel";
 import { PopupLayer, ToastLayer } from "./PopupLayer";
 import styles from "./shell.module.css";
 
-type Tab = "main" | "map" | "date";
+type Tab = "main" | "map" | "events" | "date";
 
 /**
  * 게임 화면 틀.
  * - 모바일 세로: 한 번에 한 화면, 아래 탭으로 메인·맵·데이트 전환
- * - 넓은 화면: 메인·맵·데이트를 나란히
+ * - 넓은 화면: 메인·맵·데이트를 나란히 (이벤트는 맵 아래)
  */
 export default function GameShell({ view, banner, menu }: { view: GameView; banner?: ReactNode; menu?: ReactNode }) {
   const [tab, setTab] = useState<Tab>("main");
@@ -41,6 +42,7 @@ export default function GameShell({ view, banner, menu }: { view: GameView; bann
   const tabs: { id: Tab; label: string; emoji: string; dot?: boolean }[] = [
     { id: "main", label: "메인", emoji: "🏠" },
     { id: "map", label: "추억 지도", emoji: "🗺️" },
+    { id: "events", label: "이벤트", emoji: "🎬" },
     { id: "date", label: "데이트", emoji: "💑", dot: dateOpen },
   ];
 
@@ -72,6 +74,9 @@ export default function GameShell({ view, banner, menu }: { view: GameView; bann
               setTab("date");
             }}
           />
+        </div>
+        <div className={styles.pane} data-pane="events">
+          <EventsPanel view={view} />
         </div>
         <div className={styles.pane} data-pane="date">
           <DatePanel view={view} plan={plan} setPlan={setPlan} />

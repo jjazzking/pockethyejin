@@ -2,6 +2,7 @@ import { BULLDAK, DAY_END, HYEJIN, JUNGWOO, SOCIAL, TIME } from "./balance";
 import { addDays, daysBetween, isSunday, isWeekend } from "./date";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
 import { rollPercent } from "./rules";
+import { markSeen } from "./seen";
 import type { ActionContext, ActionError, ActionResult, GameDate, GameEvent, GameState, Rng, SocialEventId } from "./types";
 
 const SOCIAL_EVENTS = Object.keys(SOCIAL.EVENTS) as SocialEventId[];
@@ -85,11 +86,13 @@ export function createInitialState(
     lastSettledDate: firstDay,
     nights: { realDay: null, used: 0 },
     social: null,
+    seenEvents: [],
     jungwooTiredActions: 0,
     knownPlaceCount: null,
   };
   const events: GameEvent[] = [];
   startDay(state, firstDay, rng, events);
+  markSeen(state, events);
   return { state, events };
 }
 
@@ -99,6 +102,7 @@ export function closeDay(state: GameState, rng: Rng): { state: GameState; events
   const events: GameEvent[] = [];
   endDay(s, events);
   startDay(s, addDays(s.lastSettledDate, 1), rng, events);
+  markSeen(s, events);
   return { state: s, events };
 }
 

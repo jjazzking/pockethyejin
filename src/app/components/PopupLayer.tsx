@@ -74,7 +74,8 @@ function BlockOverlay({ popup, urls, onClose }: { popup: Popup; urls: ReadonlyMa
       <div className={styles.blockStripes} aria-hidden />
       <div className={styles.block}>
         <div className={styles.blockScene} aria-hidden>
-          <span className={styles.blockFreezer}>🧊</span>
+          {/* eslint-disable-next-line @next/next/no-img-element -- 연출용 작은 소품, 레이아웃 고정 크기 */}
+          <img className={styles.blockFreezer} src="/characters/props/freezer.webp" alt="" draggable={false} />
           <JungwooRun popup={popup} urls={urls} />
         </div>
         <Face popup={popup} urls={urls} />

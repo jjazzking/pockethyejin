@@ -61,6 +61,7 @@
 /* 모바일: 선택한 탭만 보여준다 */
 .columns[data-tab="main"] > .pane:not([data-pane="main"]),
 .columns[data-tab="map"] > .pane:not([data-pane="map"]),
+.columns[data-tab="events"] > .pane:not([data-pane="events"]),
 .columns[data-tab="date"] > .pane:not([data-pane="date"]) {
   display: none;
 }
@@ -72,7 +73,7 @@
   right: 0;
   bottom: 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   padding: 6px 8px max(6px, env(safe-area-inset-bottom));
   background: var(--surface);
   border-top: 1px solid var(--line);
@@ -131,14 +132,30 @@ a.tab {
 
   .columns {
     grid-template-columns: minmax(360px, 1.15fr) minmax(280px, 1fr) minmax(300px, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "main map date"
+      "main events date";
+  }
+
+  .columns > .pane[data-pane="main"] {
+    grid-area: main;
+  }
+
+  .columns > .pane[data-pane="map"] {
+    grid-area: map;
+  }
+
+  .columns > .pane[data-pane="events"] {
+    grid-area: events;
   }
 
   .columns > .pane {
     display: grid !important;
   }
 
-  .columns > .pane[data-pane="map"],
   .columns > .pane[data-pane="date"] {
+    grid-area: date;
     position: sticky;
     top: 20px;
   }

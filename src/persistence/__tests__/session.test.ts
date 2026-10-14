@@ -252,6 +252,12 @@ describe("상태 구조 버전", () => {
     expect(() => migrateState(1, {}, {}, 2)).toThrow();
   });
 
+  it("v4 → v5: 저장된 상태로 알 수 있는 이벤트만 도감에 채운다", () => {
+    const v4: Partial<GameState> = makeState({ social: "poker", jungwoo: { rank: 2 }, hyejin: { jungwooBlockUsed: true } });
+    delete v4.seenEvents;
+    expect(migrateState(4, v4, undefined, 5).seenEvents).toEqual(["poker", "promoted", "block"]);
+  });
+
   it("앱보다 새로운 구조면 NewerSchemaError (오래된 탭이 덮어쓰지 않게)", async () => {
     const store = new MemoryGameStore({
       state: makeState(),

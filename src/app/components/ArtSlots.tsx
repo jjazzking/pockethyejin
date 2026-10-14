@@ -4,8 +4,8 @@
  */
 import styles from "./art.module.css";
 
-/** 장소 사진 자리. 사진이 없으면 도형 + 이모지 */
-export function PlaceArt({ url, locked, label }: { url?: string; locked?: boolean; label: string }) {
+/** 장소 사진(이벤트 그림) 자리. 사진이 없으면 도형 + 이모지 */
+export function PlaceArt({ url, locked, label, emoji = "📍" }: { url?: string; locked?: boolean; label: string; emoji?: string }) {
   if (locked) {
     return (
       <span className={`${styles.place} ${styles.locked}`} role="img" aria-label="잠긴 장소">
@@ -19,7 +19,7 @@ export function PlaceArt({ url, locked, label }: { url?: string; locked?: boolea
   }
   return (
     <span className={styles.place} role="img" aria-label={label}>
-      📍
+      {emoji}
     </span>
   );
 }

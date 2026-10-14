@@ -1,5 +1,5 @@
 import { BALANCE } from "@/game";
-import type { ActionError, SocialEventId } from "@/game/types";
+import type { ActionError, SocialEventId, StoryEventId } from "@/game/types";
 
 /** 화면 문구. 톤: "정우를 부려먹어서 혜진이를 키우는 게임" */
 
@@ -74,4 +74,16 @@ export const SOCIAL_TEXT: Record<
     body: "밤 11시, 혜진이가 갑자기 치킨이 먹고 싶대요.",
     choices: { order: { label: "치킨 시킨다", done: "야식은 진리. 둘 다 배부르고 행복 🍗" } },
   },
+};
+
+/** 이벤트 탭(도감) 문구 */
+export const STORY_TEXT: Record<StoryEventId, { emoji: string; title: string; caption: string }> = {
+  bulldak: { emoji: "🌶️", title: "불닭이 땡기는 밤", caption: "평일 아침, 혜진이가 오늘 밤 불닭이 먹고 싶대요." },
+  poker: { emoji: SOCIAL_TEXT.poker.emoji, title: "번개 포커", caption: "정우 친구들이랑 밤새 포커 한 판." },
+  friends: { emoji: SOCIAL_TEXT.friends.emoji, title: "민정·다은이랑", caption: "혜진이가 민정이, 다은이랑 놀러 간 날." },
+  snack: { emoji: SOCIAL_TEXT.snack.emoji, title: "야식 번개", caption: "밤 11시에 갑자기 치킨." },
+  sulk: { emoji: "😤", title: "정우 삐짐", caption: "웨이팅 또 가라니까 정우가 방에 들어가 버렸어요." },
+  promoted: { emoji: "📈", title: "정우 승진", caption: "열심히 일한 정우가 승진했어요." },
+  block: { emoji: "🙅‍♂️", title: "냉동실 사수", caption: "정우가 냉동실 앞을 몸으로 막아섰어요." },
+  raid: { emoji: "🧊", title: "냉동실 털림", caption: "혜진이가 냉동실 한정선을 절반 먹어치웠어요." },
 };

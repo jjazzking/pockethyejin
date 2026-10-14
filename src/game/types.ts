@@ -45,6 +45,9 @@ export type BulldakState = "none" | "active" | "resolved";
 /** 랜덤 이벤트 종류 (balance.ts SOCIAL.EVENTS) */
 export type SocialEventId = "poker" | "friends" | "snack";
 
+/** 이벤트 탭에 모이는 이벤트. 랜덤 번개 약속 + 게임 중 생기는 사건들 */
+export type StoryEventId = SocialEventId | "bulldak" | "sulk" | "promoted" | "block" | "raid";
+
 export interface GameState {
   jungwoo: JungwooState;
   hyejin: HyejinState;
@@ -57,6 +60,8 @@ export interface GameState {
   lastSettledDate: GameDate;
   /** 오늘 생긴 랜덤 이벤트 (아직 안 골랐으면). 고르거나 하루가 끝나면 null */
   social: SocialEventId | null;
+  /** 지금까지 만난 이벤트 (이벤트 탭 도감). 처음 만난 순서대로 */
+  seenEvents: StoryEventId[];
   /** 내일 아침 정우 행동에서 뺄 수 (밤샘 포커 피로) */
   jungwooTiredActions: number;
   /** 현실 하루에 잔 밤 횟수. realDay가 바뀌면 0부터 다시 센다. */
