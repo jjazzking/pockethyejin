@@ -1,5 +1,8 @@
+import { STORY_EVENTS } from "@/game/seen";
+import { STORY_TEXT } from "@/ui/copy";
 import { LOGIN_ART } from "@/ui/loginArt";
 import { CHARACTER_ART } from "./characterArt";
+import { EVENT_ART } from "./eventArt";
 
 /*
  * 사진첩: 그려둔 혜진·정우 그림을 전부 모아 보는 페이지(/album)의 내용.
@@ -15,13 +18,13 @@ export interface AlbumPhoto {
   caption: string;
 }
 
-export type AlbumShape = "full" | "square" | "poster" | "wide";
+export type AlbumShape = "full" | "square" | "poster" | "wide" | "scene";
 
 export interface AlbumSection {
   id: string;
   title: string;
   photos: AlbumPhoto[];
-  /** 전신(세로 2:3), 얼굴·장면(정사각형), 표지(세로 9:16) */
+  /** 전신(세로 2:3), 얼굴·장면(정사각형), 표지(세로 9:16), 이벤트 그림(가로 3:2) */
   shape: AlbumShape;
 }
 
@@ -223,6 +226,15 @@ export const ALBUM: AlbumSection[] = [
       hj("face-with-jeongwoo.webp", "볼 맞대기", "정우가 볼을 꾹 맞대니 혜진이는 땀 삐질. 그래도 웃음은 못 참는다."),
       hj("face-massage.webp", "어깨 주물러 드릴게요", "팔짱 끼고 삐진 혜진이 뒤에서 정우가 열심히 어깨 안마. 효과는… 아직 모름."),
     ],
+  },
+  {
+    id: "events",
+    title: "이벤트",
+    shape: "scene",
+    photos: STORY_EVENTS.flatMap((id) => {
+      const path = EVENT_ART[id];
+      return path ? [{ path, title: STORY_TEXT[id].title, caption: STORY_TEXT[id].caption }] : [];
+    }),
   },
 ];
 

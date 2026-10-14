@@ -98,6 +98,10 @@
   grid-template-columns: minmax(0, 420px);
 }
 
+.grid[data-shape="scene"] {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
 .grid[data-shape="full"] {
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
@@ -143,8 +147,14 @@
   aspect-ratio: 16 / 9;
 }
 
+/* 이벤트 그림은 이벤트 탭과 같은 3:2로 자른다 */
+.thumb[data-shape="scene"] {
+  aspect-ratio: 3 / 2;
+}
+
 .thumb[data-shape="poster"] img,
-.thumb[data-shape="wide"] img {
+.thumb[data-shape="wide"] img,
+.thumb[data-shape="scene"] img {
   object-fit: cover;
 }
 
@@ -237,6 +247,10 @@
 
 .viewerImageWrap[data-shape="wide"] {
   aspect-ratio: 16 / 9;
+}
+
+.viewerImageWrap[data-shape="scene"] {
+  aspect-ratio: 4 / 3;
 }
 
 .viewerImageWrap[data-shape="full"] {
