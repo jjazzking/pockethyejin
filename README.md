@@ -2,7 +2,7 @@
 
 정우를 부려먹어서 혜진이를 키우는 커플 육성 게임. 기획서: [`game-design-spec.md`](./game-design-spec.md)
 
-- 프레임워크: Next.js (App Router, TypeScript) — Vercel 배포 예정
+- 프레임워크: Next.js (App Router, TypeScript) — Vercel + Netlify 배포 (회사 PC에서 Vercel이 막혀서 Netlify에도 올린다)
 - 백엔드: Supabase (Auth + Postgres)
 - 테스트: Vitest
 
@@ -38,7 +38,18 @@ npm run simulate   # 밸런스 시뮬레이터 (전략 4개 × 12주 × 100회)
    - `20261013000500_seed_mood_art.sql`: 시무룩·화남·위기 혜진 전신 18장, 정우 삐짐·눈치 7장, "냉동실 경고" 팝업 그림 1장
 3. **Authentication → Users → Add user**에서 혜진 계정(이메일 + 비밀번호)을 만든다. 이때 "Auto Confirm User"를 체크한다.
 4. **Authentication → Sign In / Providers**에서 "Allow new users to sign up"을 끈다. 이렇게 하면 계정이 하나로 고정된다.
-5. `.env.example`을 `.env.local`로 복사하고 URL과 Publishable key를 채운다. Vercel에는 같은 이름으로 환경 변수를 등록한다.
+5. `.env.example`을 `.env.local`로 복사하고 URL과 Publishable key를 채운다. Vercel·Netlify에도 같은 이름으로 환경 변수를 등록한다.
+
+### Netlify 배포
+
+설정은 `netlify.toml`에 있다 (빌드 명령, Node 22). Next.js 런타임은 Netlify가 알아서 붙인다.
+
+1. Netlify → **Add new project → Import an existing project → GitHub**에서 이 저장소를 고른다. 브랜치는 `main`.
+2. 빌드 설정은 `netlify.toml`에서 읽으니 그대로 둔다.
+3. **Environment variables**에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`를 Vercel과 같은 값으로 넣는다. `NEXT_PUBLIC_` 값은 빌드할 때 박히므로, 나중에 바꾸면 다시 배포해야 한다.
+4. 배포하면 `https://<이름>.netlify.app` 주소가 생긴다. 로그인은 비밀번호 방식이라 Supabase 쪽 설정은 바꿀 게 없다.
+
+Vercel과 Netlify는 같은 Supabase를 쓰므로 어느 주소로 들어가도 같은 게임이 이어진다. 로그인은 주소마다 따로라서 Netlify 주소에서 처음 한 번은 다시 로그인한다.
 
 로그인은 **이메일 + 비밀번호** 방식이다.
 - 폰과 컴퓨터에서 각각 한 번만 로그인하면 세션이 브라우저에 남아서 계속 유지된다.
