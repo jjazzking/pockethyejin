@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BALANCE } from "@/game";
-import { daysTogether } from "@/game/date";
+import { dayOfWeek, daysTogether } from "@/game/date";
 import { SULK_LINES } from "@/ui/copy";
 import type { GameView, Popup } from "@/ui/useGame";
 import CharacterFrame from "./CharacterFrame";
@@ -35,6 +35,7 @@ function SummaryBody({ popup }: { popup: Extract<Popup, { kind: "summary" }> }) 
         {s.breakdown.overwork < 0 && <li>💼 정우가 일만 해서 서운해요 {s.breakdown.overwork}</li>}
         {s.breakdown.bulldakIgnored < 0 && <li>🌶️ 불닭을 못 먹었어요 {s.breakdown.bulldakIgnored}</li>}
         {change === 0 && <li>😴 푹 잤어요</li>}
+        {dayOfWeek(s.toDate) === 6 && <li>🎉 <b>주말 시작!</b> 이번 주말엔 혜진이랑 데이트 갈 수 있어요</li>}
         {s.jungwooSulkHealed && <li>😤→🙂 삐졌던 정우가 자고 일어나서 풀렸어요</li>}
         {s.jungwooTired > 0 && <li>🥱 밤샘 포커 여파로 정우가 피곤해요 (오늘 행동 -{s.jungwooTired})</li>}
         {s.countdownTurnsLeft !== null && <li>🚨 냉동실 카운트다운 중! {s.countdownTurnsLeft}턴 남았어요</li>}
@@ -130,7 +131,7 @@ function WaitingOverlay({ popup, urls, onClose }: { popup: Extract<Popup, { kind
         )}
         {stage !== "ask" && !rejected && (
           // eslint-disable-next-line @next/next/no-img-element -- 연출용 고정 그림
-          <img className={styles.waitingScene} src="/characters/props/waiting-line.webp" alt="땡볕에 줄 선 정우" draggable={false} />
+          <img className={styles.scene} src="/characters/props/waiting-line.webp" alt="땡볕에 줄 선 정우" draggable={false} />
         )}
         {stage === "line" && (
           <>

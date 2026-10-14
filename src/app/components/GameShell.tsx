@@ -62,6 +62,25 @@ export default function GameShell({ view, banner, menu }: { view: GameView; bann
       </header>
       {banner}
 
+      {dateOpen && (
+        <div className={styles.weekend} role="status">
+          <div>
+            <strong>🎉 주말이에요!</strong>
+            <span>혜진이랑 데이트 갈 수 있는 날 💕</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setTab("date");
+              // 넓은 화면에선 탭 대신 데이트 칸으로 스크롤
+              document.querySelector('[data-pane="date"]')?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          >
+            💑 데이트 하러 가기
+          </button>
+        </div>
+      )}
+
       <main className={styles.columns} data-tab={tab}>
         <div className={styles.pane} data-pane="main">
           <MainPanel view={view} />
