@@ -15,7 +15,7 @@ export interface AlbumPhoto {
   caption: string;
 }
 
-export type AlbumShape = "full" | "square" | "poster";
+export type AlbumShape = "full" | "square" | "poster" | "wide";
 
 export interface AlbumSection {
   id: string;
@@ -38,6 +38,18 @@ export const ALBUM: AlbumSection[] = [
         path: LOGIN_ART.mobile,
         title: "꿍진이 키우기",
         caption: "관람차와 카페가 보이는 숲길을 혜진이, 정우, 하얀 강아지가 신나게 걸어간다. 비둘기도 따라온다. 로그인 화면 그림.",
+      },
+    ],
+  },
+  {
+    id: "cover-wide",
+    title: "표지 (컴퓨터)",
+    shape: "wide",
+    photos: [
+      {
+        path: LOGIN_ART.desktop,
+        title: "꿍진이 키우기 (가로)",
+        caption: "같은 숲길을 넓게 담은 컴퓨터용 표지. 혜진이가 앞을 가리키고 정우는 두 팔 벌려 신났다.",
       },
     ],
   },

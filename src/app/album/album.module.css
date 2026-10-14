@@ -94,6 +94,10 @@
   grid-template-columns: minmax(0, 220px);
 }
 
+.grid[data-shape="wide"] {
+  grid-template-columns: minmax(0, 420px);
+}
+
 .grid[data-shape="full"] {
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
@@ -135,7 +139,12 @@
   aspect-ratio: 9 / 16;
 }
 
-.thumb[data-shape="poster"] img {
+.thumb[data-shape="wide"] {
+  aspect-ratio: 16 / 9;
+}
+
+.thumb[data-shape="poster"] img,
+.thumb[data-shape="wide"] img {
   object-fit: cover;
 }
 
@@ -224,6 +233,10 @@
   width: auto;
   height: 60dvh;
   max-width: 100%;
+}
+
+.viewerImageWrap[data-shape="wide"] {
+  aspect-ratio: 16 / 9;
 }
 
 .viewerImageWrap[data-shape="full"] {

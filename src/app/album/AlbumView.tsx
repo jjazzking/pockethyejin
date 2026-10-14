@@ -9,7 +9,7 @@ import styles from "./album.module.css";
 const FLAT = ALBUM.flatMap((section) => section.photos.map((photo) => ({ photo, section })));
 
 function Usage({ path, shape }: { path: string; shape: AlbumShape }) {
-  if (shape === "poster") return <span className={styles.chip}>🎮 로그인 화면</span>;
+  if (shape === "poster" || shape === "wide") return <span className={styles.chip}>🎮 로그인 화면</span>;
   const usage = albumUsage(path);
   if (usage.length === 0) return <span className={`${styles.chip} ${styles.chipOnly}`}>📸 사진첩에서만</span>;
   return (
