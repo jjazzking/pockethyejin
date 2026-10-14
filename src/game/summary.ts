@@ -17,6 +17,8 @@ export interface NightSummary {
   countdownTurnsLeft: number | null;
   /** 삐졌던 정우가 풀렸는지 */
   jungwooSulkHealed: boolean;
+  /** 밤샘 포커 피로로 오늘 줄어든 정우 행동 수 */
+  jungwooTired: number;
 }
 
 /** 잠자기 전후 상태와 이벤트로 요약을 만든다. 날짜가 넘어가지 않았으면 null. */
@@ -38,5 +40,6 @@ export function summarizeNight(before: GameState, after: GameState, events: Game
     warningStarted: events.some((e) => e.type === "warningStarted"),
     countdownTurnsLeft: after.hyejin.countdownTurnsLeft,
     jungwooSulkHealed: events.some((e) => e.type === "dayStarted" && e.sulkHealed),
+    jungwooTired: events.reduce((n, e) => (e.type === "dayStarted" ? n + e.tired : n), 0),
   };
 }

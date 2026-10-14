@@ -2,7 +2,7 @@ import { faceTagForEvent } from "@/content/images";
 import type { FaceEventTag, JungwooFaceTag, Place } from "@/content/types";
 import type { NightSummary } from "@/game/summary";
 import type { GameEvent, Stars } from "@/game/types";
-import { PLAY_ALONE_FLAVORS, formatMoney, rankName, type PlayFlavor } from "./copy";
+import { PLAY_ALONE_FLAVORS, SOCIAL_TEXT, formatMoney, rankName, type PlayFlavor } from "./copy";
 
 /** 화면에 띄울 팝업 (얼굴 그림은 띄울 때 faceTag로 고른다. 정우가 주인공이면 jungwooFace로 정우 얼굴) */
 export type PopupSpec =
@@ -90,6 +90,14 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
       };
     case "bulldakCraving":
       return { kind: "card", emoji: "🌶️", title: "혜진이가 불닭이 땡긴다!", body: "자기 전에 정우를 편의점에 보내주세요.", faceTag };
+    case "socialEvent": {
+      const t = SOCIAL_TEXT[event.event];
+      return { kind: "card", emoji: t.emoji, title: t.title, body: `${t.body} 메인 화면에서 골라주세요. (행동은 안 써요)`, faceTag: "play_together" };
+    }
+    case "socialDone":
+      return SOCIAL_TEXT[event.event].choices[event.choice]?.done ?? null;
+    case "socialSkipped":
+      return null;
     case "newPlacesAdded":
       return {
         kind: "card",

@@ -133,7 +133,7 @@ describe("웨이팅", () => {
     const rejected = act(s, { type: "waiting", quantity: 1 }, ctx(fixed(0))).state;
     const { state, events } = settle(rejected, "2026-10-13", NEVER);
     expect(state.jungwoo).toMatchObject({ happiness: 100, sulking: false, actionsLeft: 5 });
-    expect(events).toContainEqual({ type: "dayStarted", date: "2026-10-13", sulkHealed: true });
+    expect(events).toContainEqual({ type: "dayStarted", date: "2026-10-13", sulkHealed: true, tired: 0 });
   });
 
   it("삐지지 않은 날은 다음 날에도 정우 행복도가 그대로", () => {

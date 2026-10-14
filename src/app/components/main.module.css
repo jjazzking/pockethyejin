@@ -137,6 +137,16 @@
   border-color: #fff;
 }
 
+.social {
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 10px;
+}
+
 @keyframes pulseHot {
   0%,
   100% {

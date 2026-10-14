@@ -1,0 +1,54 @@
+.card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  line-height: 1.55;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.card ul,
+.card ol {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 4px;
+}
+
+.danger {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.tip {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 0.9rem;
+}
+
+.table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.table th,
+.table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.table td:first-child {
+  text-align: left;
+  font-weight: 700;
+}

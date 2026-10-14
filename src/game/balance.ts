@@ -151,3 +151,25 @@ export const DATE_OFFERING = {
   /** 3성 확률 상한 (%) */
   MAX_THREE_STAR_PERCENT: 95,
 } as const;
+
+/**
+ * 랜덤 이벤트 (번개 약속). 아침에 확률로 하나가 생기고 그날 자기 전까지 고른다.
+ * 정우 행동은 쓰지 않는다. 대신 돈이나 다음 날 피로(행동 감소)가 든다. 안 고르면 그냥 지나간다.
+ */
+export const SOCIAL = {
+  /** 아침마다 이벤트가 생길 확률 (%) */
+  CHANCE_PERCENT: 20,
+  /** 이벤트 → 고를 수 있는 선택지 → 효과. tired: 다음 날 정우 행동 감소 */
+  EVENTS: {
+    poker: {
+      go: { hyejin: 20, jungwoo: 20, money: 0, tired: 2 },
+    },
+    friends: {
+      solo: { hyejin: 15, jungwoo: 0, money: 0, tired: 0 },
+      join: { hyejin: 25, jungwoo: 10, money: 50_000, tired: 0 },
+    },
+    snack: {
+      order: { hyejin: 15, jungwoo: 10, money: 20_000, tired: 0 },
+    },
+  },
+} as const;

@@ -1,8 +1,10 @@
-import { BULLDAK, DAY_END, HYEJIN, JUNGWOO, TIME } from "./balance";
+import { BULLDAK, DAY_END, HYEJIN, JUNGWOO, SOCIAL, TIME } from "./balance";
 import { addDays, daysBetween, isSunday, isWeekend } from "./date";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
 import { rollPercent } from "./rules";
-import type { ActionContext, ActionError, ActionResult, GameDate, GameEvent, GameState, Rng } from "./types";
+import type { ActionContext, ActionError, ActionResult, GameDate, GameEvent, GameState, Rng, SocialEventId } from "./types";
+
+const SOCIAL_EVENTS = Object.keys(SOCIAL.EVENTS) as SocialEventId[];
 
 export function createInitialJungwoo(): GameState["jungwoo"] {
   return {
@@ -35,7 +37,7 @@ function endDay(s: GameState, events: GameEvent[]): void {
   if (isSunday(date)) s.weekendDateUsed = false;
 }
 
-/** 새 날 아침: 행동 충전, 삐짐 해제, 불닭 판정(평일만) */
+/** 새 날 아침: 행동 충전(전날 밤샘 피로만큼 덜), 삐짐 해제, 불닭 판정(평일만), 랜덤 이벤트 판정 */
 function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[]): void {
   const j = s.jungwoo;
   const sulkHealed = j.sulking;
@@ -43,15 +45,23 @@ function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[]): 
     j.happiness = JUNGWOO.HAPPINESS_AFTER_SULK;
     j.sulking = false;
   }
-  j.actionsLeft = TIME.ACTIONS_PER_DAY;
+  const tired = s.jungwooTiredActions;
+  j.actionsLeft = Math.max(0, TIME.ACTIONS_PER_DAY - tired);
+  s.jungwooTiredActions = 0;
   j.workCountToday = 0;
   s.lastSettledDate = date;
-  events.push({ type: "dayStarted", date, sulkHealed });
+  events.push({ type: "dayStarted", date, sulkHealed, tired });
 
   s.bulldak = "none";
   if (!isWeekend(date) && rollPercent(rng, BULLDAK.WEEKDAY_CHANCE_PERCENT)) {
     s.bulldak = "active";
     events.push({ type: "bulldakCraving", date });
+  }
+
+  s.social = null;
+  if (rollPercent(rng, SOCIAL.CHANCE_PERCENT)) {
+    s.social = SOCIAL_EVENTS[Math.min(SOCIAL_EVENTS.length - 1, Math.floor(rng() * SOCIAL_EVENTS.length))];
+    events.push({ type: "socialEvent", event: s.social });
   }
 }
 
@@ -74,6 +84,8 @@ export function createInitialState(
     weekendDateUsed: false,
     lastSettledDate: firstDay,
     nights: { realDay: null, used: 0 },
+    social: null,
+    jungwooTiredActions: 0,
     knownPlaceCount: null,
   };
   const events: GameEvent[] = [];

@@ -1,5 +1,5 @@
 import { BALANCE } from "@/game";
-import type { ActionError } from "@/game/types";
+import type { ActionError, SocialEventId } from "@/game/types";
 
 /** 화면 문구. 톤: "정우를 부려먹어서 혜진이를 키우는 게임" */
 
@@ -19,6 +19,8 @@ export const ERROR_TEXT: Record<ActionError, string> = {
   INVALID_OFFERING: "한정선은 정해진 단위로만 바칠 수 있어요.",
   OFFERING_NOT_ALLOWED: "이미 별 3개를 받은 장소예요.",
   NO_NIGHTS_LEFT: "오늘은 여기까지! 내일 아침 6시에 또 놀자 🌙",
+  NO_SOCIAL_EVENT: "오늘은 약속이 없어요.",
+  INVALID_CHOICE: "다시 골라주세요.",
 };
 
 export const SULKING_TEXT = "정우가 삐져서 방에 들어갔다… 자고 일어나면 풀려요.";
@@ -44,4 +46,32 @@ export type PlayFlavor = "dj" | "game";
 export const PLAY_ALONE_FLAVORS: Record<PlayFlavor, { label: string; emoji: string; done: string }> = {
   dj: { label: "디제잉", emoji: "🎧", done: "정우가 방에서 디제잉하며 혼자 신났다 🎧" },
   game: { label: "게임", emoji: "🎮", done: "정우가 게임 한 판으로 기분이 풀렸다 🎮" },
+};
+
+/** 랜덤 이벤트 문구. 선택지 키는 balance.ts SOCIAL.EVENTS와 같다 */
+export const SOCIAL_TEXT: Record<
+  SocialEventId,
+  { emoji: string; title: string; body: string; choices: Record<string, { label: string; done: string }> }
+> = {
+  poker: {
+    emoji: "🃏",
+    title: "오늘 밤 번개 포커!",
+    body: "정우 친구들이 밤새 포커 치자고 연락이 왔어요. 혜진이도 같이 가자는데…",
+    choices: { go: { label: "밤새 치러 간다", done: "밤새 포커! 둘 다 신났지만 정우는 내일 좀 피곤할 듯 🃏" } },
+  },
+  friends: {
+    emoji: "👯",
+    title: "민정·다은이랑 놀러 간대요",
+    body: "혜진이가 민정이, 다은이랑 놀기로 했어요. 정우도 합류할까요?",
+    choices: {
+      solo: { label: "혜진이만 보낸다", done: "셋이서 수다 삼매경. 혜진이 기분 최고 👯" },
+      join: { label: "정우도 합류", done: "정우까지 합류! 넷이서 신나게 놀았다 🎉" },
+    },
+  },
+  snack: {
+    emoji: "🍗",
+    title: "야식 번개!",
+    body: "밤 11시, 혜진이가 갑자기 치킨이 먹고 싶대요.",
+    choices: { order: { label: "치킨 시킨다", done: "야식은 진리. 둘 다 배부르고 행복 🍗" } },
+  },
 };

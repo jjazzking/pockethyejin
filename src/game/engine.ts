@@ -1,4 +1,4 @@
-import { ACTIONS, DATE_OFFERING, FEED } from "./balance";
+import { ACTIONS, DATE_OFFERING, FEED, SOCIAL } from "./balance";
 import { isWeekend } from "./date";
 import { sleep } from "./day";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
@@ -38,6 +38,13 @@ function checkActions(s: GameState, cost: number): ActionError | null {
   return null;
 }
 
+type SocialChoice = { hyejin: number; jungwoo: number; money: number; tired: number };
+
+/** 오늘 이벤트의 선택지 효과. 없는 선택지면 undefined */
+function socialChoice(s: GameState, choice: string): SocialChoice | undefined {
+  return s.social ? (SOCIAL.EVENTS[s.social] as Record<string, SocialChoice>)[choice] : undefined;
+}
+
 /** 턴을 쓰는 행동 (잠자기 제외) */
 type TurnAction = Exclude<Action, { type: "sleep" }>;
 
@@ -64,6 +71,14 @@ function validate(s: GameState, action: TurnAction, ctx: ActionContext): ActionE
       const err = checkActions(s, ACTIONS.CONVENIENCE_STORE.ACTION_COST);
       if (err) return err;
       if (s.jungwoo.money < ACTIONS.CONVENIENCE_STORE.COST_MONEY) return "NOT_ENOUGH_MONEY";
+      return null;
+    }
+    case "social": {
+      if (!s.social) return "NO_SOCIAL_EVENT";
+      if (action.choice === "skip") return null;
+      const c = socialChoice(s, action.choice);
+      if (!c) return "INVALID_CHOICE";
+      if (s.jungwoo.money < c.money) return "NOT_ENOUGH_MONEY";
       return null;
     }
     case "feed":
@@ -155,6 +170,22 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
       j.actionsLeft -= ACTIONS.CONVENIENCE_STORE.ACTION_COST;
       events.push({ type: "bulldakResolved" });
       return ACTIONS.CONVENIENCE_STORE.ACTION_COST;
+    case "social": {
+      // 이벤트는 정우 행동을 쓰지 않는다 (턴 0)
+      const event = s.social!;
+      const c = socialChoice(s, action.choice);
+      s.social = null;
+      if (!c) {
+        events.push({ type: "socialSkipped", event });
+        return 0;
+      }
+      j.money -= c.money;
+      addHyejinHappiness(s, c.hyejin);
+      addJungwooHappiness(s, c.jungwoo);
+      s.jungwooTiredActions += c.tired;
+      events.push({ type: "socialDone", event, choice: action.choice });
+      return 0;
+    }
     case "feed":
       h.hanjeongseon -= action.count;
       addHyejinHappiness(s, action.count * FEED.HYEJIN_HAPPINESS_PER_HANJEONGSEON);
