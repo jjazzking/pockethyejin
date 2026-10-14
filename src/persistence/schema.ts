@@ -1,12 +1,12 @@
 import { createInitialState } from "@/game/day";
-import type { GameState } from "@/game/types";
+import type { GameState, StoryEventId } from "@/game/types";
 
 /**
  * 저장되는 GameState 구조의 버전. GameState 모양을 바꾸면 1 올리고
  * MIGRATIONS에 (이전 버전 → 다음 버전) 변환 함수를 추가한다.
  * 동시 수정 방지용 버전(game_states.version)과는 별개다.
  */
-export const CURRENT_SCHEMA_VERSION = 4;
+export const CURRENT_SCHEMA_VERSION = 5;
 
 /** MIGRATIONS[n]: 구조 버전 n → n + 1 */
 const MIGRATIONS: Record<number, (raw: unknown) => unknown> = {
@@ -17,6 +17,16 @@ const MIGRATIONS: Record<number, (raw: unknown) => unknown> = {
   2: () => createInitialState(undefined, () => 0.999).state,
   // v4: 랜덤 이벤트. 진행 중인 게임은 이벤트 없음·피로 없음으로 시작한다.
   3: (raw) => ({ ...(raw as object), social: null, jungwooTiredActions: 0 }),
+  // v5: 이벤트 도감. 저장된 상태로 알 수 있는 것만 채운다 (오늘 이벤트, 승진, 정우가 막아준 적).
+  4: (raw) => {
+    const s = raw as Omit<GameState, "seenEvents">;
+    const seen: StoryEventId[] = [];
+    if (s.bulldak === "active") seen.push("bulldak");
+    if (s.social) seen.push(s.social);
+    if (s.jungwoo.rank > 1) seen.push("promoted");
+    if (s.hyejin.jungwooBlockUsed) seen.push("block");
+    return { ...s, seenEvents: seen };
+  },
 };
 
 /** 이 앱보다 새로운 구조로 저장된 상태 (다른 기기에서 새 버전 앱을 쓴 경우) */

@@ -163,8 +163,7 @@
 .blockFreezer {
   height: 10rem;
   width: auto;
-  margin-right: -4.5rem; /* 정우가 냉동고 앞을 막아선 것처럼 겹친다 */
-  mask-image: linear-gradient(to right, #000 85%, transparent); /* 잘라낸 오른쪽 끝을 흐리게 */
+  margin-right: -2.5rem; /* 정우가 냉장고 앞을 막아선 것처럼 겹친다 */
   filter: drop-shadow(0 0 8px rgba(120, 200, 255, 0.8));
   user-select: none;
 }

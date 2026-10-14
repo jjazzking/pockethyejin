@@ -27,6 +27,7 @@ const SHOTS = {
   block: { w: 525, h: 832, caption: "정우가 막아줄 때" },
   "date-plan": { w: 585, h: 1266, caption: "데이트 고르기" },
   "date-result": { w: 562, h: 592, caption: "다녀오면" },
+  events: { w: 585, h: 1266, caption: "이벤트 도감" },
 } as const;
 
 function Shots({ names }: { names: (keyof typeof SHOTS)[] }) {
@@ -197,12 +198,16 @@ export default function GuidePage() {
       <section className={styles.card}>
         <h2>✨ 그 밖에</h2>
         <ul>
+          <li>
+            <b>🎬 이벤트</b> 탭에는 지금까지 만난 이벤트(불닭, 번개 약속, 승진, 냉동실 사수 등)가 모여요. 아직 못 만난 건 ???로 보여요.
+          </li>
           <li>정우가 새 장소를 추가하면 다음 접속 때 &quot;새 추억이 추가됐어요!&quot; 알림이 떠요.</li>
           <li>메인 화면의 혜진이를 누르면 다른 포즈로 바뀌어요.</li>
           <li>
             위쪽 <b>📸 사진첩</b>에서 그동안 그린 혜진이와 정우를 전부 볼 수 있어요.
           </li>
         </ul>
+        <Shots names={["events"]} />
       </section>
     </div>
   );
