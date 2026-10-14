@@ -85,8 +85,8 @@ export default function GuidePage() {
             정우가 하루에 일을 {DAY_END.OVERWORK_THRESHOLD}번 이상 하면 {plus(DAY_END.OVERWORK_PENALTY)} (일만 하면 서운해요).
           </li>
           <li>
-            평일 아침 {BULLDAK.WEEKDAY_CHANCE_PERCENT}% 확률로 <b>불닭이 땡겨요</b>. 자기 전에 정우를 편의점에 보내면 {plus(A.CONVENIENCE_STORE.HYEJIN_HAPPINESS)}, 안 보내면{" "}
-            {plus(DAY_END.BULLDAK_IGNORED_PENALTY)}.
+            평일에 가끔({BULLDAK.WEEKDAY_CHANCE_PERCENT}%) 혜진이가 <b>오늘 밤 불닭이 땡긴대요</b>. 아침에 미리 알려주니, 자기 전까지 정우를 편의점에 보내면{" "}
+            {plus(A.CONVENIENCE_STORE.HYEJIN_HAPPINESS)}, 안 보내면 {plus(DAY_END.BULLDAK_IGNORED_PENALTY)}.
           </li>
         </ul>
       </section>
