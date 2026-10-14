@@ -154,10 +154,13 @@ a.tab {
     display: grid !important;
   }
 
+  /* 화면에 붙어 있는 데이트 칸이 창보다 길면 칸 안에서 스크롤한다 (안 그러면 아래쪽 출발 버튼이 안 보임) */
   .columns > .pane[data-pane="date"] {
     grid-area: date;
     position: sticky;
     top: 20px;
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
   }
 
   .tabs {
