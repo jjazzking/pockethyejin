@@ -161,7 +161,7 @@ export const SOCIAL_TEXT: Record<
     choices: {
       save: { label: "통장에 고이 넣는다", done: "월급 그대로 저축. 정우 마음이 든든하다 💰" },
       treat: { label: "혜진이 맛있는 거 사준다", done: "월급날 외식! 혜진이 볼이 빵빵 🍽️" },
-      hanjeongseon: { label: "한정선 왕창 사온다", done: "월급 털어 한정선 3개! 냉동실이 든든해졌다 🍡" },
+      hanjeongseon: { label: "한정선 왕창 사온다", done: "월급 털어 한정선 5개! 냉동실이 든든해졌다 🍡" },
     },
   },
   anniversary: {

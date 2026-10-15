@@ -223,7 +223,7 @@ export const SOCIAL = {
     payday: {
       save: { hyejin: 0, jungwoo: 10, money: 0, hanjeongseon: 0, tired: 0 },
       treat: { hyejin: 20, jungwoo: 0, money: 50_000, hanjeongseon: 0, tired: 0 },
-      hanjeongseon: { hyejin: 0, jungwoo: 0, money: 50_000, hanjeongseon: 3, tired: 0 },
+      hanjeongseon: { hyejin: 0, jungwoo: 0, money: 50_000, hanjeongseon: 5, tired: 0 },
     },
     anniversary: {
       cake: { hyejin: 30, jungwoo: 10, money: 30_000, hanjeongseon: 0, tired: 0 },

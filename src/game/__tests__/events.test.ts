@@ -42,7 +42,7 @@ describe("날짜로 정해지는 이벤트", () => {
     expect(treat.jungwoo.money).toBeLessThan(SOCIAL.PAYDAY_SALARY);
     const bought = act(paid, { type: "social", choice: "hanjeongseon" }).state;
     expect(bought.jungwoo.money).toBe(SOCIAL.PAYDAY_SALARY - 50_000);
-    expect(bought.hyejin.hanjeongseon).toBe(3);
+    expect(bought.hyejin.hanjeongseon).toBe(5);
   });
 });
 
