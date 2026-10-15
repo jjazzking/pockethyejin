@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIONS } from "../balance";
 import { advanceTo as settle } from "../day";
 import { applyAction } from "../engine";
 import { budgetPercents, maxUsefulOffering } from "../rules";
@@ -71,11 +72,6 @@ describe("일", () => {
     expect(r2.state.jungwoo.money).toBe(30_000 + 45_000);
   });
 
-  it("정우 행복도는 0 아래로 내려가지 않고, 0이어도 일은 가능", () => {
-    const { state } = act(makeState({ jungwoo: { happiness: 5 } }), { type: "work" });
-    expect(state.jungwoo.happiness).toBe(0);
-    expect(applyAction(state, { type: "work" }, ctx()).ok).toBe(true);
-  });
 });
 
 describe("웨이팅", () => {
@@ -317,5 +313,14 @@ describe("데이트", () => {
 
   it("처음 가는 장소에도 한정선을 바칠 수 있다", () => {
     expect(applyAction(weekend({ hyejin: { hanjeongseon: 5 } }), date("p1", 50_000, 5), ctx()).ok).toBe(true);
+  });
+});
+
+describe("정우 체력", () => {
+  it("일 하면 행복도가 0 밑으로 떨어질 만큼 지쳤으면 일을 못 시킨다", () => {
+    const tired = (happiness: number) => makeState({ jungwoo: { happiness } });
+    expect(applyAction(tired(-ACTIONS.WORK.JUNGWOO_HAPPINESS - 1), { type: "work" }, ctx())).toEqual({ ok: false, error: "JUNGWOO_EXHAUSTED" });
+    expect(applyAction(tired(0), { type: "work" }, ctx())).toEqual({ ok: false, error: "JUNGWOO_EXHAUSTED" });
+    expect(act(tired(-ACTIONS.WORK.JUNGWOO_HAPPINESS), { type: "work" }).state.jungwoo.happiness).toBe(0);
   });
 });

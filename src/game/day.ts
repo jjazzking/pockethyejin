@@ -82,6 +82,7 @@ function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[], l
     const pool = randomPool(date);
     s.social = pool[Math.min(pool.length - 1, Math.floor(rng() * pool.length))];
   }
+  if (s.social === "payday") j.money += SOCIAL.PAYDAY_SALARY;
   if (s.social) events.push({ type: "socialEvent", event: s.social });
 
   s.hyejin.sick = rollPercent(rng, SICK.CHANCE_PERCENT);

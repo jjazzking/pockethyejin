@@ -55,6 +55,7 @@ type TurnAction = Exclude<Action, { type: "sleep" }>;
 function validate(s: GameState, action: TurnAction, ctx: ActionContext): ActionError | null {
   switch (action.type) {
     case "work":
+      if (s.jungwoo.happiness + ACTIONS.WORK.JUNGWOO_HAPPINESS < 0) return "JUNGWOO_EXHAUSTED";
       return checkActions(s, ACTIONS.WORK.ACTION_COST);
     case "waiting": {
       if (!isPositiveInteger(action.quantity)) return "INVALID_QUANTITY";
@@ -244,10 +245,8 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
     case "date": {
       const percents = applyOffering(budgetPercents(action.budget)!, action.offering);
       const rolled = rollStars(ctx.rng, percents);
-      // 기념일이면 별 +1, 돌발 상황(비 -1 / 사장님 서비스 +1). 별은 1~3
-      const twist = rollLuck(ctx.luck, LUCK.DATE);
-      const bonus = (isAnniversary(s.lastSettledDate) ? 1 : 0) + (twist === "service" ? 1 : twist === "rain" ? -1 : 0);
-      const stars = Math.min(3, Math.max(1, rolled + bonus)) as Stars;
+      // 기념일 데이트는 별 하나 더
+      const stars = isAnniversary(s.lastSettledDate) ? (Math.min(3, rolled + 1) as Stars) : rolled;
       const prevBest = s.bestStars[action.placeId];
       j.money -= action.budget;
       h.hanjeongseon -= action.offering;
@@ -266,7 +265,6 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
         stars,
         newBest,
         firstVisit: prevBest === undefined,
-        ...(twist && { twist }),
       });
       return ACTIONS.DATE.ACTION_COST;
     }

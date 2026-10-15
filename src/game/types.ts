@@ -124,6 +124,8 @@ export type ActionError =
   | "NOT_ENOUGH_HANJEONGSEON"
   | "INVALID_QUANTITY"
   | "NO_BULLDAK_EVENT"
+  /** 정우가 너무 지쳐서 일 못 함 */
+  | "JUNGWOO_EXHAUSTED"
   /** 혜진이 감기라 같이 놀 수 없음 */
   | "HYEJIN_SICK"
   | "NOT_SICK"
@@ -153,7 +155,7 @@ export type GameEvent =
   | { type: "playedTogether"; luck?: "fight" | "great" }
   | { type: "bulldakResolved" }
   | { type: "porridgeDelivered" }
-  | { type: "dated"; placeId: string; stars: Stars; newBest: boolean; firstVisit: boolean; twist?: "rain" | "service" }
+  | { type: "dated"; placeId: string; stars: Stars; newBest: boolean; firstVisit: boolean }
   // 혜진
   | { type: "fed"; count: number }
   | { type: "leveledUp"; level: number; cost: number }

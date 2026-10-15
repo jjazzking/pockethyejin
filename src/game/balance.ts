@@ -176,9 +176,11 @@ export const SOCIAL = {
   /** 날짜로 정해지는 이벤트 (확률과 상관없이 그날 아침 생긴다). 기념일이 월급날보다 먼저 */
   ANNIVERSARY_EVERY_DAYS: 100,
   PAYDAY_DAY_OF_MONTH: 25,
+  /** 월급날 아침에 자동으로 들어오는 월급 */
+  PAYDAY_SALARY: 100_000,
   /**
    * 이벤트 → 고를 수 있는 선택지 → 효과.
-   * money: 드는 돈 (음수면 들어오는 돈), hanjeongseon: 한정선 변화, tired: 다음 날 정우 행동 감소
+   * money: 드는 돈, hanjeongseon: 한정선 변화, tired: 다음 날 정우 행동 감소
    */
   EVENTS: {
     poker: {
@@ -219,9 +221,9 @@ export const SOCIAL = {
       treat: { hyejin: 20, jungwoo: 10, money: 5_000, hanjeongseon: 0, tired: 0 },
     },
     payday: {
-      save: { hyejin: 0, jungwoo: 10, money: -100_000, hanjeongseon: 0, tired: 0 },
-      treat: { hyejin: 20, jungwoo: 0, money: -50_000, hanjeongseon: 0, tired: 0 },
-      hanjeongseon: { hyejin: 0, jungwoo: 0, money: -50_000, hanjeongseon: 3, tired: 0 },
+      save: { hyejin: 0, jungwoo: 10, money: 0, hanjeongseon: 0, tired: 0 },
+      treat: { hyejin: 20, jungwoo: 0, money: 50_000, hanjeongseon: 0, tired: 0 },
+      hanjeongseon: { hyejin: 0, jungwoo: 0, money: 50_000, hanjeongseon: 3, tired: 0 },
     },
     anniversary: {
       cake: { hyejin: 30, jungwoo: 10, money: 30_000, hanjeongseon: 0, tired: 0 },
@@ -244,8 +246,6 @@ export const LUCK = {
   WORK_OVERTIME_JUNGWOO: -10,
   /** 웨이팅: 1+1 행사(하나 더, 공짜) / 앞에서 품절(하나 덜, 그만큼 돈 안 듦) */
   WAITING: { extra: 10, short: 10 },
-  /** 데이트 돌발: 갑자기 비(별 -1) / 사장님 서비스(별 +1). 별은 1~3 */
-  DATE: { rain: 10, service: 10 },
   /** 오늘의 기분 (아침마다): 맑음 / 꿀꿀 / 꿀잠 */
   MOOD: { sunny: 10, gloomy: 10, rested: 10 },
   SUNNY_TOGETHER_BONUS: 5,

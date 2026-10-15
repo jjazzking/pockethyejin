@@ -164,6 +164,8 @@ function JungwooActions({ view, state }: { view: GameView; state: GameState }) {
         ))}
       </div>
 
+      {view.check({ type: "work" }) === "JUNGWOO_EXHAUSTED" && <Hint>{ERROR_TEXT.JUNGWOO_EXHAUSTED}</Hint>}
+
       <div className={styles.waiting}>
         <div className={styles.waitingHead}>
           <strong>🍡 한정선 웨이팅</strong>
@@ -250,7 +252,6 @@ function SocialCallout({ view, state }: { view: GameView; state: GameState }) {
             e.hyejin !== 0 && `혜진 ${signed(e.hyejin)}`,
             e.jungwoo !== 0 && `정우 ${signed(e.jungwoo)}`,
             e.money > 0 && formatMoney(e.money),
-            e.money < 0 && `+${formatMoney(-e.money)}`,
             e.hanjeongseon !== 0 && `한정선 ${signed(e.hanjeongseon)}`,
             e.tired > 0 && `내일 행동 -${e.tired}`,
           ]

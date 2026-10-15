@@ -59,8 +59,6 @@ function DateBody({ popup }: { popup: Extract<Popup, { kind: "date" }> }) {
         <StarRow stars={popup.stars} />
       </div>
       {popup.newBest && !popup.firstVisit && <p className={styles.lead}>🎉 최고 기록 갱신!</p>}
-      {popup.twist === "rain" && <p className={styles.lead}>☔ 갑자기 비가 와서 별 하나가 날아갔어요…</p>}
-      {popup.twist === "service" && <p className={styles.lead}>🎁 사장님이 서비스를 주셔서 별 하나 더!</p>}
       {episode && <p className={styles.episode}>{episode}</p>}
       <p className={styles.dim}>
         혜진 +{popup.stars === 3 ? BALANCE.ACTIONS.DATE.HYEJIN_HAPPINESS_THREE_STARS : BALANCE.ACTIONS.DATE.HYEJIN_HAPPINESS} · 정우 +
