@@ -1,4 +1,4 @@
-import type { GameDate, GameEvent, GameState } from "./types";
+import type { GameDate, GameEvent, GameState, Mood } from "./types";
 
 /** 자고 일어났을 때 보여주는 "밤사이 있었던 일" 요약 */
 export interface NightSummary {
@@ -8,7 +8,9 @@ export interface NightSummary {
   toDate: GameDate;
   hyejinHappiness: { before: number; after: number; change: number };
   /** 원인별 감소 (음수). 0~100 제한 때문에 합이 실제 변화량과 다를 수 있다. */
-  breakdown: { commute: number; overwork: number; bulldakIgnored: number };
+  breakdown: { commute: number; overwork: number; bulldakIgnored: number; gloomy: number };
+  /** 새 날의 기분 */
+  mood: Mood | null;
   /** 오늘 아침 새로 생긴 불닭 이벤트 */
   bulldakToday: boolean;
   /** 마감하면서 경고 구간(30 이하)에 들어갔는지 */
@@ -26,7 +28,7 @@ export function summarizeNight(before: GameState, after: GameState, events: Game
   const ends = events.filter((e) => e.type === "dayEnded");
   if (ends.length === 0) return null;
 
-  const sum = (key: "commute" | "overwork" | "bulldakIgnored") => ends.reduce((acc, e) => acc + e[key], 0);
+  const sum = (key: "commute" | "overwork" | "bulldakIgnored" | "gloomy") => ends.reduce((acc, e) => acc + (e[key] ?? 0), 0);
   return {
     fromDate: before.lastSettledDate,
     toDate: after.lastSettledDate,
@@ -35,7 +37,8 @@ export function summarizeNight(before: GameState, after: GameState, events: Game
       after: after.hyejin.happiness,
       change: after.hyejin.happiness - before.hyejin.happiness,
     },
-    breakdown: { commute: sum("commute"), overwork: sum("overwork"), bulldakIgnored: sum("bulldakIgnored") },
+    breakdown: { commute: sum("commute"), overwork: sum("overwork"), bulldakIgnored: sum("bulldakIgnored"), gloomy: sum("gloomy") },
+    mood: after.mood,
     bulldakToday: after.bulldak === "active",
     warningStarted: events.some((e) => e.type === "warningStarted"),
     countdownTurnsLeft: after.hyejin.countdownTurnsLeft,

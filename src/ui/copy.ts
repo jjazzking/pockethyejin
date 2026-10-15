@@ -1,5 +1,5 @@
 import { BALANCE } from "@/game";
-import type { ActionError, SocialEventId, StoryEventId } from "@/game/types";
+import type { ActionError, Mood, SocialEventId, StoryEventId } from "@/game/types";
 
 /** 화면 문구. 톤: "정우를 부려먹어서 혜진이를 키우는 게임" */
 
@@ -22,10 +22,18 @@ export const ERROR_TEXT: Record<ActionError, string> = {
   OFFERING_NOT_ALLOWED: "이미 별 3개를 받은 장소예요.",
   NO_NIGHTS_LEFT: "오늘은 여기까지! 내일 아침 6시에 또 놀자 🌙",
   NO_SOCIAL_EVENT: "오늘은 약속이 없어요.",
+  ALREADY_PETTED: "오늘은 이미 쓰다듬었어요.",
   INVALID_CHOICE: "다시 골라주세요.",
 };
 
 export const SULKING_TEXT = "정우가 삐져서 방에 들어갔다… 자고 일어나면 풀려요.";
+/** 오늘의 기분 (운). 날짜 옆 배지와 아침 요약에 쓴다 */
+export const MOOD_TEXT: Record<Mood, { badge: string; detail: string }> = {
+  sunny: { badge: "☀️ 맑음", detail: `날씨가 좋아서 같이 놀면 혜진 +${BALANCE.LUCK.SUNNY_TOGETHER_BONUS} 더` },
+  gloomy: { badge: "☁️ 꿀꿀", detail: `혜진이 기분이 꿀꿀한 날. 자기 전에 혜진 ${BALANCE.LUCK.GLOOMY_DAY_END}` },
+  rested: { badge: "😴 꿀잠", detail: `정우가 꿀잠 자서 오늘 행동 +${BALANCE.LUCK.RESTED_EXTRA_ACTIONS}` },
+};
+
 /** 웨이팅 거절할 때 정우 한마디 (하나 골라서 보여준다) */
 export const SULK_LINES = [
   "흥! 오늘은 안 가줄래!",

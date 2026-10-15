@@ -147,7 +147,7 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
         }
         rotate(content.images, outcome.game.state);
         if (outcome.kind === "done") {
-          poseJungwoo(content.images, outcome.game.state, jungwooPoseFor(action, opts.playFlavor));
+          if (action.type !== "pet") poseJungwoo(content.images, outcome.game.state, jungwooPoseFor(action, opts.playFlavor));
           show(content, outcome.events, outcome.summary, opts.playFlavor);
         } else {
           show(content, outcome.events, null);
@@ -194,7 +194,12 @@ export function useGame(deps: SessionDeps, loadContent: () => Promise<Content>) 
     nightsLeft,
     unlimitedNights,
     toggleUnlimitedNights,
-    tapHyejin: () => content && game && rotate(content.images, game.state),
+    // 하루 첫 쓰다듬기는 뽀뽀 판정(저장), 나머지는 그림만 바꾼다
+    tapHyejin: () => {
+      if (!content || !game) return;
+      if (check({ type: "pet" }) === null) run({ type: "pet" });
+      else rotate(content.images, game.state);
+    },
     run,
     check,
   };

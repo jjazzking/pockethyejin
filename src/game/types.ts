@@ -41,6 +41,9 @@ export interface HyejinState {
   sick: boolean;
 }
 
+/** 오늘의 기분 (운). 맑음: 같이 놀기 효과 +, 꿀꿀: 자기 전 혜진 -, 꿀잠: 정우 행동 + */
+export type Mood = "sunny" | "gloomy" | "rested";
+
 /** 오늘의 불닭 이벤트 상태 */
 export type BulldakState = "none" | "active" | "resolved";
 
@@ -70,6 +73,10 @@ export interface GameState {
   bestStars: Record<string, Stars>;
   /** 이번 주말 데이트를 이미 했는지. 월요일 아침에 초기화된다. */
   weekendDateUsed: boolean;
+  /** 오늘의 기분. 아침마다 다시 정한다 */
+  mood: Mood | null;
+  /** 혜진이를 마지막으로 쓰다듬은 게임 날짜 (하루 한 번 뽀뽀 판정) */
+  lastPetDate: GameDate | null;
   /** 현재 진행 중인 게임 속 날짜 */
   lastSettledDate: GameDate;
   /** 오늘 생긴 랜덤 이벤트 (아직 안 골랐으면). 고르거나 하루가 끝나면 null */
@@ -103,6 +110,8 @@ export type Action =
   | { type: "feed"; count: number }
   | { type: "levelUp" }
   | { type: "date"; placeId: string; budget: number; offering: number }
+  /** 혜진이 쓰다듬기 (하루 한 번, 행동 안 씀). 가끔 뽀뽀 */
+  | { type: "pet" }
   /** 랜덤 이벤트 고르기 (행동 안 씀). choice는 SOCIAL.EVENTS의 선택지 또는 "skip" */
   | { type: "social"; choice: string }
   /** 하루를 마감하고 다음 날 아침으로 */
@@ -130,19 +139,21 @@ export type ActionError =
   /** 현실 하루에 잘 수 있는 밤을 다 씀 */
   | "NO_NIGHTS_LEFT"
   | "NO_SOCIAL_EVENT"
+  | "ALREADY_PETTED"
   | "INVALID_CHOICE";
 
 export type GameEvent =
   // 정우 행동
-  | { type: "worked"; income: number }
+  | { type: "worked"; income: number; luck?: "bonus" | "overtime" }
   | { type: "promoted"; rank: number }
-  | { type: "waitingDone"; quantity: number; cost: number }
+  /** quantity: 실제로 사 온 개수 */
+  | { type: "waitingDone"; quantity: number; cost: number; luck?: "extra" | "short" }
   | { type: "waitingRejected" }
   | { type: "playedAlone" }
-  | { type: "playedTogether" }
+  | { type: "playedTogether"; luck?: "fight" | "great" }
   | { type: "bulldakResolved" }
   | { type: "porridgeDelivered" }
-  | { type: "dated"; placeId: string; stars: Stars; newBest: boolean; firstVisit: boolean }
+  | { type: "dated"; placeId: string; stars: Stars; newBest: boolean; firstVisit: boolean; twist?: "rain" | "service" }
   // 혜진
   | { type: "fed"; count: number }
   | { type: "leveledUp"; level: number; cost: number }
@@ -160,8 +171,10 @@ export type GameEvent =
       commute: number;
       overwork: number;
       bulldakIgnored: number;
+      /** 꿀꿀한 날 감소 (없으면 생략) */
+      gloomy?: number;
     }
-  | { type: "dayStarted"; date: GameDate; sulkHealed: boolean; tired: number }
+  | { type: "dayStarted"; date: GameDate; sulkHealed: boolean; tired: number; mood?: Mood }
   // 업데이트
   | {
       type: "newPlacesAdded";
@@ -172,6 +185,7 @@ export type GameEvent =
     }
   | { type: "bulldakCraving"; date: GameDate }
   | { type: "hyejinSick" }
+  | { type: "kissed" }
   // 랜덤 이벤트
   | { type: "socialEvent"; event: SocialEventId }
   | { type: "socialDone"; event: SocialEventId; choice: string }
@@ -185,6 +199,8 @@ export interface ActionContext {
   rng: Rng;
   /** 등록된 장소, order 순 */
   places: readonly PlaceRef[];
+  /** 행운 판정용 난수 (LUCK). 없으면 운은 늘 평소 결과 */
+  luck?: Rng;
   /** 지금의 현실 하루 (잠자기 밤 횟수 판정용). 없으면 밤 횟수를 제한하지 않는다 (시뮬레이션). */
   realDay?: GameDate;
 }

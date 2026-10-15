@@ -10,6 +10,7 @@ import { incomeForRank, levelUpCost, rejectPercent } from "@/game/rules";
 import type { Action, GameState } from "@/game/types";
 import {
   ERROR_TEXT,
+  MOOD_TEXT,
   SOCIAL_TEXT,
   PLAY_ALONE_FLAVORS,
   SULKING_TEXT,
@@ -41,6 +42,11 @@ export function DateHeader({ state }: { state: GameState }) {
         </span>
         <span className={c.hint}>💕 사귄 지 {daysTogether(date)}일째</span>
       </span>
+      {state.mood && (
+        <span className={c.hint} title={MOOD_TEXT[state.mood].detail}>
+          {MOOD_TEXT[state.mood].badge}
+        </span>
+      )}
       <Badge accent={weekend}>{weekend ? "주말 · 데이트 가능 💑" : "평일 · 혜진 출근 🏢"}</Badge>
     </div>
   );

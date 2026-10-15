@@ -229,3 +229,29 @@ export const SOCIAL = {
     },
   },
 } as const;
+
+/**
+ * 운: 같은 행동도 가끔 결과가 달라진다. 숫자는 확률(%). 행운 난수(ActionContext.luck)가 있을 때만 판정한다.
+ */
+export const LUCK = {
+  /** 같이 놀기: 투닥(fight) / 인생샷(great) */
+  PLAY_TOGETHER: { fight: 15, great: 10 },
+  PLAY_TOGETHER_FIGHT: { HYEJIN: -5, JUNGWOO: -5 },
+  PLAY_TOGETHER_GREAT: { HYEJIN: 20, JUNGWOO: 15 },
+  /** 일 시키기: 상사 칭찬 보너스 / 야근 */
+  WORK: { bonus: 10, overtime: 10 },
+  WORK_BONUS_MULTIPLIER: 1.5,
+  WORK_OVERTIME_JUNGWOO: -10,
+  /** 웨이팅: 1+1 행사(하나 더, 공짜) / 앞에서 품절(하나 덜, 그만큼 돈 안 듦) */
+  WAITING: { extra: 10, short: 10 },
+  /** 데이트 돌발: 갑자기 비(별 -1) / 사장님 서비스(별 +1). 별은 1~3 */
+  DATE: { rain: 10, service: 10 },
+  /** 오늘의 기분 (아침마다): 맑음 / 꿀꿀 / 꿀잠 */
+  MOOD: { sunny: 10, gloomy: 10, rested: 10 },
+  SUNNY_TOGETHER_BONUS: 5,
+  GLOOMY_DAY_END: -5,
+  RESTED_EXTRA_ACTIONS: 1,
+  /** 혜진이 쓰다듬기: 하루 한 번, 뽀뽀 받을 확률 */
+  KISS_PERCENT: 15,
+  KISS_JUNGWOO: 10,
+} as const;

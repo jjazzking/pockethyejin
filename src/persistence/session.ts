@@ -84,7 +84,7 @@ export async function performAction(
   unlimitedNights = false,
 ): Promise<ActionOutcome> {
   const realDay = unlimitedNights ? undefined : toRealDay(deps.now());
-  const result = applyAction(game.state, action, { rng: deps.rng, places, realDay });
+  const result = applyAction(game.state, action, { rng: deps.rng, luck: deps.rng, places, realDay });
   if (!result.ok) return { kind: "invalid", error: result.error, game };
 
   const saved = await deps.store.save(game.version, result.state);

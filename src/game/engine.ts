@@ -1,4 +1,4 @@
-import { ACTIONS, DATE_OFFERING, FEED, SOCIAL } from "./balance";
+import { ACTIONS, DATE_OFFERING, FEED, LUCK, SOCIAL } from "./balance";
 import { isAnniversary, isWeekend } from "./date";
 import { sleep } from "./day";
 import { markSeen } from "./seen";
@@ -12,6 +12,7 @@ import {
   maxUsefulOffering,
   rankForWorkCount,
   rejectPercent,
+  rollLuck,
   rollPercent,
   rollStars,
 } from "./rules";
@@ -92,6 +93,8 @@ function validate(s: GameState, action: TurnAction, ctx: ActionContext): ActionE
       if (s.hyejin.hanjeongseon + c.hanjeongseon < 0) return "NOT_ENOUGH_HANJEONGSEON";
       return null;
     }
+    case "pet":
+      return s.lastPetDate === s.lastSettledDate ? "ALREADY_PETTED" : null;
     case "feed":
       if (!isPositiveInteger(action.count)) return "INVALID_QUANTITY";
       if (s.hyejin.hanjeongseon < action.count) return "NOT_ENOUGH_HANJEONGSEON";
@@ -132,12 +135,13 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
   const h = s.hyejin;
   switch (action.type) {
     case "work": {
-      const income = incomeForRank(j.rank);
+      const luck = rollLuck(ctx.luck, LUCK.WORK);
+      const income = Math.round(incomeForRank(j.rank) * (luck === "bonus" ? LUCK.WORK_BONUS_MULTIPLIER : 1));
       j.money += income;
       j.totalWorkCount += 1;
       j.workCountToday += 1;
-      addJungwooHappiness(s, ACTIONS.WORK.JUNGWOO_HAPPINESS);
-      events.push({ type: "worked", income });
+      addJungwooHappiness(s, ACTIONS.WORK.JUNGWOO_HAPPINESS + (luck === "overtime" ? LUCK.WORK_OVERTIME_JUNGWOO : 0));
+      events.push({ type: "worked", income, ...(luck && { luck }) });
       const rank = rankForWorkCount(j.totalWorkCount);
       if (rank > j.rank) {
         j.rank = rank;
@@ -155,11 +159,14 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
         events.push({ type: "waitingRejected" });
         return ACTIONS.WAITING.ACTION_COST;
       }
-      const cost = action.quantity * ACTIONS.WAITING.PRICE_PER_HANJEONGSEON;
+      // 1+1이면 하나 더(공짜), 앞에서 품절이면 하나 덜(그만큼 돈 안 냄)
+      const luck = rollLuck(ctx.luck, LUCK.WAITING);
+      const got = action.quantity + (luck === "extra" ? 1 : luck === "short" ? -1 : 0);
+      const cost = Math.min(got, action.quantity) * ACTIONS.WAITING.PRICE_PER_HANJEONGSEON;
       j.money -= cost;
-      h.hanjeongseon += action.quantity;
+      h.hanjeongseon += got;
       addJungwooHappiness(s, ACTIONS.WAITING.JUNGWOO_HAPPINESS);
-      events.push({ type: "waitingDone", quantity: action.quantity, cost });
+      events.push({ type: "waitingDone", quantity: got, cost, ...(luck && { luck }) });
       return ACTIONS.WAITING.ACTION_COST;
     }
     case "playAlone":
@@ -167,12 +174,29 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
       j.actionsLeft -= ACTIONS.PLAY_ALONE.ACTION_COST;
       events.push({ type: "playedAlone" });
       return ACTIONS.PLAY_ALONE.ACTION_COST;
-    case "playTogether":
-      addJungwooHappiness(s, ACTIONS.PLAY_TOGETHER.JUNGWOO_HAPPINESS);
-      addHyejinHappiness(s, ACTIONS.PLAY_TOGETHER.HYEJIN_HAPPINESS);
+    case "playTogether": {
+      const luck = rollLuck(ctx.luck, LUCK.PLAY_TOGETHER);
+      const effect =
+        luck === "fight"
+          ? LUCK.PLAY_TOGETHER_FIGHT
+          : luck === "great"
+            ? LUCK.PLAY_TOGETHER_GREAT
+            : { HYEJIN: ACTIONS.PLAY_TOGETHER.HYEJIN_HAPPINESS, JUNGWOO: ACTIONS.PLAY_TOGETHER.JUNGWOO_HAPPINESS };
+      // 맑은 날은 기분 좋게 놀면 조금 더 (투닥거리면 소용없음)
+      const sunny = s.mood === "sunny" && luck !== "fight" ? LUCK.SUNNY_TOGETHER_BONUS : 0;
+      addJungwooHappiness(s, effect.JUNGWOO);
+      addHyejinHappiness(s, effect.HYEJIN + sunny);
       j.actionsLeft -= ACTIONS.PLAY_TOGETHER.ACTION_COST;
-      events.push({ type: "playedTogether" });
+      events.push({ type: "playedTogether", ...(luck && { luck }) });
       return ACTIONS.PLAY_TOGETHER.ACTION_COST;
+    }
+    case "pet":
+      s.lastPetDate = s.lastSettledDate;
+      if (rollLuck(ctx.luck, { kiss: LUCK.KISS_PERCENT })) {
+        addJungwooHappiness(s, LUCK.KISS_JUNGWOO);
+        events.push({ type: "kissed" });
+      }
+      return 0;
     case "convenienceStore":
       j.money -= ACTIONS.CONVENIENCE_STORE.COST_MONEY;
       addJungwooHappiness(s, ACTIONS.CONVENIENCE_STORE.JUNGWOO_HAPPINESS);
@@ -220,8 +244,10 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
     case "date": {
       const percents = applyOffering(budgetPercents(action.budget)!, action.offering);
       const rolled = rollStars(ctx.rng, percents);
-      // 기념일 데이트는 별 하나 더
-      const stars = isAnniversary(s.lastSettledDate) ? (Math.min(3, rolled + 1) as Stars) : rolled;
+      // 기념일이면 별 +1, 돌발 상황(비 -1 / 사장님 서비스 +1). 별은 1~3
+      const twist = rollLuck(ctx.luck, LUCK.DATE);
+      const bonus = (isAnniversary(s.lastSettledDate) ? 1 : 0) + (twist === "service" ? 1 : twist === "rain" ? -1 : 0);
+      const stars = Math.min(3, Math.max(1, rolled + bonus)) as Stars;
       const prevBest = s.bestStars[action.placeId];
       j.money -= action.budget;
       h.hanjeongseon -= action.offering;
@@ -240,6 +266,7 @@ function perform(s: GameState, action: TurnAction, ctx: ActionContext, events: G
         stars,
         newBest,
         firstVisit: prevBest === undefined,
+        ...(twist && { twist }),
       });
       return ACTIONS.DATE.ACTION_COST;
     }

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BALANCE } from "@/game";
 import { dayOfWeek, daysTogether } from "@/game/date";
-import { SULK_LINES } from "@/ui/copy";
+import { MOOD_TEXT, SULK_LINES } from "@/ui/copy";
 import type { GameView, Popup } from "@/ui/useGame";
 import CharacterFrame from "./CharacterFrame";
 import { Button, StarRow } from "./controls";
@@ -34,7 +34,13 @@ function SummaryBody({ popup }: { popup: Extract<Popup, { kind: "summary" }> }) 
         {s.breakdown.commute < 0 && <li>🏢 출근하느라 지쳤어요 {s.breakdown.commute}</li>}
         {s.breakdown.overwork < 0 && <li>💼 정우가 일만 해서 서운해요 {s.breakdown.overwork}</li>}
         {s.breakdown.bulldakIgnored < 0 && <li>🌶️ 불닭을 못 먹었어요 {s.breakdown.bulldakIgnored}</li>}
+        {s.breakdown.gloomy < 0 && <li>☁️ 꿀꿀한 하루였어요 {s.breakdown.gloomy}</li>}
         {change === 0 && <li>😴 푹 잤어요</li>}
+        {s.mood && (
+          <li>
+            오늘의 기분 <b>{MOOD_TEXT[s.mood].badge}</b> · {MOOD_TEXT[s.mood].detail}
+          </li>
+        )}
         {dayOfWeek(s.toDate) === 6 && <li>🎉 <b>주말 시작!</b> 이번 주말엔 혜진이랑 데이트 갈 수 있어요</li>}
         {s.jungwooSulkHealed && <li>😤→🙂 삐졌던 정우가 자고 일어나서 풀렸어요</li>}
         {s.jungwooTired > 0 && <li>🥱 밤샘 포커 여파로 정우가 피곤해요 (오늘 행동 -{s.jungwooTired})</li>}
@@ -53,6 +59,8 @@ function DateBody({ popup }: { popup: Extract<Popup, { kind: "date" }> }) {
         <StarRow stars={popup.stars} />
       </div>
       {popup.newBest && !popup.firstVisit && <p className={styles.lead}>🎉 최고 기록 갱신!</p>}
+      {popup.twist === "rain" && <p className={styles.lead}>☔ 갑자기 비가 와서 별 하나가 날아갔어요…</p>}
+      {popup.twist === "service" && <p className={styles.lead}>🎁 사장님이 서비스를 주셔서 별 하나 더!</p>}
       {episode && <p className={styles.episode}>{episode}</p>}
       <p className={styles.dim}>
         혜진 +{popup.stars === 3 ? BALANCE.ACTIONS.DATE.HYEJIN_HAPPINESS_THREE_STARS : BALANCE.ACTIONS.DATE.HYEJIN_HAPPINESS} · 정우 +
@@ -155,9 +163,13 @@ function WaitingOverlay({ popup, urls, onClose }: { popup: Extract<Popup, { kind
           </>
         )}
         {stage === "done" && !rejected && (
-          <h2 id="waiting-title" className={styles.title}>
-            한정선 {popup.quantity}개 사왔다! 🍡
-          </h2>
+          <>
+            <h2 id="waiting-title" className={styles.title}>
+              {popup.quantity === 0 ? "앞에서 품절돼서 빈손으로 왔다… 🥲" : `한정선 ${popup.quantity}개 사왔다! 🍡`}
+            </h2>
+            {popup.luck === "extra" && <p className={styles.sulkLine}>🎉 1+1 행사라 하나 더 받아왔어요!</p>}
+            {popup.luck === "short" && popup.quantity !== 0 && <p className={styles.dim}>바로 앞에서 품절돼서 하나 덜 사왔어요. 돈은 그만큼 안 냈어요.</p>}
+          </>
         )}
         {stage === "done" && (
           <button type="button" className={styles.ok} onClick={onClose} autoFocus>

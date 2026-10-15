@@ -6,7 +6,7 @@ import type { GameState, StoryEventId } from "@/game/types";
  * MIGRATIONS에 (이전 버전 → 다음 버전) 변환 함수를 추가한다.
  * 동시 수정 방지용 버전(game_states.version)과는 별개다.
  */
-export const CURRENT_SCHEMA_VERSION = 6;
+export const CURRENT_SCHEMA_VERSION = 7;
 
 /** MIGRATIONS[n]: 구조 버전 n → n + 1 */
 const MIGRATIONS: Record<number, (raw: unknown) => unknown> = {
@@ -32,6 +32,8 @@ const MIGRATIONS: Record<number, (raw: unknown) => unknown> = {
     const s = raw as GameState;
     return { ...s, hyejin: { ...s.hyejin, sick: false } };
   },
+  // v7: 운 (오늘의 기분, 하루 한 번 쓰다듬기). 진행 중인 게임은 평범한 날로 이어진다.
+  6: (raw) => ({ ...(raw as object), mood: null, lastPetDate: null }),
 };
 
 /** 이 앱보다 새로운 구조로 저장된 상태 (다른 기기에서 새 버전 앱을 쓴 경우) */
