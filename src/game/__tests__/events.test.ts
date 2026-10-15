@@ -9,10 +9,11 @@ import { ALWAYS, FRIDAY, MONDAY, NEVER, SATURDAY, act, ctx, makeState, sequence 
 const dayN = (n: number) => addDays(TIME.START_DATE, n - 1);
 
 describe("날짜로 정해지는 이벤트", () => {
-  it("매달 월급날 아침엔 확률과 상관없이 월급날 이벤트", () => {
+  it("매달 월급날 아침엔 확률과 상관없이 월급날 이벤트, 월급이 들어온다", () => {
     const { state, events } = closeDay(makeState({}, "2026-10-24"), NEVER);
     expect(state.lastSettledDate).toBe(`2026-10-${SOCIAL.PAYDAY_DAY_OF_MONTH}`);
     expect(state.social).toBe("payday");
+    expect(state.jungwoo.money).toBe(SOCIAL.PAYDAY_SALARY);
     expect(events).toContainEqual({ type: "socialEvent", event: "payday" });
   });
 
@@ -34,12 +35,14 @@ describe("날짜로 정해지는 이벤트", () => {
     expect(best).toMatchObject({ stars: 3 });
   });
 
-  it("월급날 선택지는 돈이 들어온다", () => {
-    const { state } = act(makeState({ social: "payday" }), { type: "social", choice: "save" });
-    expect(state.jungwoo.money).toBe(100_000);
-    const bought = act(makeState({ social: "payday" }), { type: "social", choice: "hanjeongseon" }).state;
-    expect(bought.jungwoo.money).toBe(50_000);
-    expect(bought.hyejin.hanjeongseon).toBe(3);
+  it("월급날 선택지는 쓰는 돈만 든다 (저축은 그대로)", () => {
+    const paid = makeState({ social: "payday", jungwoo: { money: SOCIAL.PAYDAY_SALARY } });
+    expect(act(paid, { type: "social", choice: "save" }).state.jungwoo.money).toBe(SOCIAL.PAYDAY_SALARY);
+    const treat = act(paid, { type: "social", choice: "treat" }).state;
+    expect(treat.jungwoo.money).toBeLessThan(SOCIAL.PAYDAY_SALARY);
+    const bought = act(paid, { type: "social", choice: "hanjeongseon" }).state;
+    expect(bought.jungwoo.money).toBe(SOCIAL.PAYDAY_SALARY - 50_000);
+    expect(bought.hyejin.hanjeongseon).toBe(5);
   });
 });
 

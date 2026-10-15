@@ -76,7 +76,7 @@ export default function GuidePage() {
         <h2>💼 정우 부려먹기 (행동 1번씩)</h2>
         <ul>
           <li>
-            <b>일 시키기</b>: 돈 +{formatMoney(RANKS[0].incomePerWork)}(승진하면 더 많이), 정우 행복도 {plus(A.WORK.JUNGWOO_HAPPINESS)}. 일을 많이 하면 승진해요.
+            <b>일 시키기</b>: 돈 +{formatMoney(RANKS[0].incomePerWork)}(승진하면 더 많이), 정우 행복도 {plus(A.WORK.JUNGWOO_HAPPINESS)}. 일을 많이 하면 승진해요. 정우 행복도가 {-A.WORK.JUNGWOO_HAPPINESS}보다 낮으면 지쳐서 일을 못 해요.
           </li>
           <li>
             <b>한정선 웨이팅</b>: 1개 {formatMoney(A.WAITING.PRICE_PER_HANJEONGSEON)}, 정우 {plus(A.WAITING.JUNGWOO_HAPPINESS)}. 정우 행복도가 {SULK.SAFE_HAPPINESS} 밑이면{" "}
@@ -146,7 +146,7 @@ export default function GuidePage() {
             그 밖에 🌧️ 소나기(평일만), 🎤 코인노래방, 🍰 편의점 신상 디저트, 🕹️ 정우 게임 신작, 🛋️ 주말 집콕(주말만), 📦 택배, 🐶 예삐 방문. 선택지 버튼에 효과가 적혀 있어요.
           </li>
           <li>
-            💸 <b>월급날</b>: 매달 {SOCIAL.PAYDAY_DAY_OF_MONTH}일 아침엔 꼭 생겨요. 저축하면 {formatMoney(-SOCIAL.EVENTS.payday.save.money)}이 들어와요.
+            💸 <b>월급날</b>: 매달 {SOCIAL.PAYDAY_DAY_OF_MONTH}일 아침엔 꼭 생겨요. 월급 {formatMoney(SOCIAL.PAYDAY_SALARY)}이 들어오고, 저축할지 혜진이한테 쓸지 골라요.
           </li>
           <li>
             🎂 <b>기념일</b>: 사귄 지 {SOCIAL.ANNIVERSARY_EVERY_DAYS}일 단위 날엔 꼭 생겨요. 그날이 주말이면 데이트 별이 하나 더 붙어요.
@@ -168,9 +168,6 @@ export default function GuidePage() {
           </li>
           <li>
             🍡 웨이팅: {LUCK.WAITING.extra}% <b>1+1</b>(하나 더 공짜), {LUCK.WAITING.short}% <b>앞에서 품절</b>(하나 덜, 그만큼 돈도 덜).
-          </li>
-          <li>
-            💑 데이트: {LUCK.DATE.service}% <b>사장님 서비스</b>(별 +1), {LUCK.DATE.rain}% <b>갑자기 비</b>(별 -1).
           </li>
           <li>
             🌤️ 오늘의 기분(아침마다): ☀️ 맑음(같이 놀기 혜진 {plus(LUCK.SUNNY_TOGETHER_BONUS)} 더) · ☁️ 꿀꿀(자기 전 혜진 {plus(LUCK.GLOOMY_DAY_END)}) · 😴 꿀잠(정우 행동{" "}

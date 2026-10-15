@@ -20,7 +20,7 @@ export type PopupSpec =
   /** 웨이팅 연출: 정우가 갈지 말지 뜸 들인 뒤 결과. quantity가 null이면 삐짐. luck: 1+1 / 앞에서 품절 */
   | { kind: "waiting"; quantity: number | null; luck?: "extra" | "short"; faceTag: null; jungwooFace?: JungwooFaceTag }
   | { kind: "summary"; summary: NightSummary; faceTag: FaceEventTag }
-  | { kind: "date"; place: Place | null; stars: Stars; newBest: boolean; firstVisit: boolean; twist?: "rain" | "service"; faceTag: FaceEventTag };
+  | { kind: "date"; place: Place | null; stars: Stars; newBest: boolean; firstVisit: boolean; faceTag: FaceEventTag };
 
 export interface Described {
   popups: PopupSpec[];
@@ -77,7 +77,7 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
       return { kind: "card", emoji: "⭐", title: `혜진이 레벨 ${event.level}!`, body: "맵에 새 장소가 열렸다.", faceTag };
     case "dated": {
       const place = opts.places.find((p) => p.id === event.placeId) ?? null;
-      return { kind: "date", place, stars: event.stars, newBest: event.newBest, firstVisit: event.firstVisit, ...(event.twist && { twist: event.twist }), faceTag: faceTag! };
+      return { kind: "date", place, stars: event.stars, newBest: event.newBest, firstVisit: event.firstVisit, faceTag: faceTag! };
     }
     case "warningStarted":
       return { kind: "card", emoji: "🧊", title: "혜진이가 냉동실을 힐끔거린다", body: "기분이 안 좋아 보여요. 놀아주거나 한정선을 먹여주세요.", faceTag, tone: "danger" };

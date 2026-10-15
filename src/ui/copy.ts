@@ -10,6 +10,7 @@ export const ERROR_TEXT: Record<ActionError, string> = {
   NOT_ENOUGH_HANJEONGSEON: "한정선이 모자라요. 정우를 웨이팅 보내자 🍡",
   INVALID_QUANTITY: "개수를 다시 골라주세요.",
   NO_BULLDAK_EVENT: "지금은 불닭이 안 땡긴대요.",
+  JUNGWOO_EXHAUSTED: "정우가 너무 지쳐서 일 못 하겠대요. 혼자 놀게 해주세요 🎧",
   HYEJIN_SICK: "혜진이가 감기라 오늘은 같이 못 놀아요. 죽을 사다 주세요 🥣",
   NOT_SICK: "혜진이 지금 멀쩡해요.",
   MAX_LEVEL: "새 추억 업데이트를 기다리는 중",
@@ -156,11 +157,11 @@ export const SOCIAL_TEXT: Record<
   payday: {
     emoji: "💸",
     title: "오늘은 월급날!",
-    body: "정우 월급이 들어왔어요. 혜진이가 \"오늘 뭐 사줄 거야?\" 하고 물어봐요.",
+    body: `정우 월급 ${formatMoney(BALANCE.SOCIAL.PAYDAY_SALARY)}이 들어왔어요! 혜진이가 "오늘 뭐 사줄 거야?" 하고 물어봐요.`,
     choices: {
       save: { label: "통장에 고이 넣는다", done: "월급 그대로 저축. 정우 마음이 든든하다 💰" },
       treat: { label: "혜진이 맛있는 거 사준다", done: "월급날 외식! 혜진이 볼이 빵빵 🍽️" },
-      hanjeongseon: { label: "한정선 왕창 사온다", done: "월급 털어 한정선 3개! 냉동실이 든든해졌다 🍡" },
+      hanjeongseon: { label: "한정선 왕창 사온다", done: "월급 털어 한정선 5개! 냉동실이 든든해졌다 🍡" },
     },
   },
   anniversary: {

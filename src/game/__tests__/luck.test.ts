@@ -4,7 +4,7 @@ import { closeDay } from "../day";
 import { applyAction } from "../engine";
 import { rollLuck } from "../rules";
 import type { Rng } from "../types";
-import { ALWAYS, MONDAY, NEVER, SATURDAY, act, ctx, fixed, makeState } from "./helpers";
+import { MONDAY, NEVER, SATURDAY, act, ctx, fixed, makeState } from "./helpers";
 
 /** 행운 난수를 준 컨텍스트 (일반 판정은 NEVER = 거절·불닭 없음) */
 const lucky = (luck: Rng, rng: Rng = NEVER) => ({ ...ctx(rng), luck });
@@ -82,20 +82,6 @@ describe("웨이팅 운", () => {
     const empty = act(rich(), { type: "waiting", quantity: 1 }, lucky(pick(LUCK.WAITING, "short")));
     expect(empty.state.hyejin.hanjeongseon).toBe(0);
     expect(empty.state.jungwoo.money).toBe(100_000);
-  });
-});
-
-describe("데이트 돌발 상황", () => {
-  const date = { type: "date", placeId: "p1", budget: 50_000, offering: 0 } as const;
-  const sat = () => makeState({ jungwoo: { money: 100_000 } }, SATURDAY);
-  const stars = (rng: Rng, luck: Rng) => act(sat(), date, lucky(luck, rng)).events.find((e) => e.type === "dated");
-
-  it("서비스면 별 +1, 비 오면 별 -1 (1~3 사이)", () => {
-    // ALWAYS → 별 1개, NEVER → 별 3개
-    expect(stars(ALWAYS, pick(LUCK.DATE, "service"))).toMatchObject({ stars: 2, twist: "service" });
-    expect(stars(ALWAYS, pick(LUCK.DATE, "rain"))).toMatchObject({ stars: 1, twist: "rain" });
-    expect(stars(NEVER, pick(LUCK.DATE, "rain"))).toMatchObject({ stars: 2 });
-    expect(stars(NEVER, pick(LUCK.DATE, "service"))).toMatchObject({ stars: 3 });
   });
 });
 
