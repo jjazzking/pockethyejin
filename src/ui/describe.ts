@@ -17,10 +17,10 @@ export type PopupSpec =
     }
   /** 정우 막기 전용 연출 */
   | { kind: "block"; faceTag: FaceEventTag }
-  /** 웨이팅 연출: 정우가 갈지 말지 뜸 들인 뒤 결과. quantity가 null이면 삐짐 */
-  | { kind: "waiting"; quantity: number | null; faceTag: null; jungwooFace?: JungwooFaceTag }
+  /** 웨이팅 연출: 정우가 갈지 말지 뜸 들인 뒤 결과. quantity가 null이면 삐짐. luck: 1+1 / 앞에서 품절 */
+  | { kind: "waiting"; quantity: number | null; luck?: "extra" | "short"; faceTag: null; jungwooFace?: JungwooFaceTag }
   | { kind: "summary"; summary: NightSummary; faceTag: FaceEventTag }
-  | { kind: "date"; place: Place | null; stars: Stars; newBest: boolean; firstVisit: boolean; faceTag: FaceEventTag };
+  | { kind: "date"; place: Place | null; stars: Stars; newBest: boolean; firstVisit: boolean; twist?: "rain" | "service"; faceTag: FaceEventTag };
 
 export interface Described {
   popups: PopupSpec[];
@@ -41,17 +41,24 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
   const faceTag = faceTagForEvent(event);
   switch (event.type) {
     case "worked":
+      if (event.luck === "bonus") return `상사 칭찬받고 보너스까지! ${formatMoney(event.income)} 벌어왔다 🎉`;
+      if (event.luck === "overtime") return `야근까지 하고 ${formatMoney(event.income)} 벌어왔다… 정우 녹초 🥱`;
       return `정우가 출근해서 ${formatMoney(event.income)} 벌어왔다 💼`;
     case "promoted":
       return { kind: "card", emoji: "🎉", title: `정우 승진! ${rankName(event.rank)}`, body: "이제 일 한 번에 더 많이 벌어온다.", faceTag: null, jungwooFace: "happy" };
     case "waitingDone":
-      return { kind: "waiting", quantity: event.quantity, faceTag: null };
+      return { kind: "waiting", quantity: event.quantity, ...(event.luck && { luck: event.luck }), faceTag: null };
     case "waitingRejected":
       return { kind: "waiting", quantity: null, faceTag: null, jungwooFace: "sulk" };
     case "playedAlone":
       return PLAY_ALONE_FLAVORS[opts.playFlavor ?? "dj"].done;
     case "playedTogether":
+      if (event.luck === "fight")
+        return { kind: "card", emoji: "😤", title: "놀다가 투닥투닥…", body: "사소한 걸로 말다툼. 분위기가 싸해졌다.", faceTag: "warning", tone: "danger" };
+      if (event.luck === "great") return { kind: "card", emoji: "📸", title: "인생샷 건졌다!", body: "오늘 노는 거 대성공. 둘 다 기분 최고!", faceTag };
       return { kind: "card", emoji: "💞", title: "같이 놀았다!", body: "혜진이도 정우도 기분 최고.", faceTag };
+    case "kissed":
+      return { kind: "card", emoji: "💋", title: "혜진이가 뽀뽀해줬다!", body: "쓰다듬어 줬더니 볼에 쪽. 정우 기분 최고.", faceTag: "play_together" };
     case "hyejinSick":
       return {
         kind: "card",
@@ -70,7 +77,7 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
       return { kind: "card", emoji: "⭐", title: `혜진이 레벨 ${event.level}!`, body: "맵에 새 장소가 열렸다.", faceTag };
     case "dated": {
       const place = opts.places.find((p) => p.id === event.placeId) ?? null;
-      return { kind: "date", place, stars: event.stars, newBest: event.newBest, firstVisit: event.firstVisit, faceTag: faceTag! };
+      return { kind: "date", place, stars: event.stars, newBest: event.newBest, firstVisit: event.firstVisit, ...(event.twist && { twist: event.twist }), faceTag: faceTag! };
     }
     case "warningStarted":
       return { kind: "card", emoji: "🧊", title: "혜진이가 냉동실을 힐끔거린다", body: "기분이 안 좋아 보여요. 놀아주거나 한정선을 먹여주세요.", faceTag, tone: "danger" };

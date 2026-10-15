@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "꿍진이 키우기 게임 방법",
 };
 
-const { TIME, ACTIONS: A, FEED, DAY_END, SULK, WARNING, BULLDAK, SICK, DATE_BUDGETS, DATE_OFFERING, RANKS, SOCIAL } = BALANCE;
+const { TIME, ACTIONS: A, FEED, DAY_END, SULK, WARNING, BULLDAK, SICK, DATE_BUDGETS, DATE_OFFERING, RANKS, SOCIAL, LUCK } = BALANCE;
 const plus = (n: number) => (n > 0 ? `+${n}` : `${n}`);
 
 /** public/guide 의 실제 게임 화면 캡처 (체험 모드) */
@@ -153,6 +153,33 @@ export default function GuidePage() {
           </li>
         </ul>
         <Shots names={["social"]} />
+      </section>
+
+      <section className={styles.card}>
+        <h2>🍀 운</h2>
+        <p>같은 행동도 가끔 결과가 달라져요.</p>
+        <ul>
+          <li>
+            💞 같이 놀기: {LUCK.PLAY_TOGETHER.fight}% 확률로 <b>투닥투닥</b>(혜진 {plus(LUCK.PLAY_TOGETHER_FIGHT.HYEJIN)}, 정우 {plus(LUCK.PLAY_TOGETHER_FIGHT.JUNGWOO)}),{" "}
+            {LUCK.PLAY_TOGETHER.great}% 확률로 <b>인생샷</b>(혜진 {plus(LUCK.PLAY_TOGETHER_GREAT.HYEJIN)}, 정우 {plus(LUCK.PLAY_TOGETHER_GREAT.JUNGWOO)}).
+          </li>
+          <li>
+            💼 일 시키기: {LUCK.WORK.bonus}% <b>보너스</b>(수입 ×{LUCK.WORK_BONUS_MULTIPLIER}), {LUCK.WORK.overtime}% <b>야근</b>(정우 {plus(LUCK.WORK_OVERTIME_JUNGWOO)} 더).
+          </li>
+          <li>
+            🍡 웨이팅: {LUCK.WAITING.extra}% <b>1+1</b>(하나 더 공짜), {LUCK.WAITING.short}% <b>앞에서 품절</b>(하나 덜, 그만큼 돈도 덜).
+          </li>
+          <li>
+            💑 데이트: {LUCK.DATE.service}% <b>사장님 서비스</b>(별 +1), {LUCK.DATE.rain}% <b>갑자기 비</b>(별 -1).
+          </li>
+          <li>
+            🌤️ 오늘의 기분(아침마다): ☀️ 맑음(같이 놀기 혜진 {plus(LUCK.SUNNY_TOGETHER_BONUS)} 더) · ☁️ 꿀꿀(자기 전 혜진 {plus(LUCK.GLOOMY_DAY_END)}) · 😴 꿀잠(정우 행동{" "}
+            {plus(LUCK.RESTED_EXTRA_ACTIONS)}). 날짜 옆에 표시돼요.
+          </li>
+          <li>
+            🤚 혜진이를 하루 처음 쓰다듬으면 {LUCK.KISS_PERCENT}% 확률로 <b>뽀뽀</b>(정우 {plus(LUCK.KISS_JUNGWOO)}).
+          </li>
+        </ul>
       </section>
 
       <section className={`${styles.card} ${styles.danger}`}>

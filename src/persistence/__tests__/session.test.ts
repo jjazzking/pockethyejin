@@ -277,3 +277,14 @@ describe("v5 → v6 마이그레이션", () => {
     expect(migrateState(5, { ...current, hyejin: hyejinV5 }).hyejin.sick).toBe(false);
   });
 });
+
+describe("v6 → v7 마이그레이션", () => {
+  it("진행 중인 게임은 평범한 기분, 쓰다듬기 기록 없음으로 이어진다", () => {
+    const v6: Partial<GameState> = makeState();
+    delete v6.mood;
+    delete v6.lastPetDate;
+    const migrated = migrateState(6, v6);
+    expect(migrated.mood).toBeNull();
+    expect(migrated.lastPetDate).toBeNull();
+  });
+});

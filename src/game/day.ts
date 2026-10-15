@@ -1,7 +1,7 @@
-import { BULLDAK, DAY_END, HYEJIN, JUNGWOO, SICK, SOCIAL, TIME } from "./balance";
+import { BULLDAK, DAY_END, HYEJIN, JUNGWOO, LUCK, SICK, SOCIAL, TIME } from "./balance";
 import { addDays, daysBetween, isAnniversary, isSunday, isWeekend } from "./date";
 import { addHyejinHappiness, emitWarningChange, updateCountdown } from "./hyejin";
-import { rollPercent } from "./rules";
+import { rollLuck, rollPercent } from "./rules";
 import { markSeen } from "./seen";
 import type { ActionContext, ActionError, ActionResult, GameDate, GameEvent, GameState, Rng, SocialEventId } from "./types";
 
@@ -39,12 +39,14 @@ function endDay(s: GameState, events: GameEvent[]): void {
   const commute = isWeekend(date) ? 0 : DAY_END.WEEKDAY_COMMUTE;
   const overwork = s.jungwoo.workCountToday >= DAY_END.OVERWORK_THRESHOLD ? DAY_END.OVERWORK_PENALTY : 0;
   const bulldakIgnored = s.bulldak === "active" ? DAY_END.BULLDAK_IGNORED_PENALTY : 0;
+  const gloomy = s.mood === "gloomy" ? LUCK.GLOOMY_DAY_END : 0;
 
   const before = s.hyejin.happiness;
   addHyejinHappiness(s, commute);
   addHyejinHappiness(s, overwork);
   addHyejinHappiness(s, bulldakIgnored);
-  events.push({ type: "dayEnded", date, commute, overwork, bulldakIgnored });
+  addHyejinHappiness(s, gloomy);
+  events.push({ type: "dayEnded", date, commute, overwork, bulldakIgnored, ...(gloomy && { gloomy }) });
   // 하루 마감은 턴이 아니므로 카운트다운 시작·해제만 하고 절반 섭취는 일어나지 않는다.
   updateCountdown(s, 0, events);
   emitWarningChange(before, s.hyejin.happiness, events);
@@ -53,7 +55,7 @@ function endDay(s: GameState, events: GameEvent[]): void {
 }
 
 /** 새 날 아침: 행동 충전(전날 밤샘 피로만큼 덜), 삐짐·감기 해제, 불닭 판정(평일만), 이벤트 판정, 감기 판정 */
-function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[]): void {
+function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[], luck?: Rng): void {
   const j = s.jungwoo;
   const sulkHealed = j.sulking;
   if (j.sulking) {
@@ -61,11 +63,13 @@ function startDay(s: GameState, date: GameDate, rng: Rng, events: GameEvent[]): 
     j.sulking = false;
   }
   const tired = s.jungwooTiredActions;
-  j.actionsLeft = Math.max(0, TIME.ACTIONS_PER_DAY - tired);
+  s.mood = rollLuck(luck, LUCK.MOOD);
+  const rested = s.mood === "rested" ? LUCK.RESTED_EXTRA_ACTIONS : 0;
+  j.actionsLeft = Math.max(0, TIME.ACTIONS_PER_DAY - tired) + rested;
   s.jungwooTiredActions = 0;
   j.workCountToday = 0;
   s.lastSettledDate = date;
-  events.push({ type: "dayStarted", date, sulkHealed, tired });
+  events.push({ type: "dayStarted", date, sulkHealed, tired, ...(s.mood && { mood: s.mood }) });
 
   s.bulldak = "none";
   if (!isWeekend(date) && rollPercent(rng, BULLDAK.WEEKDAY_CHANCE_PERCENT)) {
@@ -108,6 +112,8 @@ export function createInitialState(
     seenEvents: [],
     jungwooTiredActions: 0,
     knownPlaceCount: null,
+    mood: null,
+    lastPetDate: null,
   };
   const events: GameEvent[] = [];
   startDay(state, firstDay, rng, events);
@@ -116,11 +122,11 @@ export function createInitialState(
 }
 
 /** 하루 마감 + 다음 날 아침을 한 번 진행한다 (밤 횟수는 세지 않는다). 입력 상태는 바꾸지 않는다. */
-export function closeDay(state: GameState, rng: Rng): { state: GameState; events: GameEvent[] } {
+export function closeDay(state: GameState, rng: Rng, luck?: Rng): { state: GameState; events: GameEvent[] } {
   const s = structuredClone(state);
   const events: GameEvent[] = [];
   endDay(s, events);
-  startDay(s, addDays(s.lastSettledDate, 1), rng, events);
+  startDay(s, addDays(s.lastSettledDate, 1), rng, events, luck);
   markSeen(s, events);
   return { state: s, events };
 }
@@ -152,7 +158,7 @@ export function validateSleep(state: GameState, ctx: ActionContext): ActionError
 export function sleep(state: GameState, ctx: ActionContext): ActionResult {
   const error = validateSleep(state, ctx);
   if (error) return { ok: false, error };
-  const { state: next, events } = closeDay(state, ctx.rng);
+  const { state: next, events } = closeDay(state, ctx.rng, ctx.luck);
   if (ctx.realDay !== undefined) {
     next.nights = { realDay: ctx.realDay, used: nightsUsed(state, ctx.realDay) + 1 };
   }

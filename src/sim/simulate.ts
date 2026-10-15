@@ -102,13 +102,13 @@ export function simulateRun(makeStrategy: () => Strategy, seed: number, opts: Si
     const date = addDays(opts.startDate, i);
     const present = strategy.present(date);
     if (present) {
-      const runner = new DayRunner(state, { rng, places });
+      const runner = new DayRunner(state, { rng, luck: rng, places });
       strategy.playDay(runner, date);
       state = runner.state;
       count(runner.events, day);
     }
     weekHappiness += state.hyejin.happiness;
-    const closed = closeDay(state, rng);
+    const closed = closeDay(state, rng, rng);
     state = closed.state;
     count(closed.events, day);
 

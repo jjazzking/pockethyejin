@@ -39,6 +39,20 @@ export function rejectPercent(jungwooHappiness: number): number {
   return Math.min(100, (SULK.SAFE_HAPPINESS - jungwooHappiness) * SULK.PERCENT_PER_HAPPINESS_BELOW);
 }
 
+/**
+ * 행운 판정: 결과별 확률(%)대로 하나를 고른다. 아무것도 안 걸리면 null (평소 결과).
+ * 행운 난수가 없으면(테스트·예전 호출) 늘 null.
+ */
+export function rollLuck<K extends string>(luck: Rng | undefined, percents: Record<K, number>): K | null {
+  if (!luck) return null;
+  let r = luck() * 100;
+  for (const [key, percent] of Object.entries(percents) as [K, number][]) {
+    if (r < percent) return key;
+    r -= percent;
+  }
+  return null;
+}
+
 /** percent% 확률로 true */
 export function rollPercent(rng: Rng, percent: number): boolean {
   return rng() * 100 < percent;
