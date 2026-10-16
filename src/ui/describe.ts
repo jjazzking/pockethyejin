@@ -1,7 +1,8 @@
+import { EVENT_ART } from "@/content/eventArt";
 import { faceTagForEvent } from "@/content/images";
 import type { FaceEventTag, JungwooFaceTag, Place } from "@/content/types";
 import type { NightSummary } from "@/game/summary";
-import type { GameEvent, Stars } from "@/game/types";
+import type { GameEvent, Stars, StoryEventId } from "@/game/types";
 import { PLAY_ALONE_FLAVORS, SOCIAL_TEXT, formatMoney, rankName, type PlayFlavor } from "./copy";
 
 /** 화면에 띄울 팝업 (얼굴 그림은 띄울 때 faceTag로 고른다. 정우가 주인공이면 jungwooFace로 정우 얼굴) */
@@ -14,6 +15,8 @@ export type PopupSpec =
       faceTag: FaceEventTag | null;
       jungwooFace?: JungwooFaceTag;
       tone?: "danger";
+      /** 이벤트 그림. 있으면 얼굴 대신 크게 보여준다 */
+      art?: string;
     }
   /** 정우 막기 전용 연출 */
   | { kind: "block"; faceTag: FaceEventTag }
@@ -36,6 +39,9 @@ export interface DescribeOptions {
   playFlavor?: PlayFlavor;
 }
 
+/** 이벤트 그림이 있으면 팝업에 붙인다 */
+const art = (id: StoryEventId) => (EVENT_ART[id] ? { art: EVENT_ART[id] } : {});
+
 /** 이벤트 하나 → 팝업 또는 토스트. 아무것도 안 띄우면 null. */
 function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | string | null {
   const faceTag = faceTagForEvent(event);
@@ -45,7 +51,7 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
       if (event.luck === "overtime") return `야근까지 하고 ${formatMoney(event.income)} 벌어왔다… 정우 녹초 🥱`;
       return `정우가 출근해서 ${formatMoney(event.income)} 벌어왔다 💼`;
     case "promoted":
-      return { kind: "card", emoji: "🎉", title: `정우 승진! ${rankName(event.rank)}`, body: "이제 일 한 번에 더 많이 벌어온다.", faceTag: null, jungwooFace: "happy" };
+      return { kind: "card", emoji: "🎉", title: `정우 승진! ${rankName(event.rank)}`, body: "이제 일 한 번에 더 많이 벌어온다.", faceTag: null, jungwooFace: "happy", ...art("promoted") };
     case "waitingDone":
       return { kind: "waiting", quantity: event.quantity, ...(event.luck && { luck: event.luck }), faceTag: null };
     case "waitingRejected":
@@ -68,9 +74,9 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
         faceTag: "warning",
       };
     case "porridgeDelivered":
-      return { kind: "card", emoji: "🥣", title: "죽 배달 완료!", body: "따끈한 죽 먹고 혜진이 감기가 싹 나았다.", faceTag: null, jungwooFace: "happy" };
+      return { kind: "card", emoji: "🥣", title: "죽 배달 완료!", body: "따끈한 죽 먹고 혜진이 감기가 싹 나았다.", faceTag: null, jungwooFace: "happy", ...art("cold") };
     case "bulldakResolved":
-      return { kind: "card", emoji: "🔥", title: "불닭 배달 완료!", body: "정우가 편의점까지 뛰어갔다 왔다. 혜진이 매운맛 충전 완료.", faceTag };
+      return { kind: "card", emoji: "🔥", title: "불닭 배달 완료!", body: "정우가 편의점까지 뛰어갔다 왔다. 혜진이 매운맛 충전 완료.", faceTag, ...art("bulldak") };
     case "fed":
       return { kind: "card", emoji: "🍡", title: `한정선 ${event.count}개 냠냠`, body: "혜진이 볼이 빵빵해졌다.", faceTag };
     case "leveledUp":
@@ -106,6 +112,7 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
         body: event.eaten > 0 ? `행복도가 ${event.recovered} 올랐지만… 냉동실이 텅 비어간다.` : "먹을 한정선도 없었다…",
         faceTag,
         tone: "danger",
+        ...art("raid"),
       };
     case "bulldakCraving":
       return { kind: "card", emoji: "🌶️", title: "혜진이가 불닭이 땡긴다!", body: "자기 전에 정우를 편의점에 보내주세요.", faceTag };
@@ -113,8 +120,11 @@ function describeEvent(event: GameEvent, opts: DescribeOptions): PopupSpec | str
       const t = SOCIAL_TEXT[event.event];
       return { kind: "card", emoji: t.emoji, title: t.title, body: `${t.body} 메인 화면에서 골라주세요. (행동은 안 써요)`, faceTag: "play_together" };
     }
-    case "socialDone":
-      return SOCIAL_TEXT[event.event].choices[event.choice]?.done ?? null;
+    case "socialDone": {
+      const t = SOCIAL_TEXT[event.event];
+      const done = t.choices[event.choice]?.done;
+      return done ? { kind: "card", emoji: t.emoji, title: t.title, body: done, faceTag: null, ...art(event.event) } : null;
+    }
     case "socialSkipped":
       return null;
     case "newPlacesAdded":
