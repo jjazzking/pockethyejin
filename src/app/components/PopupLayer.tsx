@@ -203,7 +203,12 @@ export function PopupLayer({ view }: { view: GameView }) {
         aria-modal
         onClick={(e) => e.stopPropagation()}
       >
-        <Face popup={popup} urls={urls} />
+        {popup.kind === "card" && popup.art ? (
+          // eslint-disable-next-line @next/next/no-img-element -- 연출용 고정 그림
+          <img className={styles.scene} src={popup.art} alt="" draggable={false} />
+        ) : (
+          <Face popup={popup} urls={urls} />
+        )}
         {popup.kind === "card" && (
           <>
             <div className={styles.emoji} aria-hidden>
