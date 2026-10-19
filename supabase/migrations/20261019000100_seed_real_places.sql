@@ -5,6 +5,13 @@
 -- 이름이 다르면 화면에 빈 자리(📍)로 나오니, 파일 이름이나 아래 경로를 맞춘다.
 -- 에피소드는 메모 그대로 (별 개수와 상관없이 같은 글).
 
+-- 대시보드에서 따로 넣은 행이 order를 차지하고 있어도 되게, 이 목록에 없는 기존 행은 지운다.
+
+begin;
+
+-- order가 겹치지 않게 기존 행을 잠시 음수로 비켜 둔다
+update public.places set "order" = -1 - "order";
+
 insert into public.places (id, "order", name, date, image, photos, episodes) values
   ('place-001', 1, '인천여행', '2026-03-29', '2026-03-29-170152.jpeg', array['2026-03-29-204802.jpeg']::text[],
    '{"1": "첫 여행. 월미도에서 탄 바이킹이 재미있었음.", "2": "첫 여행. 월미도에서 탄 바이킹이 재미있었음.", "3": "첫 여행. 월미도에서 탄 바이킹이 재미있었음."}'),
@@ -109,4 +116,8 @@ insert into public.places (id, "order", name, date, image, photos, episodes) val
 on conflict (id) do update set
   "order" = excluded."order", name = excluded.name, date = excluded.date,
   image = excluded.image, photos = excluded.photos, episodes = excluded.episodes;
+
+delete from public.places where "order" < 0;
+
+commit;
 
