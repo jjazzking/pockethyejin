@@ -9,6 +9,7 @@ const place = (id: string, order: number): Place => ({
   name: id,
   date: null,
   image: null,
+  photos: [],
   episodes: { 1: "", 2: "", 3: "" },
 });
 
@@ -44,7 +45,12 @@ describe("DB 행 읽기", () => {
       image: "placeholder.png",
       episodes: { "1": "별 1개", "2": "별 2개", "3": "별 3개" },
     };
-    expect(parsePlaceRow(row)).toEqual({ ...row, episodes: { 1: "별 1개", 2: "별 2개", 3: "별 3개" } });
+    expect(parsePlaceRow(row)).toEqual({ ...row, photos: ["placeholder.png"], episodes: { 1: "별 1개", 2: "별 2개", 3: "별 3개" } });
+  });
+
+  it("추억 사진: 대표 사진이 맨 앞, 빈 값·중복은 뺀다", () => {
+    const row = { id: "x", order: 1, image: "a.jpg", photos: ["b.jpg", "", "a.jpg", 3, "c.jpg"] };
+    expect(parsePlaceRow(row)?.photos).toEqual(["a.jpg", "b.jpg", "c.jpg"]);
   });
 
   it("빠진 값은 채우고, id·order가 없으면 건너뛴다", () => {
@@ -54,6 +60,7 @@ describe("DB 행 읽기", () => {
       name: "이름 없는 장소",
       date: null,
       image: null,
+      photos: [],
       episodes: { 1: "", 2: "", 3: "!" },
     });
     expect(parsePlaceRow({ order: 1 })).toBeNull();

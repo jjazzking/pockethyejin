@@ -10,6 +10,8 @@ export interface Place {
   date: string | null;
   /** 사진 경로. Storage places 버킷 안의 경로, 또는 앱에 들어 있는 "/..." 경로 */
   image: string | null;
+  /** 추억 사진 전부 (image가 맨 앞). 해금된 장소에서 넘겨 본다. */
+  photos: string[];
   /** 별 개수별 에피소드 텍스트 */
   episodes: Record<Stars, string>;
 }

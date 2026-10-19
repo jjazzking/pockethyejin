@@ -33,12 +33,15 @@ export function parsePlaceRow(row: Record<string, unknown>): Place | null {
 
   const raw = (row.episodes && typeof row.episodes === "object" ? row.episodes : {}) as Record<string, unknown>;
   const episode = (stars: Stars) => asText(raw[String(stars)]) ?? "";
+  const image = asText(row.image);
+  const extra = Array.isArray(row.photos) ? row.photos.map(asText).filter((p): p is string => p !== null) : [];
   return {
     id,
     order,
     name: asText(row.name) ?? "이름 없는 장소",
     date: asText(row.date),
-    image: asText(row.image),
+    image,
+    photos: [...new Set([...(image ? [image] : []), ...extra])],
     episodes: { 1: episode(1), 2: episode(2), 3: episode(3) },
   };
 }
