@@ -17,7 +17,7 @@ export async function loadSupabaseContent(): Promise<Content> {
 
 /** 체험 모드: 앱에 들어 있는 임시 장소 + 캐릭터 그림 */
 export async function loadTrialContent(): Promise<Content> {
-  const paths = [...CHARACTER_ART.map((i) => i.path), ...PLACEHOLDER_PLACES.flatMap((p) => (p.image ? [p.image] : []))];
+  const paths = [...CHARACTER_ART.map((i) => i.path), ...PLACEHOLDER_PLACES.flatMap((p) => p.photos)];
   const urls = new Map(paths.map((path) => [path, path]));
   return { places: PLACEHOLDER_PLACES, images: CHARACTER_ART, imageUrls: urls, placeUrls: urls };
 }

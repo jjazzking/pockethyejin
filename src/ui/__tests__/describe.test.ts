@@ -22,7 +22,7 @@ describe("이벤트 → 팝업·토스트", () => {
   });
 
   it("데이트 결과는 장소 에피소드와 함께", () => {
-    const place = { id: "p1", order: 1, name: "카페", date: null, image: null, episodes: { 1: "a", 2: "b", 3: "c" } };
+    const place = { id: "p1", order: 1, name: "카페", date: null, image: null, photos: [], episodes: { 1: "a", 2: "b", 3: "c" } };
     const d = describeEvents([{ type: "dated", placeId: "p1", stars: 3, newBest: true, firstVisit: true }], { summary: null, places: [place] });
     expect(d.popups).toEqual([{ kind: "date", place, stars: 3, newBest: true, firstVisit: true, faceTag: "date_3star" }]);
   });
