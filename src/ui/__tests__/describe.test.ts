@@ -8,6 +8,15 @@ import { describeEvents } from "../describe";
 const opts = { summary: null, places: [] };
 
 describe("이벤트 → 팝업·토스트", () => {
+  it("이벤트를 마치면 그 이벤트 그림이 팝업에 뜬다", () => {
+    const d = describeEvents([{ type: "socialDone", event: "karaoke", choice: "together" }, { type: "bulldakResolved" }], opts);
+    expect(d.popups).toMatchObject([
+      { kind: "card", title: "코인노래방 번개", art: "/events/karaoke.webp" },
+      { kind: "card", art: "/events/bulldak.webp" },
+    ]);
+    expect(d.toasts).toEqual([]);
+  });
+
   it("정우 막기는 전용 연출", () => {
     expect(describeEvents([{ type: "jungwooBlocked" }], opts).popups).toEqual([{ kind: "block", faceTag: "jeongwoo_block" }]);
   });
