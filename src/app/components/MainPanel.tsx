@@ -174,7 +174,7 @@ function JungwooActions({ view, state }: { view: GameView; state: GameState }) {
           </span>
         </div>
         <div className={c.row}>
-          <Stepper label="웨이팅 수량" value={qty} min={1} max={maxQty} onChange={setQty} unit="개" />
+          <Stepper label="웨이팅 수량" value={qty} min={1} max={maxQty} onChange={setQty} unit="개" editable />
           <Button variant="primary" disabled={busy || waitingError !== null} onClick={() => go(waiting)} sub={formatMoney(qty * BALANCE.ACTIONS.WAITING.PRICE_PER_HANJEONGSEON)}>
             웨이팅 보내기
           </Button>

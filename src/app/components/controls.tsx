@@ -46,6 +46,7 @@ export function Stepper({
   onChange,
   unit,
   label,
+  editable = false,
 }: {
   value: number;
   min: number;
@@ -54,16 +55,35 @@ export function Stepper({
   onChange: (value: number) => void;
   unit?: string;
   label: string;
+  /** 가운데 숫자를 직접 입력할 수 있게 (step 1일 때만 의미 있음) */
+  editable?: boolean;
 }) {
   return (
     <span className={styles.stepper} role="group" aria-label={label}>
       <button type="button" aria-label={`${label} 줄이기`} disabled={value - step < min} onClick={() => onChange(value - step)}>
         −
       </button>
-      <span className={styles.stepperValue} aria-live="polite">
-        {value}
-        {unit}
-      </span>
+      {editable ? (
+        <label className={styles.stepperValue}>
+          <input
+            className={styles.stepperInput}
+            type="number"
+            inputMode="numeric"
+            aria-label={label}
+            min={min}
+            max={max}
+            value={value}
+            onFocus={(e) => e.target.select()}
+            onChange={(e) => onChange(Math.min(max, Math.max(min, Math.floor(Number(e.target.value)) || min)))}
+          />
+          {unit}
+        </label>
+      ) : (
+        <span className={styles.stepperValue} aria-live="polite">
+          {value}
+          {unit}
+        </span>
+      )}
       <button type="button" aria-label={`${label} 늘리기`} disabled={value + step > max} onClick={() => onChange(value + step)}>
         +
       </button>
