@@ -101,6 +101,22 @@
   font-variant-numeric: tabular-nums;
 }
 
+.stepperInput {
+  width: 3em;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.stepperInput::-webkit-inner-spin-button,
+.stepperInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .meter {
   display: grid;
   gap: 4px;
